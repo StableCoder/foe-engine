@@ -17,6 +17,7 @@
 
 #include "../hid/keyboard.hpp"
 #include "../hid/mouse.hpp"
+#include "../window_surface.hpp"
 
 struct GLFWwindow;
 
@@ -29,17 +30,11 @@ struct GLFW_WindowData {
     KeyboardInput keyboard;
     MouseInput mouse;
 
+    bool needSwapchainRebuild{false};
     uint32_t desiredSampleCount{1};
     VkSampleCountFlags sampleCount;
-    VkSurfaceKHR surface{VK_NULL_HANDLE};
-    bool needSwapchainRebuild{false};
-    VkSurfaceFormatKHR surfaceFormat;
-    VkPresentModeKHR surfacePresentMode;
-    foeGfxVkSwapchain swapchain{FOE_NULL_HANDLE};
-    bool acquiredImage{false};
-    foeGfxVkSwapchainImageData acquiredImageData{FOE_NULL_HANDLE};
 
-    foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
+    WindowSurfaceData renderSurfaceData;
 
     glm::vec3 position;
     glm::quat orientation;
@@ -69,10 +64,5 @@ bool createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
                                GLFW_WindowData *pWindowData,
                                VkAllocationCallbacks *pAllocator,
                                VkSurfaceKHR *pSurface);
-
-foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
-                                          foeGfxSession gfxSession,
-                                          foeGfxDelayedCaller gfxDelayedDestructor,
-                                          VkFormat depthFormat);
 
 #endif // WSI_GLFW_WINDOW_HPP

@@ -16,9 +16,9 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-#include "../frame_timer.hpp"
 #include "../hid/keyboard.hpp"
 #include "../hid/mouse.hpp"
+#include "../window_surface.hpp"
 
 struct SDL3_WindowData {
     // sdl specific
@@ -33,24 +33,16 @@ struct SDL3_WindowData {
     KeyboardInput keyboard;
     MouseInput mouse;
 
+    bool needSwapchainRebuild{false};
     uint32_t desiredSampleCount{1};
     VkSampleCountFlags sampleCount;
-    VkSurfaceKHR surface{VK_NULL_HANDLE};
-    bool needSwapchainRebuild{false};
-    VkSurfaceFormatKHR surfaceFormat;
-    VkPresentModeKHR surfacePresentMode;
-    foeGfxVkSwapchain swapchain{FOE_NULL_HANDLE};
-    bool acquiredImage{false};
-    foeGfxVkSwapchainImageData acquiredImageData;
 
-    foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
+    WindowSurfaceData renderSurfaceData;
 
     glm::vec3 position;
     glm::quat orientation;
     float fovY, nearZ, farZ;
     foeGfxRenderView renderView{FOE_NULL_HANDLE};
-
-    FrameTimer frameTime;
 };
 
 bool createSDL3Window(int width, int height, char const *pTitle, SDL3_WindowData *pWindowData);
@@ -75,10 +67,5 @@ bool createSDL3WindowVkSurface(foeGfxRuntime gfxRuntime,
                                SDL3_WindowData *pWindowData,
                                VkAllocationCallbacks *pAllocator,
                                VkSurfaceKHR *pSurface);
-
-foeResultSet performSDL3WindowMaintenance(SDL3_WindowData *pWindow,
-                                          foeGfxSession gfxSession,
-                                          foeGfxDelayedCaller gfxDelayedDestructor,
-                                          VkFormat depthFormat);
 
 #endif // WSI_SDL3_WINDOW_HPP

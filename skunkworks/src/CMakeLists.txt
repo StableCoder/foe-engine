@@ -15,6 +15,7 @@ target_sources(
           render_to_file.cpp
           result.c
           vk_result.c
+          window_surface.cpp
           #
           render_graph/render_scene.cpp)
 

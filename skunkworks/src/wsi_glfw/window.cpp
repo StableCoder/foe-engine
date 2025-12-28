@@ -4,20 +4,11 @@
 
 #include "window.hpp"
 
-#include <vulkan/vulkan.h>
-
 #include <GLFW/glfw3.h>
-
 #include <foe/graphics/vk/render_target.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/quaternion_math.hpp>
-
-#include "../result.h"
-#include "../vk_result.h"
-
-#include <array>
-#include <vector>
 
 namespace {
 
@@ -172,14 +163,15 @@ void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
                        foeGfxSession gfxSession,
                        GLFW_WindowData *pWindow) {
     // graphics items
-    if (pWindow->gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
-        foeGfxDestroyRenderTarget(pWindow->gfxOffscreenRenderTarget);
+    if (pWindow->renderSurfaceData.gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
+        foeGfxDestroyRenderTarget(pWindow->renderSurfaceData.gfxOffscreenRenderTarget);
 
-    if (pWindow->swapchain != FOE_NULL_HANDLE)
-        foeGfxVkDestroySwapchain(gfxSession, pWindow->swapchain);
+    if (pWindow->renderSurfaceData.swapchain != FOE_NULL_HANDLE)
+        foeGfxVkDestroySwapchain(gfxSession, pWindow->renderSurfaceData.swapchain);
 
-    if (pWindow->surface != VK_NULL_HANDLE)
-        vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), pWindow->surface, nullptr);
+    if (pWindow->renderSurfaceData.surface != VK_NULL_HANDLE)
+        vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime),
+                            pWindow->renderSurfaceData.surface, nullptr);
 
     // glfw items
     PrivateWindowData *pPrivateWindowData =
@@ -285,126 +277,4 @@ bool createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
                                VkSurfaceKHR *pSurface) {
     return glfwCreateWindowSurface(foeGfxVkGetRuntimeInstance(gfxRuntime), pWindowData->pWindow,
                                    pAllocator, pSurface) == VK_SUCCESS;
-}
-
-namespace {
-
-void destroy_foeGfxVkSwapchain(foeGfxVkSwapchain pSwapchain, foeGfxSession session) {
-    foeGfxVkDestroySwapchain(session, pSwapchain);
-}
-
-} // namespace
-
-foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
-                                          foeGfxSession gfxSession,
-                                          foeGfxDelayedCaller gfxDelayedDestructor,
-                                          VkFormat depthFormat) {
-    VkResult vkResult{VK_SUCCESS};
-    foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
-
-    // Check if need to rebuild a swapchain
-    if (pWindow->swapchain == FOE_NULL_HANDLE || pWindow->needSwapchainRebuild) {
-        pWindow->needSwapchainRebuild = false;
-
-        int width, height;
-        getGlfwWindowPixelSize(pWindow, &width, &height);
-
-        if (!pWindow->swapchain) {
-            // Surface Format
-            uint32_t formatCount;
-            vkResult = vkGetPhysicalDeviceSurfaceFormatsKHR(
-                foeGfxVkGetPhysicalDevice(gfxSession), pWindow->surface, &formatCount, nullptr);
-            if (vkResult != VK_SUCCESS)
-                return vk_to_foeResult(vkResult);
-
-            std::vector<VkSurfaceFormatKHR> surfaceFormats{formatCount, VkSurfaceFormatKHR{}};
-
-            vkResult = vkGetPhysicalDeviceSurfaceFormatsKHR(foeGfxVkGetPhysicalDevice(gfxSession),
-                                                            pWindow->surface, &formatCount,
-                                                            surfaceFormats.data());
-            if (vkResult != VK_SUCCESS)
-                return vk_to_foeResult(vkResult);
-
-            pWindow->surfaceFormat = surfaceFormats[0];
-
-            // Present Mode
-            uint32_t modeCount;
-            vkGetPhysicalDeviceSurfacePresentModesKHR(foeGfxVkGetPhysicalDevice(gfxSession),
-                                                      pWindow->surface, &modeCount, nullptr);
-            if (vkResult != VK_SUCCESS)
-                return vk_to_foeResult(vkResult);
-
-            std::vector<VkPresentModeKHR> presentModes{modeCount, VkPresentModeKHR{}};
-            vkGetPhysicalDeviceSurfacePresentModesKHR(foeGfxVkGetPhysicalDevice(gfxSession),
-                                                      pWindow->surface, &modeCount,
-                                                      presentModes.data());
-            if (vkResult != VK_SUCCESS)
-                return vk_to_foeResult(vkResult);
-
-            // FIFO is always supported at a minimum
-            pWindow->surfacePresentMode = VK_PRESENT_MODE_FIFO_KHR;
-            if (!pWindow->vsync) {
-                // if not set for vsync, use any other presentation mode available
-                for (auto mode : presentModes) {
-                    if (mode != VK_PRESENT_MODE_FIFO_KHR) {
-                        pWindow->surfacePresentMode = mode;
-                        break;
-                    }
-                }
-            }
-
-            // Offscreen render target
-            std::array<foeGfxVkRenderTargetSpec, 2> offscreenSpecs = {
-                foeGfxVkRenderTargetSpec{
-                    .format = pWindow->surfaceFormat.format,
-                    .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                    .count = 3,
-                },
-                foeGfxVkRenderTargetSpec{
-                    .format = depthFormat,
-                    .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                    .count = 3,
-                },
-            };
-
-            result = foeGfxVkCreateRenderTarget(
-                gfxSession, gfxDelayedDestructor, offscreenSpecs.data(), offscreenSpecs.size(),
-                pWindow->sampleCount, &pWindow->gfxOffscreenRenderTarget);
-            if (result.value != FOE_SUCCESS) {
-                return result;
-            }
-        }
-
-        // Determine the minimum swapchain size
-        VkSurfaceCapabilitiesKHR capabilities;
-        VkResult vkResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-            foeGfxVkGetPhysicalDevice(gfxSession), pWindow->surface, &capabilities);
-        if (vkResult != VK_SUCCESS)
-            return vk_to_foeResult(vkResult);
-
-        // Create new swapchain
-        foeGfxVkSwapchain newSwapchain = FOE_NULL_HANDLE;
-
-        result = foeGfxVkCreateSwapchain(gfxSession, pWindow->surface, pWindow->surfaceFormat,
-                                         pWindow->surfacePresentMode,
-                                         VK_IMAGE_USAGE_TRANSFER_DST_BIT, pWindow->swapchain,
-                                         capabilities.minImageCount, width, height, &newSwapchain);
-        if (result.value != FOE_SUCCESS)
-            return result;
-
-        // If the old swapchain exists, we need to destroy it
-        if (pWindow->swapchain) {
-            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
-                                        (PFN_foeGfxDelayedCall)destroy_foeGfxVkSwapchain,
-                                        (void *)pWindow->swapchain);
-        }
-
-        pWindow->swapchain = newSwapchain;
-
-        VkExtent2D swapchainExtent = foeGfxVkGetSwapchainExtent(pWindow->swapchain);
-        foeGfxUpdateRenderTargetExtent(pWindow->gfxOffscreenRenderTarget, swapchainExtent.width,
-                                       swapchainExtent.height);
-    }
-
-    return result;
 }
