@@ -62,10 +62,10 @@ static foeExportFunctionality const cExportFunctionality = {
     .onDeregister = onDeregister,
 };
 
-foeResultSet foeBringupBinaryRegisterExporters() {
+foeResultSet foeSkunkworksBinaryRegisterExporters() {
     return foeRegisterExportFunctionality(&cExportFunctionality);
 }
 
-void foeBringupBinaryDeregisterExporters() {
+void foeSkunkworksBinaryDeregisterExporters() {
     foeDeregisterExportFunctionality(&cExportFunctionality);
 }

@@ -142,7 +142,7 @@ extern "C" void renderedImageToFile(void *pContext) {
     exceptionInfo = DestroyExceptionInfo(exceptionInfo);
 
     std::string logMsg = "SAVED IMAGE: " + pCpuImageData->filename;
-    FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, logMsg.c_str());
+    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_INFO, logMsg.c_str());
 
     delete pCpuImageData;
     pCpuImageData = nullptr;

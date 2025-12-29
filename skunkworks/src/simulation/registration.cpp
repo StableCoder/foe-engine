@@ -50,7 +50,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Attempted to decrement/destroy foeRenderSystem that doesn't exist: {}",
                     buffer);
 
@@ -62,7 +62,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                         "Could not release foeRenderSystem to destroy: {}", buffer);
 
                 ++errors;
@@ -78,7 +78,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Attempted to decrement/destroy foeAnimatedBoneSystem that doesn't exist: {}",
                     buffer);
 
@@ -90,7 +90,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                         "Could not release foeAnimatedBoneSystem to destroy: {}", buffer);
 
                 ++errors;
@@ -107,7 +107,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Attempted to decrement/destroy foeRenderStatePool that doesn't exist: {}",
                     buffer);
 
@@ -119,7 +119,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                         "Could not release foeRenderStatePool to destroy: {}", buffer);
 
                 ++errors;
@@ -136,7 +136,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(
-                foeBringup, FOE_LOG_LEVEL_WARNING,
+                foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                 "Attempted to decrement/destroy foeAnimatedBoneStatePool that doesn't exist: {}",
                 buffer);
 
@@ -149,7 +149,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                         "Could not release foeAnimatedBoneStatePool to destroy: {}", buffer);
 
                 ++errors;
@@ -165,7 +165,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Attempted to decrement/destroy foeArmatureStatePool that doesn't exist: {}",
                     buffer);
 
@@ -178,7 +178,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                         "Could not release foeArmatureStatePool to destroy: {}", buffer);
 
                 ++errors;
@@ -196,7 +196,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             // Trying to destroy something that doesn't exist? Not optimal
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Attempted to decrement/destroy foeArmatureLoader that doesn't exist: {}",
                     buffer);
 
@@ -208,7 +208,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                         "Could not release foeArmatureLoader to destroy: {}", buffer);
 
                 ++errors;
@@ -251,7 +251,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeArmatureLoader on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -284,7 +284,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeArmatureStatePool on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -320,7 +320,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeAnimatedBoneStatePool on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -354,7 +354,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeRenderStatePool on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -384,7 +384,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeArmatureSystem on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -413,7 +413,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeRenderSystem on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -428,7 +428,7 @@ CREATE_FAILED:
     if (result.value != FOE_SUCCESS) {
         size_t errors = destroySelection(pSimulation, &created);
         if (errors > 0)
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues destroying after failed creation", errors);
     }
 
@@ -449,7 +449,7 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Failed to decrement foeAnimatedBoneSystem initialization count on Simulation "
                     "{}: {}",
                     (void *)pSimulation, buffer);
@@ -469,7 +469,7 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(
-                foeBringup, FOE_LOG_LEVEL_WARNING,
+                foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                 "Failed to decrement foeArmatureLoader initialization count on Simulation {}: {}",
                 (void *)pSimulation, buffer);
             ++errors;
@@ -494,7 +494,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeArmatureLoader initialization count on Simulation {}: {}",
                 (void *)pSimulation, buffer);
 
@@ -509,7 +509,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeArmatureLoader on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -523,7 +523,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeArmatureSystem initialization count on Simulation {}: {}",
                 (void *)pSimulation, buffer);
 
@@ -545,7 +545,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeAnimatedBoneSystem on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -557,7 +557,7 @@ INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
         size_t errors = deinitializeSelection(pSimulation, &selection);
         if (errors > 0)
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues deinitializing after failed initialization", errors);
     }
 
@@ -580,7 +580,7 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Failed to decrement foeRenderSystem graphics initialization count on "
                     "Simulation {}: {}",
                     (void *)pSimulation, buffer);
@@ -606,7 +606,7 @@ foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSes
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeRenderSystem graphics initialization count on "
                 "Simulation {}: {}",
                 (void *)pSimulation, buffer);
@@ -632,7 +632,7 @@ foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSes
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize graphics foeRenderSystem on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -644,7 +644,7 @@ INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
         size_t errors = deinitializeGraphicsSelection(pSimulation, &selection);
         if (errors > 0)
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues deinitializing graphics after failed initialization",
                     errors);
     }
@@ -658,9 +658,9 @@ size_t deinitializeGraphics(foeSimulation *pSimulation) {
 
 } // namespace
 
-foeResultSet foeBringupRegisterFunctionality() {
-    FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-            "foeBringupRegisterFunctionality - Starting to register functionality")
+foeResultSet foeSkunkworksRegisterFunctionality() {
+    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_VERBOSE,
+            "foeSkunkworksRegisterFunctionality - Starting to register functionality")
 
     foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = 0,
@@ -675,22 +675,22 @@ foeResultSet foeBringupRegisterFunctionality() {
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
-                "foeBringupRegisterFunctionality - Failed registering functionality: {}", buffer)
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
+                "foeSkunkworksRegisterFunctionality - Failed registering functionality: {}", buffer)
     } else {
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-                "foeBringupRegisterFunctionality - Completed registering functionality")
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_VERBOSE,
+                "foeSkunkworksRegisterFunctionality - Completed registering functionality")
     }
 
     return result;
 }
 
-void foeBringupDeregisterFunctionality() {
-    FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-            "foeBringupDeregisterFunctionality - Starting to deregister functionality")
+void foeSkunkworksDeregisterFunctionality() {
+    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_VERBOSE,
+            "foeSkunkworksDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(0);
 
-    FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-            "foeBringupDeregisterFunctionality - Completed deregistering functionality")
+    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_VERBOSE,
+            "foeSkunkworksDeregisterFunctionality - Completed deregistering functionality")
 }

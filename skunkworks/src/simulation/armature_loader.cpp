@@ -184,7 +184,7 @@ void foeArmatureLoader::load(foeResource resource,
                              foeResourceCreateInfo createInfo,
                              PFN_foeResourcePostLoad postLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "foeArmatureLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
@@ -196,7 +196,7 @@ void foeArmatureLoader::load(foeResource resource,
     } else if (foeResourceType type = foeResourceGetType(resource);
                type != FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE &&
                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "foeArmatureLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), type);
 

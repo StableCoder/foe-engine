@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-typedef enum foeBringupYamlResult {
+typedef enum foeSkunkworksYamlResult {
     FOE_SKUNKWORKS_YAML_SUCCESS = 0,
     FOE_SKUNKWORKS_YAML_ERROR_UNSPECIFIED = -1000024001,
     FOE_SKUNKWORKS_YAML_ERROR_ARMATURE_POOL_NOT_FOUND = -1000024002,
@@ -22,15 +22,15 @@ typedef enum foeBringupYamlResult {
     FOE_SKUNKWORKS_YAML_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER = -1000024007,
     FOE_SKUNKWORKS_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS = -1000024008,
     FOE_SKUNKWORKS_YAML_ERROR_FAILED_TO_REGISTER_COMPONENT_EXPORTERS = -1000024009,
-} foeBringupYamlResult;
+} foeSkunkworksYamlResult;
 
-void foeBringupYamlResultToString(foeBringupYamlResult value,
-                                  char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+void foeSkunkworksYamlResultToString(foeSkunkworksYamlResult value,
+                                     char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
-inline foeResultSet to_foeResult(foeBringupYamlResult value) {
+inline foeResultSet to_foeResult(foeSkunkworksYamlResult value) {
     foeResultSet result = {
         .value = value,
-        .toString = (PFN_foeResultToString)foeBringupYamlResultToString,
+        .toString = (PFN_foeResultToString)foeSkunkworksYamlResultToString,
     };
 
     return result;

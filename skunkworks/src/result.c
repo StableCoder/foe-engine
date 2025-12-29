@@ -14,7 +14,8 @@
         pResultStr = #X;                                                                           \
         break;
 
-void foeBringupResultToString(foeBringupResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
+void foeSkunkworksResultToString(foeSkunkworksResult value,
+                                 char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
     char const *pResultStr = NULL;
 
     switch (value) {

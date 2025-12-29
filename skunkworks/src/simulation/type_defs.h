@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-typedef enum foeBringupStructureType {
+typedef enum foeSkunkworksStructureType {
     // Resources
     FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE,
     FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER,
@@ -21,7 +21,7 @@ typedef enum foeBringupStructureType {
     FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
     FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL,
     FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL,
-} foeBringupStructureType;
+} foeSkunkworksStructureType;
 
 #ifdef __cplusplus
 }

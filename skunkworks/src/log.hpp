@@ -4,4 +4,4 @@
 
 #include <foe/log.h>
 
-FOE_DECLARE_LOG_CATEGORY(foeBringup)
+FOE_DECLARE_LOG_CATEGORY(foeSkunkworks)

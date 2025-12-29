@@ -21,7 +21,7 @@ bool parseEngineConfigFile(Settings *pOptions,
                            foeSearchPaths &searchPaths,
                            std::string_view configFilePath) {
     if (configFilePath.empty()) {
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "Config file not found: {}", configFilePath);
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_INFO, "Config file not found: {}", configFilePath);
         return true;
     }
 
@@ -29,7 +29,7 @@ bool parseEngineConfigFile(Settings *pOptions,
     try {
         config = YAML::LoadFile(std::string{configFilePath});
     } catch (YAML::ParserException &e) {
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "Failed to load config file: {}", e.what());
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "Failed to load config file: {}", e.what());
         return false;
     }
 
@@ -120,7 +120,7 @@ bool parseEngineConfigFile(Settings *pOptions,
         }
 
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "Failure parsing config file: {}", e.what());
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "Failure parsing config file: {}", e.what());
         return false;
     }
 

@@ -61,7 +61,7 @@ bool generateDependencyImporters(uint32_t dependencyCount,
         if (importer != FOE_NULL_HANDLE) {
             newImporters.emplace_back(importer);
         } else {
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "Failed to find dataset and/or importer for dependency: {}",
                     ppDependencyNames[i])
             return false;
@@ -94,7 +94,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
         persistentImporter =
             searchAndCreateImporter(topLevelDataSet, foeIdPersistentGroup, *pSearchPaths);
         if (persistentImporter == FOE_NULL_HANDLE) {
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "Could not find dataset and/or importer for top-level data set: {}",
                     topLevelDataSet)
             return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_IMPORTER);
@@ -131,7 +131,8 @@ foeResultSet importState(std::string_view topLevelDataSet,
     for (auto it = dependencyNames.begin(); it != dependencyNames.end(); ++it) {
         for (auto innerIt = it + 1; innerIt != dependencyNames.end(); ++innerIt) {
             if (strcmp(*innerIt, *it) == 0) {
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR, "Duplicate dependency '{}' detected", *it)
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR, "Duplicate dependency '{}' detected",
+                        *it)
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_DUPLICATE_DEPENDENCIES);
             }
         }
@@ -167,7 +168,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
                 *importerIt, &transitiveCount, transitiveGroups.data(), &transitiveStringLength,
                 transitiveNameArray.data());
             if (result.value != FOE_SUCCESS) {
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                         "Failed to import sub-dependencies of the '{}' dependency",
                         dependencyNames[i])
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES);
@@ -193,7 +194,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
                 }
 
                 if (!depFound) {
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+                    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                             "Could not find transitive dependency '{}' for dependency group '{}'",
                             transitiveNames[j], dependencyNames[i])
                     return to_foeResult(FOE_STATE_IMPORT_ERROR_TRANSITIVE_DEPENDENCIES_UNFULFILLED);
@@ -272,7 +273,8 @@ foeResultSet importState(std::string_view topLevelDataSet,
             auto success = pSimulationSet->groupData.addDynamicGroup(newGroupEntityIndexes,
                                                                      newGroupResourceIndexes, it);
             if (!success) {
-                FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR, "Could not setup Group '{}'", pGroupName);
+                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR, "Could not setup Group '{}'",
+                        pGroupName);
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
             }
             ++groupValue;

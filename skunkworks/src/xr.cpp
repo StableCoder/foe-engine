@@ -116,7 +116,7 @@ foeResultSet startXR(foeXrRuntime runtime,
     foeResultSet result = to_foeResult(FOE_SKUNKWORKS_SUCCESS);
 
     if (runtime == FOE_NULL_HANDLE) {
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "Tried to start an XR session, but no XR runtime has been started");
     } else {
         result = createXrSession(runtime, gfxSession, &pXrData->session);
@@ -132,8 +132,8 @@ foeResultSet startXR(foeXrRuntime runtime,
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
-                            __FILE__, __LINE__, buffer);
+                    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL,
+                            "End called from {}:{} with error {}", __FILE__, __LINE__, buffer);
 
                     goto START_XR_FAILED;
                 }
@@ -353,7 +353,7 @@ foeResultSet startXR(foeXrRuntime runtime,
         if (result.value != FOE_SUCCESS)
             goto START_XR_FAILED;
 
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "Started new XR session {}",
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_INFO, "Started new XR session {}",
                 static_cast<void *>(foeOpenXrGetSession(pXrData->session)));
     }
 
@@ -361,7 +361,7 @@ START_XR_FAILED:
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "Failed to start XR with error {}", buffer);
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "Failed to start XR with error {}", buffer);
 
         // stopXR(localPoll);
     }
@@ -384,7 +384,7 @@ foeResultSet stopXR(foeXrRuntime runtime,
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL,
+                    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL,
                             "Failed to stop XR at {}:{} with error {}", __FILE__, __LINE__, buffer);
                     return result;
                 }
@@ -401,7 +401,7 @@ foeResultSet stopXR(foeXrRuntime runtime,
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL,
+                    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL,
                             "Failed to stop XR at {}:{} with error {}", __FILE__, __LINE__, buffer);
                     return result;
                 }
@@ -434,7 +434,7 @@ foeResultSet stopXR(foeXrRuntime runtime,
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL,
+                    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL,
                             "Failed to stop XR at {}:{} with error {}", __FILE__, __LINE__, buffer);
                     return result;
                 }

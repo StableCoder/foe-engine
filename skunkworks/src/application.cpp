@@ -63,8 +63,8 @@
     {                                                                                              \
         char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
         result.toString(result.value, buffer);                                                     \
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error: {}", __FILE__, \
-                __LINE__, buffer);                                                                 \
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error: {}",        \
+                __FILE__, __LINE__, buffer);                                                       \
         return std::make_tuple(false, result.value);                                               \
     }
 
@@ -72,20 +72,20 @@
     {                                                                                              \
         char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
         result.toString(result.value, buffer);                                                     \
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,  \
-                __LINE__, buffer);                                                                 \
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",         \
+                __FILE__, __LINE__, buffer);                                                       \
         return result.value;                                                                       \
     }
 
 #define END_PROGRAM_TUPLE                                                                          \
     {                                                                                              \
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{}", __FILE__, __LINE__);     \
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "End called from {}:{}", __FILE__, __LINE__);  \
         return std::make_tuple(false, 1);                                                          \
     }
 
 #define END_PROGRAM                                                                                \
     {                                                                                              \
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{}", __FILE__, __LINE__);     \
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "End called from {}:{}", __FILE__, __LINE__);  \
         return 1;                                                                                  \
     }
 
@@ -100,7 +100,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "Error registering basic functionality: {}",
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "Error registering basic functionality: {}",
                 buffer)
         return std::make_tuple(false, result.value);
     }
@@ -118,7 +118,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "Error importing '{}' state with error: {}",
+        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "Error importing '{}' state with error: {}",
                 "persistent", buffer)
 
         return std::make_tuple(false, result.value);
@@ -367,7 +367,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         // If the user specified to force an XR session and couldn't find/create the
         // session, fail out
         if (settings.xr.forceXr && xrData.session == FOE_NULL_HANDLE) {
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL,
+            FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL,
                     "XR support enabled but no HMD session was detected/started.")
             return std::make_tuple(false, 1);
         }
@@ -491,7 +491,7 @@ int Application::mainloop() {
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
-    FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "Entering main loop")
+    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_INFO, "Entering main loop")
     while ((!glfw_windowData.empty() || !sdl3_windowData.empty())
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
@@ -1163,7 +1163,7 @@ int Application::mainloop() {
                             if (xrResult != XR_SUCCESS && xrResult != XR_SESSION_LOSS_PENDING) {
                                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                                 XrResultToString(xrResult, buffer);
-                                FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+                                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                                         "xrWaitSwapchainImage failed: {}", buffer);
                             } else {
                                 VkSemaphoreSignalInfo signalInfo{
@@ -1184,7 +1184,7 @@ int Application::mainloop() {
                             if (xrResult != XR_SUCCESS) {
                                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                                 XrResultToString(xrResult, buffer);
-                                FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL,
+                                FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL,
                                         "xrReleaseSwapchainImage error: {}", buffer)
                             }
                         }
@@ -1413,7 +1413,7 @@ int Application::mainloop() {
 
         foeWaitSyncThreads(threadPool);
     }
-    FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "Exiting main loop")
+    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_INFO, "Exiting main loop")
 
     return 0;
 }

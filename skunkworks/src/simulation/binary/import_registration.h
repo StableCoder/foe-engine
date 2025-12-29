@@ -11,9 +11,9 @@
 extern "C" {
 #endif
 
-foeResultSet foeBringupBinaryRegisterImporters();
+foeResultSet foeSkunkworksBinaryRegisterImporters();
 
-void foeBringupBinaryDeregisterImporters();
+void foeSkunkworksBinaryDeregisterImporters();
 
 #ifdef __cplusplus
 }

@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-typedef enum foeBringupBinaryResult {
+typedef enum foeSkunkworksBinaryResult {
     FOE_SKUNKWORKS_BINARY_SUCCESS = 0,
     FOE_SKUNKWORKS_BINARY_DATA_NOT_EXPORTED = 1000025001,
     FOE_SKUNKWORKS_BINARY_ERROR_UNSPECIFIED = -1000025001,
@@ -26,15 +26,15 @@ typedef enum foeBringupBinaryResult {
     FOE_SKUNKWORKS_BINARY_ERROR_CAMERA_POOL_NOT_FOUND = -1000025010,
     FOE_SKUNKWORKS_BINARY_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER = -1000025011,
     FOE_SKUNKWORKS_BINARY_ERROR_RENDER_STATE_POOL_NOT_FOUND = -1000025012,
-} foeBringupBinaryResult;
+} foeSkunkworksBinaryResult;
 
-void foeBringupBinaryResultToString(foeBringupBinaryResult value,
-                                    char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+void foeSkunkworksBinaryResultToString(foeSkunkworksBinaryResult value,
+                                       char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
-inline foeResultSet to_foeResult(foeBringupBinaryResult value) {
+inline foeResultSet to_foeResult(foeSkunkworksBinaryResult value) {
     foeResultSet result = {
         .value = value,
-        .toString = (PFN_foeResultToString)foeBringupBinaryResultToString,
+        .toString = (PFN_foeResultToString)foeSkunkworksBinaryResultToString,
     };
 
     return result;

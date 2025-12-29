@@ -12,7 +12,7 @@
 #include "render_state.h"
 #include "result.h"
 
-foeResultSet foeBringupBinaryRegisterImporters() {
+foeResultSet foeSkunkworksBinaryRegisterImporters() {
     foeResultSet result = to_foeResult(FOE_SKUNKWORKS_BINARY_SUCCESS);
 
     // Resources
@@ -34,12 +34,12 @@ foeResultSet foeBringupBinaryRegisterImporters() {
 
 REGISTRATION_FAILED:
     if (result.value != FOE_SUCCESS)
-        foeBringupBinaryDeregisterImporters();
+        foeSkunkworksBinaryDeregisterImporters();
 
     return result;
 }
 
-void foeBringupBinaryDeregisterImporters() {
+void foeSkunkworksBinaryDeregisterImporters() {
     // Components
     foeImexBinaryDeregisterComponentImportFn(binary_key_foeRenderState(), import_foeRenderState);
     foeImexBinaryDeregisterComponentImportFn(binary_key_foeArmatureState(),

@@ -16,7 +16,7 @@
 
 namespace {
 
-void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimulation) {
+void imgui_foeSkunkworksComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     // foeArmatureState
     if (foeArmatureStatePool componentPool = (foeArmatureStatePool)foeSimulationGetComponentPool(
             pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
@@ -53,7 +53,7 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimula
     }
 }
 
-void imgui_foeBringupResources(foeResourceBase const *pResourceData) {
+void imgui_foeSkunkworksResources(foeResourceBase const *pResourceData) {
     if (pResourceData->rType == FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE)
         imgui_foeArmature((foeArmature const *)pResourceData);
 }
@@ -67,12 +67,14 @@ void imgui_BringupResourceCreateInfo(foeResourceCreateInfo resourceCreateInfo) {
 
 } // namespace
 
-foeResultSet foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
-    return pRegistrar->registerElements(&imgui_foeBringupComponents, imgui_foeBringupResources,
+foeResultSet foeSkunkworksImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
+    return pRegistrar->registerElements(&imgui_foeSkunkworksComponents,
+                                        imgui_foeSkunkworksResources,
                                         imgui_BringupResourceCreateInfo, nullptr);
 }
 
-foeResultSet foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
-    return pRegistrar->deregisterElements(&imgui_foeBringupComponents, imgui_foeBringupResources,
+foeResultSet foeSkunkworksImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
+    return pRegistrar->deregisterElements(&imgui_foeSkunkworksComponents,
+                                          imgui_foeSkunkworksResources,
                                           imgui_BringupResourceCreateInfo, nullptr);
 }

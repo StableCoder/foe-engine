@@ -25,7 +25,7 @@ foeResultSet registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept {
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
-    result = foeBringupImGuiRegister(pRegistrar);
+    result = foeSkunkworksImGuiRegister(pRegistrar);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
@@ -37,7 +37,7 @@ REGISTRATION_FAILED:
 }
 
 void deregisterImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept {
-    foeBringupImGuiDeregister(pRegistrar);
+    foeSkunkworksImGuiDeregister(pRegistrar);
     foeGraphicsResourceImGuiDeregister(pRegistrar);
     foePhysicsImGuiDeregister(pRegistrar);
     foePositionImGuiDeregister(pRegistrar);

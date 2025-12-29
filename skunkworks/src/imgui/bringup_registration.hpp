@@ -9,8 +9,8 @@
 
 class foeSimulationImGuiRegistrar;
 
-foeResultSet foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
+foeResultSet foeSkunkworksImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
 
-foeResultSet foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
+foeResultSet foeSkunkworksImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
 
 #endif // IMGUI_BRINGUP_REGISTRATION_HPP

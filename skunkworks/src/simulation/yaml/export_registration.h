@@ -11,9 +11,9 @@
 extern "C" {
 #endif
 
-foeResultSet foeBringupYamlRegisterExporters();
+foeResultSet foeSkunkworksYamlRegisterExporters();
 
-void foeBringupYamlDeregisterExporters();
+void foeSkunkworksYamlDeregisterExporters();
 
 #ifdef __cplusplus
 }

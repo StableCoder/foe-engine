@@ -14,8 +14,8 @@
         pResultStr = #X;                                                                           \
         break;
 
-void foeBringupBinaryResultToString(foeBringupBinaryResult value,
-                                    char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
+void foeSkunkworksBinaryResultToString(foeSkunkworksBinaryResult value,
+                                       char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
     char const *pResultStr = NULL;
 
     switch (value) {

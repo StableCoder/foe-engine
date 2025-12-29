@@ -53,8 +53,9 @@ std::array<ImExPlugin, 10> pluginList{
     },
     ImExPlugin{
         .path = BRINGUP_YAML_PLUGIN,
-        .initFn = {"foeBringupYamlRegisterExporters", "foeBringupYamlRegisterImporters"},
-        .deinitFn = {"foeBringupYamlDeregisterImporters", "foeBringupYamlDeregisterExporters"},
+        .initFn = {"foeSkunkworksYamlRegisterExporters", "foeSkunkworksYamlRegisterImporters"},
+        .deinitFn = {"foeSkunkworksYamlDeregisterImporters",
+                     "foeSkunkworksYamlDeregisterExporters"},
     },
     // Binary
     ImExPlugin{
@@ -82,8 +83,9 @@ std::array<ImExPlugin, 10> pluginList{
     },
     ImExPlugin{
         .path = BRINGUP_BINARY_PLUGIN,
-        .initFn = {"foeBringupBinaryRegisterExporters", "foeBringupBinaryRegisterImporters"},
-        .deinitFn = {"foeBringupBinaryDeregisterImporters", "foeBringupBinaryDeregisterExporters"},
+        .initFn = {"foeSkunkworksBinaryRegisterExporters", "foeSkunkworksBinaryRegisterImporters"},
+        .deinitFn = {"foeSkunkworksBinaryDeregisterImporters",
+                     "foeSkunkworksBinaryDeregisterExporters"},
     },
 };
 
@@ -136,7 +138,7 @@ extern "C" foeResultSet registerBasicFunctionality() {
     if (result.value != FOE_SUCCESS)
         return result;
 
-    result = foeBringupRegisterFunctionality();
+    result = foeSkunkworksRegisterFunctionality();
     if (result.value != FOE_SUCCESS)
         return result;
 
@@ -157,7 +159,7 @@ extern "C" void deregisterBasicFunctionality() {
     }
 
     // Core
-    foeBringupDeregisterFunctionality();
+    foeSkunkworksDeregisterFunctionality();
     foeGraphicsResourceDeregisterFunctionality();
     foePhysicsDeregisterFunctionality();
     foePositionDeregisterFunctionality();

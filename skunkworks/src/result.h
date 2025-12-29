@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-typedef enum foeBringupResult {
+typedef enum foeSkunkworksResult {
     FOE_SKUNKWORKS_SUCCESS = 0,
 
     FOE_SKUNKWORKS_ERROR_OUT_OF_MEMORY,
@@ -47,14 +47,15 @@ typedef enum foeBringupResult {
 
     // Need to have a negative enum value to prevent treatment as a flag
     FOE_SKUNKWORKS_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
-} foeBringupResult;
+} foeSkunkworksResult;
 
-void foeBringupResultToString(foeBringupResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+void foeSkunkworksResultToString(foeSkunkworksResult value,
+                                 char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
-inline foeResultSet to_foeResult(foeBringupResult value) {
+inline foeResultSet to_foeResult(foeSkunkworksResult value) {
     foeResultSet result = {
         .value = value,
-        .toString = (PFN_foeResultToString)foeBringupResultToString,
+        .toString = (PFN_foeResultToString)foeSkunkworksResultToString,
     };
 
     return result;

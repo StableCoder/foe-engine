@@ -130,10 +130,10 @@ foeExportFunctionality exportFunctionality{
 
 } // namespace
 
-extern "C" foeResultSet foeBringupYamlRegisterExporters() {
+extern "C" foeResultSet foeSkunkworksYamlRegisterExporters() {
     return foeRegisterExportFunctionality(&exportFunctionality);
 }
 
-extern "C" void foeBringupYamlDeregisterExporters() {
+extern "C" void foeSkunkworksYamlDeregisterExporters() {
     foeDeregisterExportFunctionality(&exportFunctionality);
 }

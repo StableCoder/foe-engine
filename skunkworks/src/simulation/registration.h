@@ -11,9 +11,9 @@
 extern "C" {
 #endif
 
-foeResultSet foeBringupRegisterFunctionality();
+foeResultSet foeSkunkworksRegisterFunctionality();
 
-void foeBringupDeregisterFunctionality();
+void foeSkunkworksDeregisterFunctionality();
 
 #ifdef __cplusplus
 }

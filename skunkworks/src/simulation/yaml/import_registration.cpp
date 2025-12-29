@@ -76,7 +76,7 @@ bool importRenderState(YAML::Node const &node,
 
 } // namespace
 
-extern "C" foeResultSet foeBringupYamlRegisterImporters() {
+extern "C" foeResultSet foeSkunkworksYamlRegisterImporters() {
     foeResultSet result = to_foeResult(FOE_SKUNKWORKS_YAML_SUCCESS);
 
     // Resources
@@ -98,12 +98,12 @@ extern "C" foeResultSet foeBringupYamlRegisterImporters() {
 
 REGISTRATION_FAILED:
     if (result.value != FOE_SUCCESS)
-        foeBringupYamlDeregisterImporters();
+        foeSkunkworksYamlDeregisterImporters();
 
     return result;
 }
 
-extern "C" void foeBringupYamlDeregisterImporters() {
+extern "C" void foeSkunkworksYamlDeregisterImporters() {
     // Component
     foeImexYamlDeregisterComponentFn(yaml_armature_state_key(), importArmatureState);
     foeImexYamlDeregisterComponentFn(yaml_render_state_key(), importRenderState);
