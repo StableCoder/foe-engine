@@ -250,13 +250,15 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         }
 
         for (auto it : glfw_windowData) {
-            if (!createGlfwWindowVkSurface(gfxRuntime, it, nullptr, &it->renderSurfaceData.surface))
+            if (createGlfwWindowVkSurface(gfxRuntime, FOE_NULL_HANDLE, it, nullptr,
+                                          &it->renderSurfaceData.surface) != FOE_SUCCESS)
                 std::abort();
         }
 
         // sdl3
         for (auto &it : sdl3_windowData) {
-            if (!createSDL3WindowVkSurface(gfxRuntime, it, nullptr, &it->renderSurfaceData.surface))
+            if (createSDL3WindowVkSurface(gfxRuntime, FOE_NULL_HANDLE, it, nullptr,
+                                          &it->renderSurfaceData.surface) != FOE_SUCCESS)
                 std::abort();
         }
 

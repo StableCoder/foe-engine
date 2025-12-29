@@ -60,9 +60,11 @@ void getGlfwWindowScale(GLFW_WindowData *pWindowData, float *xScale, float *ySca
 
 bool getGlfwVkInstanceExtensions(uint32_t *pCount, char const *const **ppExtensionNames);
 
-bool createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
-                               GLFW_WindowData *pWindowData,
-                               VkAllocationCallbacks *pAllocator,
-                               VkSurfaceKHR *pSurface);
+foeResult createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
+                                    // optional, will be used to check compatability if not NULL
+                                    foeGfxSession gfxSession,
+                                    GLFW_WindowData *pWindowData,
+                                    VkAllocationCallbacks *pAllocator,
+                                    VkSurfaceKHR *pSurface);
 
 #endif // WSI_GLFW_WINDOW_HPP

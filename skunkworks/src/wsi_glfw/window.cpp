@@ -10,6 +10,8 @@
 #include <foe/graphics/vk/session.h>
 #include <foe/quaternion_math.hpp>
 
+#include "../result.h"
+
 namespace {
 
 struct PrivateWindowData {
@@ -271,10 +273,33 @@ bool getGlfwVkInstanceExtensions(uint32_t *pCount, char const *const **pppExtens
     return true;
 }
 
-bool createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
-                               GLFW_WindowData *pWindowData,
-                               VkAllocationCallbacks *pAllocator,
-                               VkSurfaceKHR *pSurface) {
-    return glfwCreateWindowSurface(foeGfxVkGetRuntimeInstance(gfxRuntime), pWindowData->pWindow,
-                                   pAllocator, pSurface) == VK_SUCCESS;
+foeResult createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
+                                    foeGfxSession gfxSession,
+                                    GLFW_WindowData *pWindowData,
+                                    VkAllocationCallbacks *pAllocator,
+                                    VkSurfaceKHR *pSurface) {
+    VkSurfaceKHR newSurface;
+    VkResult vkResult = glfwCreateWindowSurface(foeGfxVkGetRuntimeInstance(gfxRuntime),
+                                                pWindowData->pWindow, pAllocator, &newSurface);
+    if (vkResult != VK_SUCCESS)
+        return (foeResult)FOE_SKUNKWORKS_ERROR_UNABLE_TO_CREATE_SURFACE;
+
+    if (gfxSession != FOE_NULL_HANDLE) {
+        // graphics session already exists, so we want to check that the surface we have is
+        // compatible with it before proceeding
+        VkBool32 usableSurface;
+        vkGetPhysicalDeviceSurfaceSupportKHR(foeGfxVkGetPhysicalDevice(gfxSession), 0, newSurface,
+                                             &usableSurface);
+
+        if (usableSurface == VK_FALSE) {
+            // it is not compatible, so destroy the surface and return saying as much
+            vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), newSurface, pAllocator);
+
+            return (foeResult)FOE_SKUNKWORKS_ERROR_INCOMPATIBLE_GRAPHICS_SESSION;
+        }
+    }
+
+SURFACE_CREATE_SUCCESS:
+    *pSurface = newSurface;
+    return (foeResult)FOE_SKUNKWORKS_SUCCESS;
 }

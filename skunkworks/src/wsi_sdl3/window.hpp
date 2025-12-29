@@ -63,9 +63,11 @@ void getSDL3WindowScale(SDL3_WindowData *pWindowData, float *xScale, int *yScale
 
 bool getSDL3VkExtensions(uint32_t *pCount, char const *const **ppExtensionNames);
 
-bool createSDL3WindowVkSurface(foeGfxRuntime gfxRuntime,
-                               SDL3_WindowData *pWindowData,
-                               VkAllocationCallbacks *pAllocator,
-                               VkSurfaceKHR *pSurface);
+foeResult createSDL3WindowVkSurface(foeGfxRuntime gfxRuntime,
+                                    // optional, will be used to check compatability if not NULL
+                                    foeGfxSession gfxSession,
+                                    SDL3_WindowData *pWindowData,
+                                    VkAllocationCallbacks *pAllocator,
+                                    VkSurfaceKHR *pSurface);
 
 #endif // WSI_SDL3_WINDOW_HPP

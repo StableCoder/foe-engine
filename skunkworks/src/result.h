@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -40,6 +40,10 @@ typedef enum foeBringupResult {
     // Armature System
     FOE_SKUNKWORKS_ERROR_NO_ARMATURE_POOL_PROVIDED,
     FOE_SKUNKWORKS_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED,
+
+    // WSI
+    FOE_SKUNKWORKS_ERROR_UNABLE_TO_CREATE_SURFACE,
+    FOE_SKUNKWORKS_ERROR_INCOMPATIBLE_GRAPHICS_SESSION,
 
     // Need to have a negative enum value to prevent treatment as a flag
     FOE_SKUNKWORKS_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,

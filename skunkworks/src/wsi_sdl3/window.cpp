@@ -11,6 +11,8 @@
 #include <foe/graphics/vk/session.h>
 #include <foe/quaternion_math.hpp>
 
+#include "../result.h"
+
 bool createSDL3Window(int width, int height, char const *pTitle, SDL3_WindowData *pWindowData) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::abort();
@@ -275,10 +277,32 @@ bool getSDL3VkExtensions(uint32_t *pCount, char const *const **ppExtensionNames)
     return true;
 }
 
-bool createSDL3WindowVkSurface(foeGfxRuntime gfxRuntime,
-                               SDL3_WindowData *pWindowData,
-                               VkAllocationCallbacks *pAllocator,
-                               VkSurfaceKHR *pSurface) {
-    return SDL_Vulkan_CreateSurface(pWindowData->pWindow, foeGfxVkGetRuntimeInstance(gfxRuntime),
-                                    nullptr, pSurface);
+foeResult createSDL3WindowVkSurface(foeGfxRuntime gfxRuntime,
+                                    foeGfxSession gfxSession,
+                                    SDL3_WindowData *pWindowData,
+                                    VkAllocationCallbacks *pAllocator,
+                                    VkSurfaceKHR *pSurface) {
+    VkSurfaceKHR newSurface;
+    bool created = SDL_Vulkan_CreateSurface(
+        pWindowData->pWindow, foeGfxVkGetRuntimeInstance(gfxRuntime), nullptr, &newSurface);
+    if (!created)
+        return (foeResult)FOE_SKUNKWORKS_ERROR_UNABLE_TO_CREATE_SURFACE;
+
+    if (gfxSession != FOE_NULL_HANDLE) {
+        // graphics session already exists, so we want to check that the surface we have is
+        // compatible with it before proceeding
+        VkBool32 usableSurface;
+        vkGetPhysicalDeviceSurfaceSupportKHR(foeGfxVkGetPhysicalDevice(gfxSession), 0, newSurface,
+                                             &usableSurface);
+
+        if (usableSurface == VK_FALSE) {
+            // it is not compatible, so destroy the surface and return saying as much
+            vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), newSurface, pAllocator);
+
+            return (foeResult)FOE_SKUNKWORKS_ERROR_INCOMPATIBLE_GRAPHICS_SESSION;
+        }
+    }
+
+    *pSurface = newSurface;
+    return (foeResult)FOE_SKUNKWORKS_SUCCESS;
 }
