@@ -1,21 +1,29 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #ifndef PER_FRAME_DATA_HPP
 #define PER_FRAME_DATA_HPP
 
+#include <foe/split_thread_pool.h>
 #include <vulkan/vulkan.h>
 
 #include "vk_result.h"
 
 #include <array>
+#include <queue>
+
+struct OnFrameCompleteTask {
+    PFN_foeTask pfnTask;
+    void *pTaskData;
+};
 
 struct PerFrameData {
     VkSemaphore preGraph;
     VkSemaphore postGraph;
 
     VkFence frameComplete;
+    std::queue<OnFrameCompleteTask> onFrameCompleteTasks;
 
     VkCommandPool commandPool;
     VkCommandBuffer commandBuffer;

@@ -602,8 +602,15 @@ int Application::mainloop() {
         for (auto it = glfw_windowData.begin(); it != glfw_windowData.end();) {
             GLFW_WindowData *window = *it;
 
-            // if window is set to close, destroy it now
+            // if window is set to close, check if to be destroyed now
             if (window->requestClose) {
+                std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
+                window->renderSurfaceData.active = false;
+                if (window->renderSurfaceData.inFlight != 0) {
+                    // still items in-flight, not to be removed yet
+                    ++it;
+                    continue;
+                }
 #ifdef EDITOR_MODE
                 windowInfo.removeWindow(window->pWindow);
 #endif
@@ -689,7 +696,15 @@ int Application::mainloop() {
         for (auto it = sdl3_windowData.begin(); it < sdl3_windowData.end();) {
             SDL3_WindowData *window = *it;
 
+            // if window is set to close, check if to be destroyed now
             if (window->close) {
+                std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
+                window->renderSurfaceData.active = false;
+                if (window->renderSurfaceData.inFlight != 0) {
+                    // still items in-flight, not to be removed yet
+                    ++it;
+                    continue;
+                }
 #ifdef EDITOR_MODE
                 windowInfo.removeWindow(window);
 #endif
@@ -719,6 +734,14 @@ int Application::mainloop() {
                                 &frameData[nextFrameIndex].frameComplete, VK_TRUE,
                                 0) == VK_SUCCESS) {
                 frameIndex = nextFrameIndex;
+
+                // run any frame-complete tasks
+                while (!frameData[nextFrameIndex].onFrameCompleteTasks.empty()) {
+                    auto task = frameData[nextFrameIndex].onFrameCompleteTasks.front();
+                    frameData[nextFrameIndex].onFrameCompleteTasks.pop();
+
+                    task.pfnTask(task.pTaskData);
+                }
 
                 // Resource Loader Gfx Maintenance
                 for (auto &it : pSimulationSet->resourceLoaders) {
@@ -824,6 +847,11 @@ int Application::mainloop() {
 
             // glfw
             for (auto &it : glfw_windowData) {
+                std::scoped_lock<std::mutex> lock{it->renderSurfaceData.sync};
+                if (!it->renderSurfaceData.active)
+                    // if this surface is not active, don't render it right now
+                    continue;
+
                 result = vk_to_foeResult(
                     foeGfxVkAcquireSwapchainImage(gfxSession, it->renderSurfaceData.swapchain,
                                                   &it->renderSurfaceData.acquiredImageData));
@@ -855,6 +883,7 @@ int Application::mainloop() {
 
                     foeGfxUpdateRenderView(it->renderView, sizeof(glm::mat4), &matrix);
 
+                    ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
                         .pWindowData = it,
                         .pSurfaceData = &it->renderSurfaceData,
@@ -866,6 +895,11 @@ int Application::mainloop() {
 
             // sdl
             for (auto it : sdl3_windowData) {
+                std::scoped_lock<std::mutex> lock{it->renderSurfaceData.sync};
+                if (!it->renderSurfaceData.active)
+                    // if this surface is not active, don't render it right now
+                    continue;
+
                 result = vk_to_foeResult(
                     foeGfxVkAcquireSwapchainImage(gfxSession, it->renderSurfaceData.swapchain,
                                                   &it->renderSurfaceData.acquiredImageData));
@@ -897,6 +931,7 @@ int Application::mainloop() {
 
                     foeGfxUpdateRenderView(it->renderView, sizeof(glm::mat4), &matrix);
 
+                    ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
                         .pWindowData = it,
                         .pSurfaceData = &it->renderSurfaceData,
@@ -1346,6 +1381,20 @@ int Application::mainloop() {
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
+
+                // set task to run when the frameComplete fence clears
+                auto onFrameCompleteTask = [](void *pTaskData) {
+                    WindowSurfaceData *pSurfaceData = static_cast<WindowSurfaceData *>(pTaskData);
+
+                    pSurfaceData->sync.lock();
+                    --pSurfaceData->inFlight;
+                    pSurfaceData->sync.unlock();
+                };
+
+                frameData[frameIndex].onFrameCompleteTasks.emplace(OnFrameCompleteTask{
+                    .pfnTask = onFrameCompleteTask,
+                    .pTaskData = pSurfaceData,
+                });
             }
 
             // Create a single final frame-complete synchronization job for the fence

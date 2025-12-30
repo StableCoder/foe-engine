@@ -12,7 +12,15 @@
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/swapchain.h>
 
+#include <mutex>
+
 struct WindowSurfaceData {
+    std::mutex sync;
+    // how many frames are in light to be rendered
+    uint32_t inFlight{0};
+    // whether or not to actively render this surface
+    bool active{true};
+
     VkSurfaceKHR surface{VK_NULL_HANDLE};
     VkSampleCountFlags sampleCount{VK_SAMPLE_COUNT_1_BIT};
 
