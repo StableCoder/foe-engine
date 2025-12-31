@@ -180,7 +180,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                 pNewWindow->farZ = 50;
 
 #ifdef EDITOR_MODE
-                imguiAddGlfwWindow(&windowInfo, pNewWindow->pWindow, &pNewWindow->keyboard,
+                imguiAddGlfwWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
                                    &pNewWindow->mouse);
 #endif
 

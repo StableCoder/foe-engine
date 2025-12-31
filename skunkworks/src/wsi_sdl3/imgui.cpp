@@ -4,6 +4,8 @@
 
 #include "imgui.hpp"
 
+#include "window.hpp"
+
 namespace {
 
 char const *windowBackend(void *pContext) { return "SDL3"; }

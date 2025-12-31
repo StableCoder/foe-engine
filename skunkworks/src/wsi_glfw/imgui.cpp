@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "imgui.hpp"
+
 #include <GLFW/glfw3.h>
+
+#include "window.hpp"
 
 namespace {
 
@@ -50,12 +53,12 @@ void windowContentScale(void *pContext, float *pX, float *pY) {
 } // namespace
 
 bool imguiAddGlfwWindow(foeImGuiWindow *pImguiWindow,
-                        GLFWwindow *pWindow,
+                        GLFW_WindowData *pWindow,
                         KeyboardInput const *pKeyboard,
                         MouseInput const *pMouse) {
-    return pImguiWindow->addWindow(pWindow, windowBackend, windowTitle, windowTerminationCalled,
-                                   windowLogicalSize, windowPixelSize, windowVisible,
-                                   windowContentScale, pKeyboard, pMouse);
+    return pImguiWindow->addWindow(pWindow->pWindow, windowBackend, windowTitle,
+                                   windowTerminationCalled, windowLogicalSize, windowPixelSize,
+                                   windowVisible, windowContentScale, pKeyboard, pMouse);
 }
 
 ImGuiKey imguiGlfwKeyConvert(int keycode, int scancode) {

@@ -9,7 +9,8 @@
 #include "../hid/keyboard.hpp"
 #include "../hid/mouse.hpp"
 #include "../imgui/window.hpp"
-#include "window.hpp"
+
+struct SDL3_WindowData;
 
 bool imguiAddSDL3Window(foeImGuiWindow *pImguiWindow,
                         SDL3_WindowData *pWindowData,

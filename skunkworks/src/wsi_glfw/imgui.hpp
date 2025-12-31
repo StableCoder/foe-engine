@@ -4,15 +4,16 @@
 #ifndef WSI_GLFW_IMGUI_HPP
 #define WSI_GLFW_IMGUI_HPP
 
-#include <GLFW/glfw3.h>
 #include <foe/external/imgui.h>
 
 #include "../hid/keyboard.hpp"
 #include "../hid/mouse.hpp"
 #include "../imgui/window.hpp"
 
+struct GLFW_WindowData;
+
 bool imguiAddGlfwWindow(foeImGuiWindow *pImguiWindow,
-                        GLFWwindow *pWindow,
+                        GLFW_WindowData *pWindow,
                         KeyboardInput const *pKeyboard,
                         MouseInput const *pMouse);
 
