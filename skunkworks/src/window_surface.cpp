@@ -11,6 +11,9 @@
 
 #include "vk_result.h"
 
+#include <array>
+#include <vector>
+
 namespace {
 
 void destroy_foeGfxVkSwapchain(foeGfxVkSwapchain pSwapchain, foeGfxSession session) {
