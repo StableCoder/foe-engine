@@ -1,4 +1,4 @@
-// Copyright (C) 2025 George Cave.
+// Copyright (C) 2025-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -59,7 +59,7 @@ void getSDL3WindowLogicalSize(SDL3_WindowData *pWindowData, int *pWidth, int *pH
 
 void getSDL3WindowPixelSize(SDL3_WindowData *pWindowData, int *pWidth, int *pHeight);
 
-void getSDL3WindowScale(SDL3_WindowData *pWindowData, float *xScale, int *yScale);
+void getSDL3WindowScale(SDL3_WindowData *pWindowData, float *xScale, float *yScale);
 
 bool getSDL3VkExtensions(uint32_t *pCount, char const *const **ppExtensionNames);
 

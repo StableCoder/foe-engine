@@ -1,4 +1,4 @@
-// Copyright (C) 2025 George Cave.
+// Copyright (C) 2025-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -265,7 +265,7 @@ void getSDL3WindowPixelSize(SDL3_WindowData *pWindowData, int *pWidth, int *pHei
     SDL_GetWindowSizeInPixels(pWindowData->pWindow, pWidth, pHeight);
 }
 
-void getSDL3WindowScale(SDL3_WindowData *pWindowData, float *xScale, int *yScale) {
+void getSDL3WindowScale(SDL3_WindowData *pWindowData, float *xScale, float *yScale) {
     float scale = SDL_GetWindowDisplayScale(pWindowData->pWindow);
 
     *xScale = scale;
