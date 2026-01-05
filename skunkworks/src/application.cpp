@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -602,8 +602,18 @@ int Application::mainloop() {
         for (auto it = glfw_windowData.begin(); it != glfw_windowData.end();) {
             GLFW_WindowData *window = *it;
 
+#ifdef EDITOR_MODE
+            if (pImGuiRenderWindow == nullptr)
+                pImGuiRenderWindow = window;
+#endif
+
             // if window is set to close, check if to be destroyed now
             if (window->requestClose) {
+#ifdef EDITOR_MODE
+                // if this was the imgui window, change it
+                if (pImGuiRenderWindow == window)
+                    pImGuiRenderWindow = nullptr;
+#endif
                 std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
                 window->renderSurfaceData.active = false;
                 if (window->renderSurfaceData.inFlight != 0) {
@@ -623,7 +633,7 @@ int Application::mainloop() {
 
 #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
-            if (it == glfw_windowData.begin()) {
+            if (window == pImGuiRenderWindow) {
                 std::vector<uint32_t> pressedKeycodes;
                 std::vector<uint32_t> pressedScancodes;
                 size_t const pressedCount = window->keyboard.pressedCodes.size();
@@ -664,8 +674,8 @@ int Application::mainloop() {
             }
 
             // If ImGui is capturing, don't pass inputs through from the first window
-            if ((!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()) ||
-                it != glfw_windowData.begin())
+            if (window != pImGuiRenderWindow ||
+                (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()))
 #endif
             {
                 processUserInput(window, timeElapsedInSec);
@@ -679,7 +689,7 @@ int Application::mainloop() {
 
 #ifdef EDITOR_MODE
             // ImGui only follows primary/first window size
-            if (it == glfw_windowData.begin()) {
+            if (window == pImGuiRenderWindow) {
                 int width, height;
                 getGlfwWindowLogicalSize(window, &width, &height);
                 imguiRenderer.resize(width, height);
@@ -696,8 +706,18 @@ int Application::mainloop() {
         for (auto it = sdl3_windowData.begin(); it < sdl3_windowData.end();) {
             SDL3_WindowData *window = *it;
 
+#ifdef EDITOR_MODE
+            if (pImGuiRenderWindow == nullptr)
+                pImGuiRenderWindow = window;
+#endif
+
             // if window is set to close, check if to be destroyed now
             if (window->close) {
+#ifdef EDITOR_MODE
+                // if this was the imgui window, change it
+                if (pImGuiRenderWindow == window)
+                    pImGuiRenderWindow = nullptr;
+#endif
                 std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
                 window->renderSurfaceData.active = false;
                 if (window->renderSurfaceData.inFlight != 0) {
@@ -715,13 +735,72 @@ int Application::mainloop() {
                 continue;
             }
 
-            processSDL3UserInput(window, timeElapsedInSec);
+#ifdef EDITOR_MODE
+            // Only the first/primary window supports ImGui interaction
+            if (window == pImGuiRenderWindow) {
+                std::vector<uint32_t> pressedKeycodes;
+                std::vector<uint32_t> pressedScancodes;
+                size_t const pressedCount = window->keyboard.pressedCodes.size();
+                pressedKeycodes.reserve(pressedCount);
+                pressedScancodes.reserve(pressedCount);
+                for (size_t i = 0; i < pressedCount; ++i) {
+                    auto const &it = window->keyboard.pressedCodes[i];
+
+                    pressedKeycodes.emplace_back(it.keycode);
+                    pressedScancodes.emplace_back(it.scancode);
+                }
+
+                std::vector<uint32_t> releasedKeycodes;
+                std::vector<uint32_t> releasedScancodes;
+                size_t const releasedCount = window->keyboard.releasedCodes.size();
+                releasedKeycodes.reserve(releasedCount);
+                releasedScancodes.reserve(releasedCount);
+                for (size_t i = 0; i < releasedCount; ++i) {
+                    auto const &it = window->keyboard.releasedCodes[i];
+
+                    releasedKeycodes.emplace_back(it.keycode);
+                    releasedScancodes.emplace_back(it.scancode);
+                }
+
+                imguiRenderer.keyboardInput(window->keyboard.unicodeChar, imguiSDL3KeyConvert,
+                                            pressedKeycodes.data(), pressedScancodes.data(),
+                                            pressedKeycodes.size(), releasedKeycodes.data(),
+                                            releasedScancodes.data(), releasedKeycodes.size());
+
+                std::vector<uint32_t> buttonsPressed{window->mouse.pressedButtons.cbegin(),
+                                                     window->mouse.pressedButtons.cend()};
+                std::vector<uint32_t> buttonsReleased{window->mouse.releasedButtons.cbegin(),
+                                                      window->mouse.releasedButtons.cend()};
+                imguiRenderer.mouseInput(window->mouse.position.x, window->mouse.position.y,
+                                         window->mouse.scroll.x, window->mouse.scroll.y,
+                                         buttonsPressed.data(), buttonsPressed.size(),
+                                         buttonsReleased.data(), buttonsReleased.size());
+            }
+
+            // If ImGui is capturing, don't pass inputs through from the first window
+            if (window != pImGuiRenderWindow ||
+                (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()))
+#endif
+            {
+                processSDL3UserInput(window, timeElapsedInSec);
+            }
 
             // Check if window was resized, and if so request associated swapchains to
             // be rebuilt
             if (window->resized) {
                 window->needSwapchainRebuild = true;
             }
+
+#ifdef EDITOR_MODE
+            if (window == pImGuiRenderWindow) {
+                int width, height;
+                getSDL3WindowLogicalSize(window, &width, &height);
+                imguiRenderer.resize(width, height);
+                float xScale, yScale;
+                getSDL3WindowScale(window, &xScale, &yScale);
+                imguiRenderer.rescale(xScale, yScale);
+            }
+#endif
 
             ++it;
         }
@@ -1352,7 +1431,7 @@ int Application::mainloop() {
                 foeGfxVkRenderGraphJob renderDebugUiJob = FOE_NULL_HANDLE;
 #ifdef EDITOR_MODE
                 // ImGui only renders on the first/primary window
-                if (window.pWindowData == glfw_windowData[0]) {
+                if (window.pWindowData == pImGuiRenderWindow) {
                     result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
                                                    presentImageResource, 1, &resolveOrCopyJob,
                                                    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,
