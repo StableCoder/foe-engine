@@ -917,7 +917,7 @@ int Application::mainloop() {
 
             // Acquire Target Presentation Images
             struct WindowRenderData {
-                void *pWindowData;
+                bool imguiWindow;
                 WindowSurfaceData *pSurfaceData;
                 foeGfxRenderView renderView;
                 VkSampleCountFlags sampleCount;
@@ -964,7 +964,7 @@ int Application::mainloop() {
 
                     ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
-                        .pWindowData = it,
+                        .imguiWindow = (it == pImGuiRenderWindow),
                         .pSurfaceData = &it->renderSurfaceData,
                         .renderView = it->renderView,
                         .sampleCount = it->sampleCount,
@@ -1012,7 +1012,7 @@ int Application::mainloop() {
 
                     ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
-                        .pWindowData = it,
+                        .imguiWindow = (it == pImGuiRenderWindow),
                         .pSurfaceData = &it->renderSurfaceData,
                         .renderView = it->renderView,
                         .sampleCount = it->sampleCount,
@@ -1431,7 +1431,7 @@ int Application::mainloop() {
                 foeGfxVkRenderGraphJob renderDebugUiJob = FOE_NULL_HANDLE;
 #ifdef EDITOR_MODE
                 // ImGui only renders on the first/primary window
-                if (window.pWindowData == pImGuiRenderWindow) {
+                if (window.imguiWindow) {
                     result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
                                                    presentImageResource, 1, &resolveOrCopyJob,
                                                    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,
