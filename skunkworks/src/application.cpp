@@ -805,19 +805,17 @@ int Application::mainloop() {
             ++it;
         }
 
-        // Determine if the next frame is available to start rendering to, if we
-        // don't have one
-        if (frameIndex == UINT32_MAX) {
-            uint32_t nextFrameIndex = (lastFrameIndex + 1) % frameData.size();
-            if (vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
-                                &frameData[nextFrameIndex].frameComplete, VK_TRUE,
-                                0) == VK_SUCCESS) {
-                frameIndex = nextFrameIndex;
+        // iterate through, clear frames that are complete
+        for (PerFrameData &frame : frameData) {
+            if (!frame.active)
+                continue;
 
+            if (vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1, &frame.frameComplete, VK_TRUE,
+                                0) == VK_SUCCESS) {
                 // run any frame-complete tasks
-                while (!frameData[nextFrameIndex].onFrameCompleteTasks.empty()) {
-                    auto task = frameData[nextFrameIndex].onFrameCompleteTasks.front();
-                    frameData[nextFrameIndex].onFrameCompleteTasks.pop();
+                while (!frame.onFrameCompleteTasks.empty()) {
+                    auto task = frame.onFrameCompleteTasks.front();
+                    frame.onFrameCompleteTasks.pop();
 
                     task.pfnTask(task.pTaskData);
                 }
@@ -830,14 +828,22 @@ int Application::mainloop() {
                 }
 
                 // Reset frame data
-                vkResetFences(foeGfxVkGetDevice(gfxSession), 1,
-                              &frameData[frameIndex].frameComplete);
-                vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool,
-                                   0);
+                vkResetFences(foeGfxVkGetDevice(gfxSession), 1, &frame.frameComplete);
+                vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frame.commandPool, 0);
 
                 // Advance and destroy items related to this frame
                 foeGfxRunDelayedCalls(gfxDelayedDestructor);
+
+                frame.active = false;
             }
+        }
+
+        // Determine if the next frame is available to start rendering to, if we
+        // don't have one
+        if (frameIndex == UINT32_MAX) {
+            uint32_t nextFrameIndex = (lastFrameIndex + 1) % frameData.size();
+            if (!frameData[nextFrameIndex].active)
+                frameIndex = nextFrameIndex;
         }
 
         // If we have a frame we can render to, proceed to check for ready-to-render
@@ -1023,6 +1029,8 @@ int Application::mainloop() {
             if (windowRenderList.empty()) {
                 goto SKIP_FRAME_RENDER;
             }
+
+            frameData[frameIndex].active = true;
 
             foeGfxUpdateRenderViewPool(gfxSession, gfxRenderViewPool);
 

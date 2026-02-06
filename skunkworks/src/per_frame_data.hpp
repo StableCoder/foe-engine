@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -19,6 +19,9 @@ struct OnFrameCompleteTask {
 };
 
 struct PerFrameData {
+    // if frame is in-progress
+    bool active;
+
     VkSemaphore preGraph;
     VkSemaphore postGraph;
 
