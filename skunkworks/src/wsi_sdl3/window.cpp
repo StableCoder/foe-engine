@@ -14,17 +14,15 @@
 #include "../result.h"
 
 bool createSDL3Window(int width, int height, char const *pTitle, SDL3_WindowData *pWindowData) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        std::abort();
-    }
+    if (!SDL_Init(SDL_INIT_VIDEO))
+        return false;
 
     SDL_WindowFlags windowFlags =
         SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
     SDL_Window *pNewWindow = SDL_CreateWindow(pTitle, width, height, windowFlags);
 
-    if (!pNewWindow) {
+    if (!pNewWindow)
         return false;
-    }
 
     pWindowData->pWindow = pNewWindow;
     pWindowData->id = SDL_GetWindowID(pNewWindow);
@@ -273,6 +271,9 @@ void getSDL3WindowScale(SDL3_WindowData *pWindowData, float *xScale, float *ySca
 }
 
 bool getSDL3VkExtensions(uint32_t *pCount, char const *const **ppExtensionNames) {
+    if (!SDL_Init(SDL_INIT_VIDEO))
+        return false;
+
     *ppExtensionNames = SDL_Vulkan_GetInstanceExtensions(pCount);
     return true;
 }

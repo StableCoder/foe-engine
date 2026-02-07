@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -265,7 +265,7 @@ void getGlfwWindowScale(GLFW_WindowData *pWindowData, float *xScale, float *ySca
 }
 
 bool getGlfwVkInstanceExtensions(uint32_t *pCount, char const *const **pppExtensionNames) {
-    if (!glfwVulkanSupported())
+    if (!glfwInit() || !glfwVulkanSupported())
         return false;
 
     *pppExtensionNames = glfwGetRequiredInstanceExtensions(pCount);
