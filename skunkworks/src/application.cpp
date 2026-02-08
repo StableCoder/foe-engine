@@ -265,13 +265,13 @@ int Application::initialize(int argc, char **argv) {
 
         // msaa - wsi - GLFW
         for (auto &window : glfw_windowData) {
-            window->sampleCount =
+            window->sampleCount = window->renderSurfaceData.sampleCount =
                 foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
 
         // msaa - wsi - SDL3
         for (auto &window : sdl3_windowData) {
-            window->sampleCount =
+            window->sampleCount = window->renderSurfaceData.sampleCount =
                 foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
 
