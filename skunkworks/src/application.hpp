@@ -54,7 +54,7 @@
 struct foeSimulation;
 
 struct Application {
-    auto initialize(int argc, char **argv) -> std::tuple<bool, int>;
+    int initialize(int argc, char **argv);
     void deinitialize();
 
     int mainloop();

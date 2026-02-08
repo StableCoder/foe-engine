@@ -59,15 +59,6 @@
 #include <fstream>
 #include <thread>
 
-#define ERRC_END_PROGRAM_TUPLE                                                                     \
-    {                                                                                              \
-        char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
-        result.toString(result.value, buffer);                                                     \
-        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error: {}",        \
-                __FILE__, __LINE__, buffer);                                                       \
-        return std::make_tuple(false, result.value);                                               \
-    }
-
 #define ERRC_END_PROGRAM                                                                           \
     {                                                                                              \
         char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
@@ -75,12 +66,6 @@
         FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",         \
                 __FILE__, __LINE__, buffer);                                                       \
         return result.value;                                                                       \
-    }
-
-#define END_PROGRAM_TUPLE                                                                          \
-    {                                                                                              \
-        FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "End called from {}:{}", __FILE__, __LINE__);  \
-        return std::make_tuple(false, 1);                                                          \
     }
 
 #define END_PROGRAM                                                                                \
@@ -91,7 +76,7 @@
 
 #include "state_import/import_state.hpp"
 
-auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
+int Application::initialize(int argc, char **argv) {
     MagickCoreGenesis(nullptr, MagickFalse);
     foeResultSet result;
 
@@ -102,17 +87,17 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         result.toString(result.value, buffer);
         FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "Error registering basic functionality: {}",
                 buffer)
-        return std::make_tuple(false, result.value);
+        return result.value;
     }
 
     auto [continueRun, retVal] = loadSettings(argc, argv, settings, searchPaths);
     if (!continueRun) {
-        return std::make_tuple(false, retVal);
+        return retVal;
     }
 
     result = foeCreateThreadPool(1, 1, &threadPool);
     if (result.value != FOE_SUCCESS)
-        ERRC_END_PROGRAM_TUPLE
+        ERRC_END_PROGRAM
 
     result = importState("persistent", &searchPaths, &pSimulationSet);
     if (result.value != FOE_SUCCESS) {
@@ -121,7 +106,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL, "Error importing '{}' state with error: {}",
                 "persistent", buffer)
 
-        return std::make_tuple(false, result.value);
+        return result.value;
     }
 
 #ifdef EDITOR_MODE
@@ -129,7 +114,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     result = registerImGui(&imguiRegistrar);
     if (result.value != FOE_SUCCESS)
-        ERRC_END_PROGRAM_TUPLE
+        ERRC_END_PROGRAM
 
     devConsole.registerWithLogger();
 
@@ -216,7 +201,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         if (settings.xr.enableXr || settings.xr.forceXr) {
             result = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
             if (result.value != FOE_SUCCESS && settings.xr.forceXr) {
-                ERRC_END_PROGRAM_TUPLE
+                ERRC_END_PROGRAM
             }
 
             xrData.desiredSampleCount = settings.xr.msaa;
@@ -246,7 +231,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             createGfxRuntime(xrRuntime, settings.graphics.validation,
                              settings.graphics.debugLogging, {}, vkInstanceExtensions, &gfxRuntime);
         if (result.value != FOE_SUCCESS) {
-            ERRC_END_PROGRAM_TUPLE
+            ERRC_END_PROGRAM
         }
 
         for (auto it : glfw_windowData) {
@@ -275,7 +260,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             gfxRuntime, xrRuntime, settings.general.enableWindows || !glfw_windowData.empty(),
             std::move(surfaces), settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
         if (result.value != FOE_SUCCESS) {
-            ERRC_END_PROGRAM_TUPLE
+            ERRC_END_PROGRAM
         }
 
         // msaa - wsi - GLFW
@@ -300,25 +285,25 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     result = foeGfxCreateUploadContext(gfxSession, &gfxResUploadContext);
     if (result.value != FOE_SUCCESS) {
-        ERRC_END_PROGRAM_TUPLE
+        ERRC_END_PROGRAM
     }
 
     result = foeGfxCreateDelayedCaller(gfxSession, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1,
                                        &gfxDelayedDestructor);
     if (result.value != FOE_SUCCESS) {
-        ERRC_END_PROGRAM_TUPLE
+        ERRC_END_PROGRAM
     }
 
     result = foeGfxCreateRenderViewPool(gfxSession, 32, &gfxRenderViewPool);
     if (result.value != FOE_SUCCESS) {
-        ERRC_END_PROGRAM_TUPLE
+        ERRC_END_PROGRAM
     }
 
     // glfw
     for (auto it : glfw_windowData) {
         result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
         if (result.value != FOE_SUCCESS) {
-            ERRC_END_PROGRAM_TUPLE
+            ERRC_END_PROGRAM
         }
     }
 
@@ -326,7 +311,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     for (auto &it : sdl3_windowData) {
         result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
         if (result.value != FOE_SUCCESS) {
-            ERRC_END_PROGRAM_TUPLE
+            ERRC_END_PROGRAM
         }
     }
 
@@ -334,7 +319,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     for (auto &it : frameData) {
         result = it.create(foeGfxVkGetDevice(gfxSession));
         if (result.value != FOE_SUCCESS) {
-            ERRC_END_PROGRAM_TUPLE
+            ERRC_END_PROGRAM
         }
     }
 
@@ -369,12 +354,12 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         if (settings.xr.forceXr && xrData.session == FOE_NULL_HANDLE) {
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL,
                     "XR support enabled but no HMD session was detected/started.")
-            return std::make_tuple(false, 1);
+            return 1;
         }
     }
 #endif
 
-    return std::make_tuple(true, FOE_SUCCESS);
+    return FOE_SUCCESS;
 }
 
 void Application::deinitialize() {
