@@ -26,7 +26,6 @@ struct SDL3_WindowData {
     SDL_WindowID id{0};
     bool close{false};
     bool resized{false};
-    bool visible{false};
     bool vsync{false};
 
     // common

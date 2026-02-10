@@ -1,4 +1,4 @@
-// Copyright (C) 2025 George Cave.
+// Copyright (C) 2025-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -38,12 +38,6 @@ void windowPixelSize(void *pContext, int *pWidth, int *pHeight) {
     glfwGetFramebufferSize(pWindow, pWidth, pHeight);
 }
 
-bool windowVisible(void *pContext) {
-    GLFWwindow *pWindow = (GLFWwindow *)pContext;
-
-    return glfwGetWindowAttrib(pWindow, GLFW_VISIBLE);
-}
-
 void windowContentScale(void *pContext, float *pX, float *pY) {
     GLFWwindow *pWindow = (GLFWwindow *)pContext;
 
@@ -58,7 +52,7 @@ bool imguiAddGlfwWindow(foeImGuiWindow *pImguiWindow,
                         MouseInput const *pMouse) {
     return pImguiWindow->addWindow(pWindow->pWindow, windowBackend, windowTitle,
                                    windowTerminationCalled, windowLogicalSize, windowPixelSize,
-                                   windowVisible, windowContentScale, pKeyboard, pMouse);
+                                   windowContentScale, pKeyboard, pMouse);
 }
 
 ImGuiKey imguiGlfwKeyConvert(int keycode, int scancode) {

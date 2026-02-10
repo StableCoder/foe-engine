@@ -74,20 +74,6 @@ void processSDL3Events(uint32_t count, SDL3_WindowData **ppWindowData) {
     while (SDL_PollEvent(&event)) {
         SDL3_WindowData *pWindowData;
         switch (event.type) {
-        case SDL_EVENT_WINDOW_HIDDEN:
-            pWindowData = getWindowDataFromID(event.window.windowID, count, ppWindowData);
-            if (pWindowData != nullptr) {
-                pWindowData->visible = false;
-            }
-            break;
-
-        case SDL_EVENT_WINDOW_EXPOSED:
-            pWindowData = getWindowDataFromID(event.window.windowID, count, ppWindowData);
-            if (pWindowData != nullptr) {
-                pWindowData->visible = true;
-            }
-            break;
-
         case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
             pWindowData = getWindowDataFromID(event.window.windowID, count, ppWindowData);
             if (pWindowData != nullptr) {

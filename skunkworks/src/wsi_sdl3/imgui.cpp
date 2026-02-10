@@ -1,4 +1,4 @@
-// Copyright (C) 2025 George Cave.
+// Copyright (C) 2025-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -34,12 +34,6 @@ void windowPixelSize(void *pContext, int *pWidth, int *pHeight) {
     SDL_GetWindowSizeInPixels(pWindowData->pWindow, pWidth, pHeight);
 }
 
-bool windowVisible(void *pContext) {
-    SDL3_WindowData *pWindowData = (SDL3_WindowData *)pContext;
-
-    return pWindowData->visible;
-}
-
 void windowContentScale(void *pContext, float *pX, float *pY) {
     SDL3_WindowData *pWindowData = (SDL3_WindowData *)pContext;
 
@@ -56,8 +50,8 @@ bool imguiAddSDL3Window(foeImGuiWindow *pImguiWindow,
                         KeyboardInput const *pKeyboard,
                         MouseInput const *pMouse) {
     return pImguiWindow->addWindow(pWindowData, windowBackend, windowTitle, windowTerminationCalled,
-                                   windowLogicalSize, windowPixelSize, windowVisible,
-                                   windowContentScale, pKeyboard, pMouse);
+                                   windowLogicalSize, windowPixelSize, windowContentScale,
+                                   pKeyboard, pMouse);
 }
 
 ImGuiKey imguiSDL3KeyConvert(int keycode, int scancode) {

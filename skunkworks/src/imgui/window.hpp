@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,6 @@ typedef char const *(*PFN_WindowBackend)(void *pContext);
 typedef char const *(*PFN_WindowTitle)(void *pContext);
 typedef bool (*PFN_WindowTerminationCalled)(void *pContext);
 typedef void (*PFN_WindowSize)(void *pContext, int *pWidth, int *pHeight);
-typedef bool (*PFN_WindowVisible)(void *pContext);
 typedef void (*PFN_WindowContentScale)(void *pContext, float *pX, float *pY);
 
 struct ImGuiContext;
@@ -28,7 +27,6 @@ class foeImGuiWindow {
                    PFN_WindowTerminationCalled pfnTerminationCalled,
                    PFN_WindowSize pfnLogicalSize,
                    PFN_WindowSize pfnPixelSize,
-                   PFN_WindowVisible pfnVisible,
                    PFN_WindowContentScale pfnContentScale,
                    KeyboardInput const *pKeyboard,
                    MouseInput const *pMouse);
@@ -46,7 +44,6 @@ class foeImGuiWindow {
         PFN_WindowTerminationCalled pfnTerminationCalled;
         PFN_WindowSize pfnLogicalSize;
         PFN_WindowSize pfnPixelSize;
-        PFN_WindowVisible pfnVisible;
         PFN_WindowContentScale pfnContentScale;
 
         KeyboardInput const *pKeyboard;

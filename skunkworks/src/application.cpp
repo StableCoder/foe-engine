@@ -955,7 +955,11 @@ int Application::mainloop() {
 
                     ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
+#ifdef EDITOR_MODE
                         .imguiWindow = (it == pImGuiRenderWindow),
+#else
+                        .imguiWindow = false,
+#endif
                         .pSurfaceData = &it->renderSurfaceData,
                         .renderView = it->renderView,
                         .sampleCount = it->sampleCount,
@@ -1003,7 +1007,11 @@ int Application::mainloop() {
 
                     ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
+#ifdef EDITOR_MODE
                         .imguiWindow = (it == pImGuiRenderWindow),
+#else
+                        .imguiWindow = false,
+#endif
                         .pSurfaceData = &it->renderSurfaceData,
                         .renderView = it->renderView,
                         .sampleCount = it->sampleCount,

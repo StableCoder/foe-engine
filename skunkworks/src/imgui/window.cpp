@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -82,7 +82,6 @@ bool foeImGuiWindow::addWindow(void *pContext,
                                PFN_WindowTerminationCalled pfnTerminationCalled,
                                PFN_WindowSize pfnLogicalSize,
                                PFN_WindowSize pfnPixelSize,
-                               PFN_WindowVisible pfnVisible,
                                PFN_WindowContentScale pfnContentScale,
                                KeyboardInput const *pKeyboard,
                                MouseInput const *pMouse) {
@@ -99,7 +98,6 @@ bool foeImGuiWindow::addWindow(void *pContext,
         .pfnTerminationCalled = pfnTerminationCalled,
         .pfnLogicalSize = pfnLogicalSize,
         .pfnPixelSize = pfnPixelSize,
-        .pfnVisible = pfnVisible,
         .pfnContentScale = pfnContentScale,
         .pKeyboard = pKeyboard,
         .pMouse = pMouse,
@@ -205,13 +203,6 @@ void foeImGuiWindow::customUI() {
 
         it.pfnPixelSize(it.pContext, &width, &height);
         ImGui::Text("Pixel Size: %i x %i", width, height);
-
-        // Visible
-        if (it.pfnVisible(it.pContext)) {
-            ImGui::Text("Visible: true");
-        } else {
-            ImGui::Text("Visible: false");
-        }
 
         // Scale
         float xScale, yScale;
