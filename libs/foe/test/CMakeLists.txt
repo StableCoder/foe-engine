@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -15,9 +15,14 @@ add_test(NAME FoE-Test-Split-Thread-Pool
 add_executable(test_foe_core_split_thread_pool)
 
 # Main Definition
+target_include_directories(test_foe_core PRIVATE ../src/)
+
 target_sources(
   test_foe_core
-  PRIVATE algorithm.cpp
+  PRIVATE # internal library sources
+          ../src/utf_character_conversion.c
+          # test sources
+          algorithm.cpp
           c_header_compatibility.c
           delimited_string.cpp
           filesystem.cpp
@@ -28,7 +33,14 @@ target_sources(
           memory_mapped_file.cpp
           plugin.cpp
           result.cpp
-          search_paths.cpp)
+          search_paths.cpp
+          utf_character_conversion.cpp
+          utf8_character_conversion.cpp
+          utf16_character_conversion.cpp
+          utf32_character_conversion.cpp
+          utf8_string_conversion.cpp
+          utf16_string_conversion.cpp
+          utf32_string_conversion.cpp)
 
 target_link_libraries(test_foe_core PRIVATE Catch2::Catch2WithMain foe_core)
 

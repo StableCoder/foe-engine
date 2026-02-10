@@ -71,7 +71,8 @@ target_sources(
          include/foe/result.h
          include/foe/search_paths.hpp
          include/foe/split_thread_pool.h
-         include/foe/type_defs.h)
+         include/foe/type_defs.h
+         include/foe/utf_string_conversion.h)
 
 add_subdirectory(src)
 
