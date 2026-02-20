@@ -10,6 +10,7 @@
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/quaternion_math.hpp>
+#include <foe/utf_string_conversion.h>
 
 #include "../result.h"
 
@@ -60,6 +61,8 @@ SDL3_WindowData *getWindowDataFromID(SDL_WindowID windowID,
 }
 
 } // namespace
+
+#include <cstdio>
 
 void processSDL3Events(uint32_t count, SDL3_WindowData **ppWindowData) {
     for (uint32_t i = 0; i < count; ++i) {
@@ -140,10 +143,16 @@ void processSDL3Events(uint32_t count, SDL3_WindowData **ppWindowData) {
             break;
 
         case SDL_EVENT_TEXT_INPUT:
+            // for this event to fire, be sure to use SDL_StartTextInput
             pWindowData = getWindowDataFromID(event.text.windowID, count, ppWindowData);
             if (pWindowData != nullptr) {
-                // @TODO Do UTF-8 to unicode conversion
-                // window.keyboard.unicodeChar = event.text.text;
+                uint32_t utf32;
+                size_t dstCount = 1;
+                size_t srcCount = strlen(event.text.text);
+
+                foeResult result = foe_utf8_to_utf32(&srcCount, (uint8_t const *)event.text.text,
+                                                     &dstCount, &utf32);
+                pWindowData->keyboard.unicodeChar = utf32;
             }
             break;
 
