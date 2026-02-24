@@ -21,8 +21,12 @@
 #include "settings.hpp"
 
 // WSI
+#ifdef FOE_SKUNKWORKS_GLFW
 #include "wsi_glfw/window.hpp"
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
 #include "wsi_sdl3/window.hpp"
+#endif
 
 #include <array>
 #include <vector>
@@ -69,8 +73,12 @@ struct Application {
     foeSimulation *pSimulationSet{nullptr};
 
     // I/O
+#ifdef FOE_SKUNKWORKS_GLFW
     std::vector<GLFW_WindowData *> glfw_windowData;
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
     std::vector<SDL3_WindowData *> sdl3_windowData;
+#endif
     FrameTimer frameTime;
 
     // XR

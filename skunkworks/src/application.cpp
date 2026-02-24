@@ -52,8 +52,12 @@
 #include <foe/imgui/vk/render_graph_job_imgui.hpp>
 
 #include "imgui/register.hpp"
+#ifdef FOE_SKUNKWORKS_GLFW
 #include "wsi_glfw/imgui.hpp"
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
 #include "wsi_sdl3/imgui.hpp"
+#endif
 #endif
 
 #include <fstream>
@@ -147,30 +151,8 @@ int Application::initialize(int argc, char **argv) {
     {
         // window creation
         for (auto const &it : settings.windows) {
-            if (it.implementation == Settings::Window::Implementation::GLFW) {
-                std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
-
-                bool result =
-                    createGlfwWindow(it.width, it.height, it.title.c_str(), pNewWindow.get());
-                if (!result)
-                    std::abort();
-
-                pNewWindow->desiredSampleCount = it.msaa;
-                pNewWindow->vsync = it.vsync;
-
-                pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
-                pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
-                pNewWindow->fovY = 60;
-                pNewWindow->nearZ = 2;
-                pNewWindow->farZ = 50;
-
-#ifdef EDITOR_MODE
-                imguiAddGlfwWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
-                                   &pNewWindow->mouse);
-#endif
-
-                glfw_windowData.emplace_back(pNewWindow.release());
-            } else if (it.implementation == Settings::Window::Implementation::SDL3) {
+#ifdef FOE_SKUNKWORKS_SDL3
+            if (it.implementation == Settings::Window::Implementation::SDL3) {
                 std::unique_ptr<SDL3_WindowData> pNewWindow{new SDL3_WindowData};
 
                 bool result =
@@ -194,6 +176,33 @@ int Application::initialize(int argc, char **argv) {
 #endif
 
                 sdl3_windowData.emplace_back(pNewWindow.release());
+            } else
+#endif // FOE_SKUNKWORKS_SDL3
+            {
+#ifdef FOE_SKUNKWORKS_GLFW
+                std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
+
+                bool result =
+                    createGlfwWindow(it.width, it.height, it.title.c_str(), pNewWindow.get());
+                if (!result)
+                    std::abort();
+
+                pNewWindow->desiredSampleCount = it.msaa;
+                pNewWindow->vsync = it.vsync;
+
+                pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
+                pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+                pNewWindow->fovY = 60;
+                pNewWindow->nearZ = 2;
+                pNewWindow->farZ = 50;
+
+#ifdef EDITOR_MODE
+                imguiAddGlfwWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
+                                   &pNewWindow->mouse);
+#endif
+
+                glfw_windowData.emplace_back(pNewWindow.release());
+#endif // FOE_SKUNKWORKS_GLFW
             }
         }
 
@@ -213,18 +222,20 @@ int Application::initialize(int argc, char **argv) {
         { // wsi - extensions
             uint32_t extensionCount;
             char const *const *ppExtensionNames;
-
+#ifdef FOE_SKUNKWORKS_GLFW
             if (!getGlfwVkInstanceExtensions(&extensionCount, &ppExtensionNames))
                 std::abort();
             for (uint32_t i = 0; i < extensionCount; ++i) {
                 vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
             }
-
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
             if (!getSDL3VkExtensions(&extensionCount, &ppExtensionNames))
                 std::abort();
             for (uint32_t i = 0; i < extensionCount; ++i) {
                 vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
             }
+#endif
         }
 
         result =
@@ -234,52 +245,69 @@ int Application::initialize(int argc, char **argv) {
             ERRC_END_PROGRAM
         }
 
+#ifdef FOE_SKUNKWORKS_GLFW
         for (auto it : glfw_windowData) {
             if (createGlfwWindowVkSurface(gfxRuntime, FOE_NULL_HANDLE, it, nullptr,
                                           &it->renderSurfaceData.surface) != FOE_SUCCESS)
                 std::abort();
         }
-
-        // sdl3
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
         for (auto &it : sdl3_windowData) {
             if (createSDL3WindowVkSurface(gfxRuntime, FOE_NULL_HANDLE, it, nullptr,
                                           &it->renderSurfaceData.surface) != FOE_SUCCESS)
                 std::abort();
         }
+#endif
 
         std::vector<VkSurfaceKHR> surfaces;
-        // glfw
+#ifdef FOE_SKUNKWORKS_GLFW
         for (auto const it : glfw_windowData) {
             surfaces.push_back(it->renderSurfaceData.surface);
         }
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
         for (auto const it : sdl3_windowData) {
             surfaces.push_back(it->renderSurfaceData.surface);
         }
+#endif
 
-        result = createGfxSession(
-            gfxRuntime, xrRuntime, settings.general.enableWindows || !glfw_windowData.empty(),
-            std::move(surfaces), settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
+        result = createGfxSession(gfxRuntime, xrRuntime,
+                                  settings.general.enableWindows
+#ifdef FOE_SKUNKWORKS_GLFW
+                                      || !glfw_windowData.empty()
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
+                                      || !sdl3_windowData.empty()
+#endif
+                                      ,
+                                  std::move(surfaces), settings.graphics.gpu, settings.xr.forceXr,
+                                  &gfxSession);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM
         }
 
-        // msaa - wsi - GLFW
+// MSAA
+#ifdef FOE_SKUNKWORKS_GLFW
         for (auto &window : glfw_windowData) {
             window->sampleCount = window->renderSurfaceData.sampleCount =
                 foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
-
-        // msaa - wsi - SDL3
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
         for (auto &window : sdl3_windowData) {
             window->sampleCount = window->renderSurfaceData.sampleCount =
                 foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
-
+#endif
 #ifdef FOE_XR_SUPPORT
         { // msaa - xr
             xrData.sampleCount =
                 foeGfxVkGetBestSupportedMSAA(gfxSession, xrData.desiredSampleCount);
         }
+#endif
+#ifdef FOE_XR_SUPPORT
+        xrData.sampleCount = foeGfxVkGetBestSupportedMSAA(gfxSession, xrData.desiredSampleCount);
 #endif
     }
 
@@ -299,21 +327,22 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    // glfw
+#ifdef FOE_SKUNKWORKS_GLFW
     for (auto it : glfw_windowData) {
         result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM
         }
     }
-
-    // sdl3
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
     for (auto &it : sdl3_windowData) {
         result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM
         }
     }
+#endif
 
     // Create per-frame data
     for (auto &it : frameData) {
@@ -392,7 +421,7 @@ void Application::deinitialize() {
     }
 
     // Destroy window data
-    // sdl3
+#ifdef FOE_SKUNKWORKS_SDL3
     for (auto it : sdl3_windowData) {
 #ifdef EDITOR_MODE
         windowInfo.removeWindow(it);
@@ -401,8 +430,8 @@ void Application::deinitialize() {
         delete it;
     }
     sdl3_windowData.clear();
-
-    // glfw
+#endif
+#ifdef FOE_SKUNKWORKS_GLFW
     for (auto it : glfw_windowData) {
 #ifdef EDITOR_MODE
         windowInfo.removeWindow(it->pWindow);
@@ -411,6 +440,7 @@ void Application::deinitialize() {
         delete it;
     }
     glfw_windowData.clear();
+#endif
 
     // Cleanup graphics
     if (gfxRenderViewPool != FOE_NULL_HANDLE)
@@ -477,7 +507,14 @@ int Application::mainloop() {
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
     FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_INFO, "Entering main loop")
-    while ((!glfw_windowData.empty() || !sdl3_windowData.empty())
+    while ((false
+#ifdef FOE_SKUNKWORKS_GLFW
+            || !glfw_windowData.empty()
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
+            || !sdl3_windowData.empty()
+#endif
+                )
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
 #endif
@@ -574,8 +611,12 @@ int Application::mainloop() {
             pSimulationSet, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM));
 
         // Process Window Events
+#ifdef FOE_SKUNKWORKS_GLFW
         processGlfwEvents(glfw_windowData.size(), glfw_windowData.data());
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
         processSDL3Events(sdl3_windowData.size(), sdl3_windowData.data());
+#endif
 
 #ifdef FOE_XR_SUPPORT
         // Process XR Events
@@ -584,6 +625,7 @@ int Application::mainloop() {
 #endif
 
         // Window Processing
+#ifdef FOE_SKUNKWORKS_GLFW
         for (auto it = glfw_windowData.begin(); it != glfw_windowData.end();) {
             GLFW_WindowData *window = *it;
 
@@ -686,8 +728,9 @@ int Application::mainloop() {
 
             ++it;
         }
+#endif
 
-        // sdl3
+#ifdef FOE_SKUNKWORKS_SDL3
         for (auto it = sdl3_windowData.begin(); it < sdl3_windowData.end();) {
             SDL3_WindowData *window = *it;
 
@@ -789,6 +832,7 @@ int Application::mainloop() {
 
             ++it;
         }
+#endif
 
         // iterate through, clear frames that are complete
         for (PerFrameData &frame : frameData) {
@@ -866,7 +910,7 @@ int Application::mainloop() {
             }
 
             // Swapchain updates if necessary
-            // glfw
+#ifdef FOE_SKUNKWORKS_GLFW
             for (auto it : glfw_windowData) {
                 // If no window here, skip
                 if (it->pWindow == FOE_NULL_HANDLE)
@@ -885,8 +929,8 @@ int Application::mainloop() {
                 if (result.value != FOE_SUCCESS)
                     ERRC_END_PROGRAM
             }
-
-            // sdl3
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
             for (auto it : sdl3_windowData) {
                 // If no window here, skip
                 if (it->pWindow == FOE_NULL_HANDLE)
@@ -905,6 +949,7 @@ int Application::mainloop() {
                 if (result.value != FOE_SUCCESS)
                     ERRC_END_PROGRAM
             }
+#endif
 
             // Acquire Target Presentation Images
             struct WindowRenderData {
@@ -915,7 +960,7 @@ int Application::mainloop() {
             };
             std::vector<WindowRenderData> windowRenderList;
 
-            // glfw
+#ifdef FOE_SKUNKWORKS_GLFW
             for (auto &it : glfw_windowData) {
                 std::scoped_lock<std::mutex> lock{it->renderSurfaceData.sync};
                 if (!it->renderSurfaceData.active)
@@ -966,8 +1011,8 @@ int Application::mainloop() {
                     });
                 }
             }
-
-            // sdl
+#endif
+#ifdef FOE_SKUNKWORKS_SDL3
             for (auto it : sdl3_windowData) {
                 std::scoped_lock<std::mutex> lock{it->renderSurfaceData.sync};
                 if (!it->renderSurfaceData.active)
@@ -1018,6 +1063,7 @@ int Application::mainloop() {
                     });
                 }
             }
+#endif
 
             if (windowRenderList.empty()) {
                 goto SKIP_FRAME_RENDER;
