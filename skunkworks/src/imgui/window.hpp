@@ -8,10 +8,11 @@
 #include "../hid/keyboard.hpp"
 #include "../hid/mouse.hpp"
 
+#include <string>
 #include <vector>
 
 typedef char const *(*PFN_WindowBackend)(void *pContext);
-typedef char const *(*PFN_WindowTitle)(void *pContext);
+typedef std::string (*PFN_WindowTitle)(void *pContext);
 typedef bool (*PFN_WindowTerminationCalled)(void *pContext);
 typedef void (*PFN_WindowSize)(void *pContext, int *pWidth, int *pHeight);
 typedef void (*PFN_WindowContentScale)(void *pContext, float *pX, float *pY);

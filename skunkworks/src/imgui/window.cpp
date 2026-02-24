@@ -187,7 +187,7 @@ void foeImGuiWindow::customUI() {
         ImGui::Text("Backend: %s", it.pfnBackend(it.pContext));
 
         // Title
-        ImGui::Text("Title: %s", it.pfnTitle(it.pContext));
+        ImGui::Text("Title: %s", it.pfnTitle(it.pContext).c_str());
 
         // Termination called
         if (it.pfnTerminationCalled(it.pContext)) {

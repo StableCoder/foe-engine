@@ -10,7 +10,7 @@ namespace {
 
 char const *windowBackend(void *pContext) { return "SDL3"; }
 
-char const *windowTitle(void *pContext) {
+std::string windowTitle(void *pContext) {
     SDL3_WindowData *pWindowData = (SDL3_WindowData *)pContext;
 
     return SDL_GetWindowTitle(pWindowData->pWindow);

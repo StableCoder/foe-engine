@@ -1,6 +1,7 @@
 // Copyright (C) 2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
+
 #ifndef WSI_SDL3_IMGUI_HPP
 #define WSI_SDL3_IMGUI_HPP
 

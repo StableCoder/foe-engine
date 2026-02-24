@@ -10,7 +10,7 @@
 
 namespace {
 
-char const *windowTitle(void *pContext) {
+std::string windowTitle(void *pContext) {
     GLFWwindow *pWindow = (GLFWwindow *)pContext;
 
     return glfwGetWindowTitle(pWindow);
