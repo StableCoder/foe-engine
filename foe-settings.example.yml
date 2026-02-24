@@ -1,18 +1,29 @@
-window:
-  # have_window: true
-  # vsync: false
-  width: 1920
-  height: 1080
+windows:
+  - title: FoE Skunkworks (GLFW 1)
+    implementation: glfw
+    width: 1920
+    height: 1080
+    msaa: 8
+  - title: FoE Skunkworks (SDL 1)
+    implementation: sdl3
+    width: 1280
+    height: 720
+    msaa: 1
+  - title: FoE Skunkworks (Qt 1)
+    implementation: qt
+    width: 800
+    height: 36000
+    msaa: 4
 graphics:
   # gpu: 0
   # max_frame_buffering: 3
-  validation: false
-  debug_logging: false
-  msaa: 1
+  validation: true
+  debug_logging: true
 xr:
   enable: false
   force: false
   validation: false
   debug_logging: false
+  msaa: 4
 search_paths:
   - data/bringup-data-sets

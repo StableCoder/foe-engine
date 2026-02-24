@@ -58,9 +58,16 @@
 #ifdef FOE_SKUNKWORKS_SDL3
 #include "wsi_sdl3/imgui.hpp"
 #endif
+#ifdef FOE_SKUNKWORKS_QT
+#include "wsi_qt/imgui.hpp"
+#endif
 #endif
 
-#include <fstream>
+#ifdef FOE_SKUNKWORKS_QT
+#include <QGuiApplication>
+#include <QTimer>
+#endif
+
 #include <thread>
 
 #define ERRC_END_PROGRAM                                                                           \
@@ -79,6 +86,46 @@
     }
 
 #include "state_import/import_state.hpp"
+
+#ifdef FOE_SKUNKWORKS_QT
+void Application::setQtGuiApplication(QGuiApplication *pQtGuiApplication) {
+    this->pQtGuiApplication = pQtGuiApplication;
+}
+
+void Application::setQtWindows(
+    std::vector<Application::ImportedQtWindowData> const &startingWindows) {
+    for (size_t i = 0; i < startingWindows.size(); ++i) {
+        std::unique_ptr<Qt_WindowData> pNewWindow{new Qt_WindowData};
+
+        pNewWindow->pWindow = startingWindows[i].pQtWindow;
+
+        pNewWindow->pNeedSwapchainRebuild.reset(startingWindows[i].pNeedSwapchainBuild);
+        pNewWindow->renderSurfaceData.pActive.reset(startingWindows[i].pActive);
+
+        std::string widgetWindowTitle = "WidgetWindow-" + std::to_string(i);
+        pNewWindow->pWindow->setTitle(widgetWindowTitle.c_str());
+
+        pNewWindow->pWindow->resize(800, 600);
+        pNewWindow->pWindow->show();
+
+        pNewWindow->desiredSampleCount = 1;
+        pNewWindow->vsync = true;
+
+        pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
+        pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+        pNewWindow->fovY = 60;
+        pNewWindow->nearZ = 2;
+        pNewWindow->farZ = 50;
+
+#ifdef EDITOR_MODE
+        imguiAddQtWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard, &pNewWindow->mouse);
+#endif
+
+        std::unique_lock lock{qt_windowDataSync};
+        qt_windowData.emplace_back(pNewWindow.release());
+    }
+}
+#endif // FOE_SKUNKWORKS_QT
 
 int Application::initialize(int argc, char **argv) {
     MagickCoreGenesis(nullptr, MagickFalse);
@@ -150,10 +197,54 @@ int Application::initialize(int argc, char **argv) {
 
     {
         // window creation
+        std::atomic_int windowSetups = 0;
+
         for (auto const &it : settings.windows) {
+#ifdef FOE_SKUNKWORKS_QT
+            if (pQtGuiApplication && it.implementation == Settings::Window::Implementation::Qt) {
+                windowSetups++;
+
+                // Qt need operations to run on the QGuiApplication thread
+                QTimer::singleShot(0, pQtGuiApplication, [&] {
+                    std::unique_ptr<Qt_WindowData> pNewWindow{new Qt_WindowData};
+
+                    pNewWindow->pNeedSwapchainRebuild.reset(new std::atomic_bool{true});
+                    pNewWindow->renderSurfaceData.pActive.reset(new std::atomic_bool{false});
+
+                    pNewWindow->pWindow = new foeQtVulkanWindow(
+                        pQtGuiApplication, pNewWindow->renderSurfaceData.pActive.get(),
+                        pNewWindow->pNeedSwapchainRebuild.get());
+
+                    pNewWindow->pWindow->setTitle(it.title.c_str());
+
+                    pNewWindow->pWindow->resize(800, 600);
+                    pNewWindow->pWindow->show();
+
+                    pNewWindow->desiredSampleCount = it.msaa;
+                    pNewWindow->vsync = it.vsync;
+
+                    pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
+                    pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+                    pNewWindow->fovY = 60;
+                    pNewWindow->nearZ = 2;
+                    pNewWindow->farZ = 50;
+
+#ifdef EDITOR_MODE
+                    imguiAddQtWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
+                                     &pNewWindow->mouse);
+#endif
+
+                    std::unique_lock lock{qt_windowDataSync};
+                    qt_windowData.emplace_back(pNewWindow.release());
+
+                    windowSetups--;
+                });
+            } else
+#endif // FOE_SKUNKWORKS_QT
 #ifdef FOE_SKUNKWORKS_SDL3
-            if (it.implementation == Settings::Window::Implementation::SDL3) {
+                if (it.implementation == Settings::Window::Implementation::SDL3) {
                 std::unique_ptr<SDL3_WindowData> pNewWindow{new SDL3_WindowData};
+                pNewWindow->renderSurfaceData.pActive.reset(new std::atomic_bool{true});
 
                 bool result =
                     createSDL3Window(it.width, it.height, it.title.c_str(), pNewWindow.get());
@@ -181,6 +272,7 @@ int Application::initialize(int argc, char **argv) {
             {
 #ifdef FOE_SKUNKWORKS_GLFW
                 std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
+                pNewWindow->renderSurfaceData.pActive.reset(new std::atomic_bool{true});
 
                 bool result =
                     createGlfwWindow(it.width, it.height, it.title.c_str(), pNewWindow.get());
@@ -205,6 +297,10 @@ int Application::initialize(int argc, char **argv) {
 #endif // FOE_SKUNKWORKS_GLFW
             }
         }
+
+        // wait for all initial window setup to complete
+        while (windowSetups != 0)
+            ;
 
 #ifdef FOE_XR_SUPPORT
         if (settings.xr.enableXr || settings.xr.forceXr) {
@@ -236,6 +332,13 @@ int Application::initialize(int argc, char **argv) {
                 vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
             }
 #endif
+#ifdef FOE_SKUNKWORKS_QT
+            if (!getQtVkExtensions(&extensionCount, &ppExtensionNames))
+                std::abort();
+            for (uint32_t i = 0; i < extensionCount; ++i) {
+                vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
+            }
+#endif
         }
 
         result =
@@ -259,6 +362,13 @@ int Application::initialize(int argc, char **argv) {
                 std::abort();
         }
 #endif
+#ifdef FOE_SKUNKWORKS_QT
+        for (auto &it : qt_windowData) {
+            if (createQtWindowVkSurface(gfxRuntime, FOE_NULL_HANDLE, it, nullptr,
+                                        &it->renderSurfaceData.surface) != FOE_SUCCESS)
+                std::abort();
+        }
+#endif
 
         std::vector<VkSurfaceKHR> surfaces;
 #ifdef FOE_SKUNKWORKS_GLFW
@@ -271,6 +381,11 @@ int Application::initialize(int argc, char **argv) {
             surfaces.push_back(it->renderSurfaceData.surface);
         }
 #endif
+#ifdef FOE_SKUNKWORKS_QT
+        for (auto const it : qt_windowData) {
+            surfaces.push_back(it->renderSurfaceData.surface);
+        }
+#endif
 
         result = createGfxSession(gfxRuntime, xrRuntime,
                                   settings.general.enableWindows
@@ -279,6 +394,9 @@ int Application::initialize(int argc, char **argv) {
 #endif
 #ifdef FOE_SKUNKWORKS_SDL3
                                       || !sdl3_windowData.empty()
+#endif
+#ifdef FOE_SKUNKWORKS_QT
+                                      || !qt_windowData.empty()
 #endif
                                       ,
                                   std::move(surfaces), settings.graphics.gpu, settings.xr.forceXr,
@@ -300,10 +418,10 @@ int Application::initialize(int argc, char **argv) {
                 foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
 #endif
-#ifdef FOE_XR_SUPPORT
-        { // msaa - xr
-            xrData.sampleCount =
-                foeGfxVkGetBestSupportedMSAA(gfxSession, xrData.desiredSampleCount);
+#ifdef FOE_SKUNKWORKS_QT
+        for (auto &window : qt_windowData) {
+            window->sampleCount = window->renderSurfaceData.sampleCount =
+                foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
 #endif
 #ifdef FOE_XR_SUPPORT
@@ -337,6 +455,14 @@ int Application::initialize(int argc, char **argv) {
 #endif
 #ifdef FOE_SKUNKWORKS_SDL3
     for (auto &it : sdl3_windowData) {
+        result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
+        if (result.value != FOE_SUCCESS) {
+            ERRC_END_PROGRAM
+        }
+    }
+#endif
+#ifdef FOE_SKUNKWORKS_QT
+    for (auto &it : qt_windowData) {
         result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM
@@ -421,6 +547,15 @@ void Application::deinitialize() {
     }
 
     // Destroy window data
+#ifdef FOE_SKUNKWORKS_QT
+    for (auto it : qt_windowData) {
+#ifdef EDITOR_MODE
+        windowInfo.removeWindow(it);
+#endif
+        QTimer::singleShot(0, pQtGuiApplication, [&] { it->pWindow->close(); });
+    }
+    qt_windowData.clear();
+#endif
 #ifdef FOE_SKUNKWORKS_SDL3
     for (auto it : sdl3_windowData) {
 #ifdef EDITOR_MODE
@@ -513,6 +648,9 @@ int Application::mainloop() {
 #endif
 #ifdef FOE_SKUNKWORKS_SDL3
             || !sdl3_windowData.empty()
+#endif
+#ifdef FOE_SKUNKWORKS_QT
+            || !qt_windowData.empty()
 #endif
                 )
 #ifdef EDITOR_MODE
@@ -617,6 +755,9 @@ int Application::mainloop() {
 #ifdef FOE_SKUNKWORKS_SDL3
         processSDL3Events(sdl3_windowData.size(), sdl3_windowData.data());
 #endif
+#ifdef FOE_SKUNKWORKS_QT
+        processQtEvents(qt_windowData.size(), qt_windowData.data());
+#endif
 
 #ifdef FOE_XR_SUPPORT
         // Process XR Events
@@ -642,7 +783,7 @@ int Application::mainloop() {
                     pImGuiRenderWindow = nullptr;
 #endif
                 std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
-                window->renderSurfaceData.active = false;
+                *window->renderSurfaceData.pActive = false;
                 if (window->renderSurfaceData.inFlight != 0) {
                     // still items in-flight, not to be removed yet
                     ++it;
@@ -747,7 +888,7 @@ int Application::mainloop() {
                     pImGuiRenderWindow = nullptr;
 #endif
                 std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
-                window->renderSurfaceData.active = false;
+                *window->renderSurfaceData.pActive = false;
                 if (window->renderSurfaceData.inFlight != 0) {
                     // still items in-flight, not to be removed yet
                     ++it;
@@ -827,6 +968,110 @@ int Application::mainloop() {
                 float xScale, yScale;
                 getSDL3WindowScale(window, &xScale, &yScale);
                 imguiRenderer.rescale(xScale, yScale);
+            }
+#endif
+
+            ++it;
+        }
+#endif
+
+#ifdef FOE_SKUNKWORKS_QT
+        // qt
+        for (auto it = qt_windowData.begin(); it < qt_windowData.end();) {
+            Qt_WindowData *window = *it;
+
+#ifdef EDITOR_MODE
+            if (pImGuiRenderWindow == nullptr)
+                pImGuiRenderWindow = window;
+#endif
+
+            // if window is set to close, check if to be destroyed now
+            if (window->close) {
+#ifdef EDITOR_MODE
+                // if this was the imgui window, change it
+                if (pImGuiRenderWindow == window)
+                    pImGuiRenderWindow = nullptr;
+#endif
+                std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
+                *window->renderSurfaceData.pActive = false;
+                if (window->renderSurfaceData.inFlight != 0) {
+                    // still items in-flight, not to be removed yet
+                    ++it;
+                    continue;
+                }
+#ifdef EDITOR_MODE
+                windowInfo.removeWindow(window);
+#endif
+                QTimer::singleShot(0, pQtGuiApplication, [&] { window->pWindow->close(); });
+                delete window;
+
+                it = qt_windowData.erase(it);
+                continue;
+            }
+
+#ifdef EDITOR_MODE
+            // Only the first/primary window supports ImGui interaction
+            if (window == pImGuiRenderWindow) {
+                std::vector<uint32_t> pressedKeycodes;
+                std::vector<uint32_t> pressedScancodes;
+                size_t const pressedCount = window->keyboard.pressedCodes.size();
+                pressedKeycodes.reserve(pressedCount);
+                pressedScancodes.reserve(pressedCount);
+                for (size_t i = 0; i < pressedCount; ++i) {
+                    auto const &it = window->keyboard.pressedCodes[i];
+
+                    pressedKeycodes.emplace_back(it.keycode);
+                    pressedScancodes.emplace_back(it.scancode);
+                }
+
+                std::vector<uint32_t> releasedKeycodes;
+                std::vector<uint32_t> releasedScancodes;
+                size_t const releasedCount = window->keyboard.releasedCodes.size();
+                releasedKeycodes.reserve(releasedCount);
+                releasedScancodes.reserve(releasedCount);
+                for (size_t i = 0; i < releasedCount; ++i) {
+                    auto const &it = window->keyboard.releasedCodes[i];
+
+                    releasedKeycodes.emplace_back(it.keycode);
+                    releasedScancodes.emplace_back(it.scancode);
+                }
+
+                imguiRenderer.keyboardInput(window->keyboard.unicodeChar, imguiSDL3KeyConvert,
+                                            pressedKeycodes.data(), pressedScancodes.data(),
+                                            pressedKeycodes.size(), releasedKeycodes.data(),
+                                            releasedScancodes.data(), releasedKeycodes.size());
+
+                std::vector<uint32_t> buttonsPressed{window->mouse.pressedButtons.cbegin(),
+                                                     window->mouse.pressedButtons.cend()};
+                std::vector<uint32_t> buttonsReleased{window->mouse.releasedButtons.cbegin(),
+                                                      window->mouse.releasedButtons.cend()};
+                imguiRenderer.mouseInput(window->mouse.position.x, window->mouse.position.y,
+                                         window->mouse.scroll.x, window->mouse.scroll.y,
+                                         buttonsPressed.data(), buttonsPressed.size(),
+                                         buttonsReleased.data(), buttonsReleased.size());
+            }
+
+            // If ImGui is capturing, don't pass inputs through from the first window
+            if (window != pImGuiRenderWindow ||
+                (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()))
+#endif
+            {
+                processQtUserInput(window, timeElapsedInSec);
+            }
+
+            // Check if window was resized, and if so request associated swapchains to
+            // be rebuilt
+            if (window->resized) {
+                *window->pNeedSwapchainRebuild = true;
+            }
+
+#ifdef EDITOR_MODE
+            if (window == pImGuiRenderWindow) {
+                QSize windowSize = window->pWindow->size();
+                imguiRenderer.resize(windowSize.width(), windowSize.height());
+
+                auto windowScale = window->pWindow->devicePixelRatio();
+                imguiRenderer.rescale(windowScale, windowScale);
             }
 #endif
 
@@ -950,6 +1195,30 @@ int Application::mainloop() {
                     ERRC_END_PROGRAM
             }
 #endif
+#ifdef FOE_SKUNKWORKS_QT
+            // Qt
+            for (auto it : qt_windowData) {
+                // If no window here, skip
+                if (it->pWindow == FOE_NULL_HANDLE)
+                    continue;
+                if (it->renderSurfaceData.swapchain != FOE_NULL_HANDLE &&
+                    !*it->pNeedSwapchainRebuild)
+                    continue;
+
+                *it->pNeedSwapchainRebuild = false;
+
+                QSize windowSize = it->pWindow->size();
+                auto windowScale = it->pWindow->devicePixelRatio();
+                int width = windowSize.width() * windowScale;
+                int height = windowSize.height() * windowScale;
+
+                result = rebuildSurfaceSwapchain(&it->renderSurfaceData, gfxSession,
+                                                 gfxDelayedDestructor, it->vsync, width, height,
+                                                 depthFormat);
+                if (result.value != FOE_SUCCESS)
+                    ERRC_END_PROGRAM
+            }
+#endif // FOE_SKUNKWORKS_QT
 
             // Acquire Target Presentation Images
             struct WindowRenderData {
@@ -963,7 +1232,7 @@ int Application::mainloop() {
 #ifdef FOE_SKUNKWORKS_GLFW
             for (auto &it : glfw_windowData) {
                 std::scoped_lock<std::mutex> lock{it->renderSurfaceData.sync};
-                if (!it->renderSurfaceData.active)
+                if (!*(it->renderSurfaceData.pActive))
                     // if this surface is not active, don't render it right now
                     continue;
 
@@ -1015,7 +1284,7 @@ int Application::mainloop() {
 #ifdef FOE_SKUNKWORKS_SDL3
             for (auto it : sdl3_windowData) {
                 std::scoped_lock<std::mutex> lock{it->renderSurfaceData.sync};
-                if (!it->renderSurfaceData.active)
+                if (!*it->renderSurfaceData.pActive)
                     // if this surface is not active, don't render it right now
                     continue;
 
@@ -1064,6 +1333,58 @@ int Application::mainloop() {
                 }
             }
 #endif
+#ifdef FOE_SKUNKWORKS_QT
+            for (auto it : qt_windowData) {
+                std::scoped_lock<std::mutex> lock{it->renderSurfaceData.sync};
+                if (!*it->renderSurfaceData.pActive)
+                    // if this surface is not active, don't render it right now
+                    continue;
+
+                result = vk_to_foeResult(
+                    foeGfxVkAcquireSwapchainImage(gfxSession, it->renderSurfaceData.swapchain,
+                                                  &it->renderSurfaceData.acquiredImageData));
+                if (result.value == VK_TIMEOUT || result.value == VK_NOT_READY) {
+                    // Waiting for an image to become ready
+                } else if (result.value == VK_ERROR_OUT_OF_DATE_KHR) {
+                    // Surface changed, need to rebuild swapchains
+                    *it->pNeedSwapchainRebuild = true;
+                } else if (result.value == VK_SUBOPTIMAL_KHR) {
+                    // Surface is still usable, but should rebuild next time
+                    *it->pNeedSwapchainRebuild = true;
+                    it->renderSurfaceData.acquiredImage = true;
+                } else if (result.value) {
+                    // Catastrophic error
+                    ERRC_END_PROGRAM
+                } else {
+                    // No issues, add it to be rendered
+                    it->renderSurfaceData.acquiredImage = true;
+                }
+
+                if (it->renderSurfaceData.acquiredImage) {
+                    glm::mat4 matrix = glm::perspectiveFov(
+                        glm::radians(it->fovY),
+                        (float)it->renderSurfaceData.acquiredImageData.extent.width,
+                        (float)it->renderSurfaceData.acquiredImageData.extent.height, it->nearZ,
+                        it->farZ);
+                    matrix *= glm::mat4_cast(it->orientation) *
+                              glm::translate(glm::mat4(1.f), it->position);
+
+                    foeGfxUpdateRenderView(it->renderView, sizeof(glm::mat4), &matrix);
+
+                    ++it->renderSurfaceData.inFlight;
+                    windowRenderList.emplace_back(WindowRenderData{
+#ifdef EDITOR_MODE
+                        .imguiWindow = (it == pImGuiRenderWindow),
+#else
+                        .imguiWindow = false,
+#endif
+                        .pSurfaceData = &it->renderSurfaceData,
+                        .renderView = it->renderView,
+                        .sampleCount = it->sampleCount,
+                    });
+                }
+            }
+#endif // FOE_SKUNKWORKS_QT
 
             if (windowRenderList.empty()) {
                 goto SKIP_FRAME_RENDER;

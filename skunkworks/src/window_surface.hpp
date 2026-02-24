@@ -1,4 +1,4 @@
-// Copyright (C) 2025 George Cave.
+// Copyright (C) 2025-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,8 @@
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/swapchain.h>
 
+#include <atomic>
+#include <memory>
 #include <mutex>
 
 struct WindowSurfaceData {
@@ -19,7 +21,7 @@ struct WindowSurfaceData {
     // how many frames are in light to be rendered
     uint32_t inFlight{0};
     // whether or not to actively render this surface
-    bool active{true};
+    std::unique_ptr<std::atomic_bool> pActive;
 
     VkSurfaceKHR surface{VK_NULL_HANDLE};
     VkSampleCountFlags sampleCount{VK_SAMPLE_COUNT_1_BIT};

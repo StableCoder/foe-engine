@@ -1,4 +1,4 @@
-# Copyright (C) 2025 George Cave.
+# Copyright (C) 2025-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -71,8 +71,24 @@ endif()
 
 find_package(ImageMagick REQUIRED MagickCore)
 
+if(NOT APPLE)
+  find_package(Qt6 COMPONENTS Gui GuiPrivate Widgets)
+endif()
+
 # Engine Entrypoint
 add_executable(foe_skunkworks)
+
+if(Qt6_FOUND)
+  add_compile_definitions(FOE_SKUNKWORKS_QT)
+
+  add_executable(foe_skunkworks_qt src/main_qt.cpp)
+  target_link_libraries(foe_skunkworks_qt PRIVATE foe_skunkworks_lib Qt6::Gui)
+
+  add_executable(foe_skunkworks_qt_widgets src/main_qt_widgets.cpp)
+  target_link_libraries(foe_skunkworks_qt_widgets PRIVATE foe_skunkworks_lib
+                                                          Qt6::Gui Qt6::Widgets)
+endif()
+
 target_link_libraries(foe_skunkworks PRIVATE foe_skunkworks_lib)
 target_code_coverage(
   foe_skunkworks

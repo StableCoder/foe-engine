@@ -56,3 +56,22 @@ if(SDL3_FOUND)
   target_link_libraries(foe_skunkworks_imgui PUBLIC SDL3::SDL3)
   target_sources(foe_skunkworks_imgui PRIVATE wsi_sdl3/imgui.cpp)
 endif()
+if(Qt6_FOUND)
+  message(STATUS "Compiling foe_skunkworks with Qt6 windowing support")
+
+  target_compile_definitions(foe_skunkworks_lib PUBLIC FOE_SKUNKWORKS_QT)
+  target_link_libraries(foe_skunkworks_lib PUBLIC Qt6::Gui Qt6::GuiPrivate)
+  target_sources(foe_skunkworks_lib PRIVATE wsi_qt/qt_vulkan_window.cpp
+                                            wsi_qt/window.cpp)
+
+  if(LINUX)
+    target_sources(foe_skunkworks_lib PRIVATE wsi_qt/surface_wayland.cpp
+                                              wsi_qt/surface_xcb.cpp)
+  elseif(WIN32)
+    target_sources(foe_skunkworks_lib PRIVATE wsi_qt/surface_win32.cpp)
+  endif()
+
+  target_compile_definitions(foe_skunkworks_imgui PUBLIC FOE_SKUNKWORKS_QT)
+  target_link_libraries(foe_skunkworks_imgui PUBLIC Qt6::Gui)
+  target_sources(foe_skunkworks_imgui PRIVATE wsi_qt/imgui.cpp)
+endif()

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -59,6 +59,8 @@ bool parseEngineConfigFile(Settings *pOptions,
                         newWindow.implementation = Settings::Window::Implementation::SDL3;
                     else if (implementation == "glfw")
                         newWindow.implementation = Settings::Window::Implementation::GLFW;
+                    else if (implementation == "qt")
+                        newWindow.implementation = Settings::Window::Implementation::Qt;
                     else
                         // fallback is always GLFW
                         newWindow.implementation = Settings::Window::Implementation::GLFW;

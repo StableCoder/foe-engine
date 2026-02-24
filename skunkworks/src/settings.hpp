@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,6 +20,7 @@ struct Settings {
         enum Implementation {
             GLFW,
             SDL3,
+            Qt,
         };
 
         Implementation implementation = Implementation::GLFW;

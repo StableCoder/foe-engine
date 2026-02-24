@@ -27,6 +27,9 @@
 #ifdef FOE_SKUNKWORKS_SDL3
 #include "wsi_sdl3/window.hpp"
 #endif
+#ifdef FOE_SKUNKWORKS_QT
+#include "wsi_qt/window.hpp"
+#endif
 
 #include <array>
 #include <vector>
@@ -58,6 +61,18 @@
 struct foeSimulation;
 
 struct Application {
+#ifdef FOE_SKUNKWORKS_QT
+    void setQtGuiApplication(QGuiApplication *pQtGuiApplication);
+
+    struct ImportedQtWindowData {
+        foeQtVulkanWindow *pQtWindow;
+        std::atomic_bool *pNeedSwapchainBuild;
+        std::atomic_bool *pActive;
+    };
+
+    void setQtWindows(std::vector<ImportedQtWindowData> const &startingWindows);
+#endif
+
     int initialize(int argc, char **argv);
     void deinitialize();
 
@@ -78,6 +93,11 @@ struct Application {
 #endif
 #ifdef FOE_SKUNKWORKS_SDL3
     std::vector<SDL3_WindowData *> sdl3_windowData;
+#endif
+#ifdef FOE_SKUNKWORKS_QT
+    QGuiApplication *pQtGuiApplication = nullptr;
+    std::mutex qt_windowDataSync;
+    std::vector<Qt_WindowData *> qt_windowData;
 #endif
     FrameTimer frameTime;
 
