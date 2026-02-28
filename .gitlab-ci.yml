@@ -229,7 +229,7 @@ Debian/GCC Static:
 Debian/GCC Shared:
   parallel:
     matrix:
-      - ARCH: [amd64, arm64, ppc64le, riscv64]
+      - ARCH: [amd64, arm64, ppc64le, riscv64, s390x]
         BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
