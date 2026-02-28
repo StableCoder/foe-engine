@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,16 +13,16 @@ namespace {
 
 std::string cUpperHexData = "A94A3C0F";
 std::string cLowerHexData = "a94a3c0f";
-constexpr uint32_t cBinaryData = 0x0F3C4AA9;
+constexpr std::array<uint8_t, 4> cBinaryData = {0xA9, 0x4A, 0x3C, 0x0F};
 
 } // namespace
 
 TEST_CASE("Binary/Hex Encode Cases") {
-    std::array<char, (sizeof(cBinaryData) * 3)> hexData = {};
+    std::array<char, (cBinaryData.size() * 3)> hexData = {};
     foeResultSet result;
 
     SECTION("Success - Hex buffer size is exact size needed") {
-        result = foeEncodeHex(sizeof(cBinaryData), &cBinaryData, (sizeof(cBinaryData) * 2) + 1,
+        result = foeEncodeHex(cBinaryData.size(), cBinaryData.data(), (cBinaryData.size() * 2) + 1,
                               hexData.data());
         REQUIRE(result.value == FOE_SUCCESS);
 
@@ -30,7 +30,7 @@ TEST_CASE("Binary/Hex Encode Cases") {
     }
 
     SECTION("Success - Hex buffer size larger than size needed") {
-        result = foeEncodeHex(sizeof(cBinaryData), &cBinaryData, sizeof(cBinaryData) * 3,
+        result = foeEncodeHex(cBinaryData.size(), cBinaryData.data(), cBinaryData.size() * 3,
                               hexData.data());
         REQUIRE(result.value == FOE_SUCCESS);
 
@@ -38,26 +38,26 @@ TEST_CASE("Binary/Hex Encode Cases") {
     }
 
     SECTION("Failure - Hex buffer size not large enough") {
-        result = foeEncodeHex(sizeof(cBinaryData), &cBinaryData, sizeof(cBinaryData) * 2,
+        result = foeEncodeHex(cBinaryData.size(), cBinaryData.data(), cBinaryData.size() * 2,
                               hexData.data());
         REQUIRE(result.value == FOE_ERROR_DESTINATION_BUFFER_TOO_SMALL);
     }
 }
 
 TEST_CASE("Binary/Hex Decode") {
-    uint64_t binaryBuffer = 0;
-    size_t binaryBufferSize = sizeof(binaryBuffer);
+    std::array<uint8_t, 4> binaryBuffer = {};
+    size_t binaryBufferSize = binaryBuffer.size();
     foeResultSet result;
 
     SECTION("Success - Binary buffer is exact size needed") {
-        binaryBufferSize = sizeof(cBinaryData);
+        binaryBufferSize = cBinaryData.size();
         SECTION("Uppercase hex string") {
             result = foeDecodeHex(cUpperHexData.size(), cUpperHexData.data(), &binaryBufferSize,
                                   &binaryBuffer);
             CHECK(result.value == FOE_SUCCESS);
 
             CHECK(binaryBuffer == cBinaryData);
-            CHECK(binaryBufferSize == sizeof(cBinaryData));
+            CHECK(binaryBufferSize == cBinaryData.size());
         }
         SECTION("Lowercase hex string") {
             result = foeDecodeHex(cUpperHexData.size(), cUpperHexData.data(), &binaryBufferSize,
@@ -65,7 +65,7 @@ TEST_CASE("Binary/Hex Decode") {
             CHECK(result.value == FOE_SUCCESS);
 
             CHECK(binaryBuffer == cBinaryData);
-            CHECK(binaryBufferSize == sizeof(cBinaryData));
+            CHECK(binaryBufferSize == cBinaryData.size());
         }
     }
 
@@ -75,11 +75,11 @@ TEST_CASE("Binary/Hex Decode") {
         CHECK(result.value == FOE_SUCCESS);
 
         CHECK(binaryBuffer == cBinaryData);
-        CHECK(binaryBufferSize == sizeof(cBinaryData));
+        CHECK(binaryBufferSize == cBinaryData.size());
     }
 
     SECTION("Failure - Binary buffer is too small") {
-        binaryBufferSize = sizeof(cBinaryData) - 2;
+        binaryBufferSize = cBinaryData.size() - 2;
         result = foeDecodeHex(cUpperHexData.size(), cUpperHexData.data(), &binaryBufferSize,
                               &binaryBuffer);
         CHECK(result.value == FOE_ERROR_DESTINATION_BUFFER_TOO_SMALL);
@@ -124,13 +124,15 @@ TEST_CASE("Binary/Hex Encoding/Decoding - All possible single byte values (0-255
     foeResultSet result;
 
     for (uint32_t i = 0; i <= UINT8_MAX; ++i) {
-        std::array<char, 3> hexArr = {};
-        result = foeEncodeHex(1, &i, hexArr.size(), hexArr.data());
+        std::array<uint8_t, 3> hexArr = {};
+        uint8_t value = i;
+        result = foeEncodeHex(1, &value, hexArr.size(), (char *)hexArr.data());
         REQUIRE(result.value == FOE_SUCCESS);
 
         uint8_t decodedByte;
         size_t decodedDataSize = 1;
-        result = foeDecodeHex(hexArr.size() - 1, hexArr.data(), &decodedDataSize, &decodedByte);
+        result =
+            foeDecodeHex(hexArr.size() - 1, (char *)hexArr.data(), &decodedDataSize, &decodedByte);
         REQUIRE(result.value == FOE_SUCCESS);
         REQUIRE(decodedByte == i);
         REQUIRE(decodedDataSize == 1);
