@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-add_subdirectory(foe)
+add_subdirectory(foe_core)
 add_subdirectory(foe_crypto)
 add_subdirectory(foe_ecs)
 add_subdirectory(foe_graphics)

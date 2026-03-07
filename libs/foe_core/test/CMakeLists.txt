@@ -45,8 +45,9 @@ target_sources(
 target_link_libraries(test_foe_core PRIVATE Catch2::Catch2WithMain foe_core)
 
 target_compile_definitions(
-  test_foe_core PRIVATE TEST_PLUGIN_DIR="$<TARGET_FILE:test_foe_core_plugin_so>"
-                        TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+  test_foe_core
+  PRIVATE FOE_CORE_PLUGIN_TEST_DIR="$<TARGET_FILE:test_foe_core_plugin_so>"
+          FOE_CORE_MEMORY_MAPPED_TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_code_coverage(
   test_foe_core

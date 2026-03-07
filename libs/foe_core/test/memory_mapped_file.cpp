@@ -12,8 +12,8 @@ TEST_CASE("MemoryMappedFile - Success Cases") {
     uint32_t dataSize = UINT32_MAX;
 
     SECTION("4KB file") {
-        foeResultSet result =
-            foeCreateMemoryMappedFile(TEST_DIR "/data/memory_mapped_file/4kb_file", &test);
+        foeResultSet result = foeCreateMemoryMappedFile(
+            FOE_CORE_MEMORY_MAPPED_TEST_DIR "/data/memory_mapped_file/4kb_file", &test);
         REQUIRE(result.value == FOE_SUCCESS);
         REQUIRE(test != FOE_NULL_HANDLE);
 
@@ -25,8 +25,8 @@ TEST_CASE("MemoryMappedFile - Success Cases") {
     }
 
     SECTION("4KB file") {
-        foeResultSet result =
-            foeCreateMemoryMappedFile(TEST_DIR "/data/memory_mapped_file/128kb_file", &test);
+        foeResultSet result = foeCreateMemoryMappedFile(
+            FOE_CORE_MEMORY_MAPPED_TEST_DIR "/data/memory_mapped_file/128kb_file", &test);
         REQUIRE(result.value == FOE_SUCCESS);
         REQUIRE(test != FOE_NULL_HANDLE);
 
@@ -46,14 +46,14 @@ TEST_CASE("MemoryMappedFile - Failure Cases") {
     foeManagedMemory test = FOE_NULL_HANDLE;
 
     SECTION("Attempting to open a non-existing file") {
-        foeResultSet result =
-            foeCreateMemoryMappedFile(TEST_DIR "/data/memory_mapped_file/non_existing_file", &test);
+        foeResultSet result = foeCreateMemoryMappedFile(
+            FOE_CORE_MEMORY_MAPPED_TEST_DIR "/data/memory_mapped_file/non_existing_file", &test);
         REQUIRE(result.value == FOE_ERROR_FAILED_TO_OPEN_FILE);
         REQUIRE(test == FOE_NULL_HANDLE);
     }
     SECTION("Attempting to open a zero-sized file") {
-        foeResultSet result =
-            foeCreateMemoryMappedFile(TEST_DIR "/data/memory_mapped_file/0b_file", &test);
+        foeResultSet result = foeCreateMemoryMappedFile(
+            FOE_CORE_MEMORY_MAPPED_TEST_DIR "/data/memory_mapped_file/0b_file", &test);
         REQUIRE(result.value == FOE_ERROR_ATTEMPTED_TO_MAP_ZERO_SIZED_FILE);
         REQUIRE(test == FOE_NULL_HANDLE);
     }

@@ -5,13 +5,14 @@
 #include <catch2/catch_test_macros.hpp>
 #include <foe/plugin.h>
 
-#ifndef TEST_PLUGIN_DIR
-#define TEST_PLUGIN_DIR nullptr
+#ifndef FOE_CORE_PLUGIN_TEST_DIR
+#define FOE_CORE_PLUGIN_TEST_DIR nullptr
 #endif
 
-static_assert(TEST_PLUGIN_DIR != nullptr,
-              "TEST_PLUGIN_DIR must be defined with the location of the 'test_foe_plugin_so' "
-              "shared library.");
+static_assert(
+    FOE_CORE_PLUGIN_TEST_DIR != nullptr,
+    "FOE_CORE_PLUGIN_TEST_DIR must be defined with the location of the 'test_foe_plugin_so' "
+    "shared library.");
 
 TEST_CASE("Plugin (SO/DLL) doesn't exist, and creating it fails to provide a non-null handle",
           "[foe][plugin]") {
@@ -25,7 +26,7 @@ TEST_CASE("Plugin (SO/DLL) doesn't exist, and creating it fails to provide a non
 TEST_CASE("Plugin (SO/DLL) exists, and can be created", "[foe][plugin]") {
     foePlugin test{FOE_NULL_HANDLE};
 
-    foeCreatePlugin(TEST_PLUGIN_DIR, &test);
+    foeCreatePlugin(FOE_CORE_PLUGIN_TEST_DIR, &test);
 
     REQUIRE(test != FOE_NULL_HANDLE);
 
@@ -47,13 +48,13 @@ TEST_CASE("Plugin (SO/DLL) exists, and can be created", "[foe][plugin]") {
 
 TEST_CASE("Loading the same plugin multiple times yields the same handle", "[foe][plugin]") {
     foePlugin test{FOE_NULL_HANDLE};
-    foeCreatePlugin(TEST_PLUGIN_DIR, &test);
+    foeCreatePlugin(FOE_CORE_PLUGIN_TEST_DIR, &test);
 
     foePlugin test2{FOE_NULL_HANDLE};
-    foeCreatePlugin(TEST_PLUGIN_DIR, &test2);
+    foeCreatePlugin(FOE_CORE_PLUGIN_TEST_DIR, &test2);
 
     foePlugin test3{FOE_NULL_HANDLE};
-    foeCreatePlugin(TEST_PLUGIN_DIR, &test3);
+    foeCreatePlugin(FOE_CORE_PLUGIN_TEST_DIR, &test3);
 
     CHECK(test != nullptr);
     CHECK(test == test2);
