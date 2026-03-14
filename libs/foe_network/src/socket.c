@@ -8,8 +8,6 @@
 #include "network_initialization.h"
 #include "result.h"
 
-#include <assert.h>
-#include <stdlib.h>
 #include <string.h>
 
 #ifdef _WIN32
@@ -95,15 +93,6 @@ void foeDestroyNetworkSocket(foeNetworkSocket socket) {
     close(socket_from_handle(socket));
 #endif
     deinitializeNetworkStack();
-}
-
-#ifndef _WIN32
-int foeNetworkSocketGetHandle(foeNetworkSocket socket)
-#else
-SOCKET foeNetworkSocketGetHandle(foeNetworkSocket socket)
-#endif
-{
-    return socket_from_handle(socket);
 }
 
 foeResultSet foeNetworkGetSocketAddress(foeNetworkSocket socket,
