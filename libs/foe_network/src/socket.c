@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -61,7 +61,7 @@ foeResultSet foeCreateNetworkSocket(foeNetworkAddress address,
     // Set Socket to be dual stack (IPv4 and IPv6)
     // Mostly a Windows issue, Unix sockets are dual-stack by default
     int val = 0;
-#ifdef __MINGW32__
+#ifdef _WIN32
     int errCode = setsockopt(newSocket, IPPROTO_IPV6, IPV6_V6ONLY, (char const *)&val, sizeof(val));
 #else
     int errCode = setsockopt(newSocket, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val));
