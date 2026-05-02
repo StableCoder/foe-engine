@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -55,7 +55,6 @@ target_sources(
          include/foe/chrono/dilated_long_clock.hpp
          include/foe/chrono/easy_clock.hpp
          include/foe/chrono/program_clock.hpp
-         include/foe/algorithm.hpp
          include/foe/binary_result.h
          include/foe/delimited_string.h
          include/foe/engine_detail.h

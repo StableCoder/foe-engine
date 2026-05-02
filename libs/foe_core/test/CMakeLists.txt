@@ -22,7 +22,6 @@ target_sources(
   PRIVATE # internal library sources
           ../src/utf_character_conversion.c
           # test sources
-          algorithm.cpp
           c_header_compatibility.c
           delimited_string.cpp
           filesystem.cpp
