@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@
 #include <foe/position/component/3d.hpp>
 #include <foe/position/component/3d_pool.h>
 #include <foe/position/type_defs.h>
-#include <foe/simulation/registration.hpp>
+#include <foe/simulation/registration.h>
 #include <foe/simulation/simulation.hpp>
 
 #include "log.hpp"

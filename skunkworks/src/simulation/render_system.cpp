@@ -1,4 +1,4 @@
-// Copyright (C) 2023-2025 George Cave.
+// Copyright (C) 2023-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/resource/vertex_descriptor.hpp>
+#include <foe/graphics/resource/vertex_descriptor.h>
 #include <foe/position/component/3d.hpp>
 
 #include "../log.hpp"

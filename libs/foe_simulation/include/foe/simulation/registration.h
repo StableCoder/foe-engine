@@ -1,15 +1,19 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_SIMULATION_REGISTRATION_HPP
-#define FOE_SIMULATION_REGISTRATION_HPP
+#ifndef FOE_SIMULATION_REGISTRATION_H
+#define FOE_SIMULATION_REGISTRATION_H
 
 #include <foe/graphics/session.h>
 #include <foe/result.h>
 #include <foe/simulation/export.h>
 
 #include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct foeSimulation;
 struct foeSimulationInitInfo;
@@ -84,4 +88,8 @@ foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functiona
 FOE_SIM_EXPORT
 foeResultSet foeDeregisterFunctionality(foeSimulationUUID functionalityUUID);
 
-#endif // FOE_SIMULATION_REGISTRATION_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_SIMULATION_REGISTRATION_H

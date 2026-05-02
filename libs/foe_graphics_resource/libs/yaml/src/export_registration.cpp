@@ -1,11 +1,11 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/graphics/resource/yaml/export_registration.h>
 
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/resource/vertex_descriptor.hpp>
+#include <foe/graphics/resource/vertex_descriptor.h>
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
 

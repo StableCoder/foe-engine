@@ -1,8 +1,8 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/simulation/registration.hpp>
+#include <foe/simulation/registration.h>
 #include <foe/simulation/simulation.hpp>
 
 #include <foe/chrono/easy_clock.hpp>
@@ -131,7 +131,7 @@ void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad 
 
 } // namespace
 
-foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
+extern "C" foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
     std::scoped_lock lock{mSync};
 
     if (functionality.id != 0 && (functionality.id < 1000000000 || functionality.id % 1000 != 0)) {
@@ -261,7 +261,7 @@ foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functiona
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-foeResultSet foeDeregisterFunctionality(foeSimulationUUID functionalityUUID) {
+extern "C" foeResultSet foeDeregisterFunctionality(foeSimulationUUID functionalityUUID) {
     std::scoped_lock lock{mSync};
 
     for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it) {

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/resource/vertex_descriptor.hpp>
+#include <foe/graphics/resource/vertex_descriptor.h>
 #include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/pipeline_pool.h>
 #include <foe/graphics/vk/render_graph/resource/image.hpp>

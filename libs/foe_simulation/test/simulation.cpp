@@ -1,9 +1,9 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch2/catch_test_macros.hpp>
-#include <foe/simulation/registration.hpp>
+#include <foe/simulation/registration.h>
 #include <foe/simulation/result.h>
 #include <foe/simulation/simulation.hpp>
 #include <foe/type_defs.h>

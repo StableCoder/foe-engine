@@ -1,11 +1,11 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #ifndef VERTEX_DESCRIPTOR_LOADER_HPP
 #define VERTEX_DESCRIPTOR_LOADER_HPP
 
-#include <foe/graphics/resource/vertex_descriptor.hpp>
+#include <foe/graphics/resource/vertex_descriptor.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>

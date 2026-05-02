@@ -1,9 +1,9 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/resource/vertex_descriptor.hpp>
+#include <foe/graphics/resource/vertex_descriptor.h>
 
-void cleanup_foeVertexDescriptor(foeVertexDescriptor *pData) {
+extern "C" void cleanup_foeVertexDescriptor(foeVertexDescriptor *pData) {
     cleanup_foeGfxVkVertexDescriptor(&pData->vertexDescriptor);
 }

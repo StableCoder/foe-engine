@@ -1,11 +1,11 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "vertex_descriptor.hpp"
 
 #include <foe/external/imgui.h>
-#include <foe/graphics/resource/vertex_descriptor.hpp>
+#include <foe/graphics/resource/vertex_descriptor.h>
 #include <foe/graphics/resource/vertex_descriptor_create_info.h>
 #include <foe/graphics/vk/imgui/vertex_descriptor.hpp>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
