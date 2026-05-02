@@ -706,11 +706,6 @@ Code Coverage:
     - cmake --build build --target ccov-all
     - cmake --build build --target ccov-report
     - cmake --build build --target ccov-all-report
-  artifacts:
-    name: CodeCoverage
-    paths:
-      - build/ccov
-    expire_in: 1 day
 
 ThreadSanitizer:
   variables:
