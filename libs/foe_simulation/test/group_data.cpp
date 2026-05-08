@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,9 +7,9 @@
 #include <foe/ecs/result.h>
 #include <foe/imex/result.h>
 #include <foe/imex/type_defs.h>
-#include <foe/simulation/group_data.hpp>
+#include <foe/simulation/group_data.h>
+#include <foe/simulation/result.h>
 
-#include <filesystem>
 #include <string>
 
 namespace {
@@ -56,96 +56,104 @@ foeImexImporterCalls dummyImporterCalls{
 } // namespace
 
 TEST_CASE("foeGroupData - Initial State", "[foe]") {
-    foeGroupData test;
+    foeGroupData test = FOE_NULL_HANDLE;
+    foeResultSet result;
+
+    result = foeSimulationCreateGroupData(&test);
+    REQUIRE(result.value == FOE_SIMULATION_SUCCESS);
+    REQUIRE(test != FOE_NULL_HANDLE);
 
     SECTION("Persistent Group") {
         SECTION("Resource Indexes") {
-            REQUIRE(test.persistentResourceIndexes() != FOE_NULL_HANDLE);
-            REQUIRE(test.persistentResourceIndexes() == test.resourceIndexes(foeIdPersistentGroup));
-            REQUIRE(foeEcsIndexesGetGroupID(test.persistentResourceIndexes()) ==
+            REQUIRE(foeSimulationPersistentResourceIndexes(test) != FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationPersistentResourceIndexes(test) ==
+                    foeSimulationResourceIndexes(test, foeIdPersistentGroup));
+            REQUIRE(foeEcsIndexesGetGroupID(foeSimulationPersistentResourceIndexes(test)) ==
                     foeIdPersistentGroup);
-            REQUIRE(test.persistentResourceIndexes() == test.resourceIndexes("Persistent"));
 
-            REQUIRE(test.resourceIndexes(foeIdPersistentGroup) != FOE_NULL_HANDLE);
-            REQUIRE(test.resourceIndexes(foeIdPersistentGroup) ==
-                    test.resourceIndexes(foeIdPersistentGroup));
-            REQUIRE(foeEcsIndexesGetGroupID(test.resourceIndexes(foeIdPersistentGroup)) ==
-                    foeIdPersistentGroup);
-            REQUIRE(test.resourceIndexes(foeIdPersistentGroup) ==
-                    test.resourceIndexes("Persistent"));
+            REQUIRE(foeSimulationResourceIndexes(test, foeIdPersistentGroup) != FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationResourceIndexes(test, foeIdPersistentGroup) ==
+                    foeSimulationResourceIndexes(test, foeIdPersistentGroup));
+            REQUIRE(foeEcsIndexesGetGroupID(foeSimulationResourceIndexes(
+                        test, foeIdPersistentGroup)) == foeIdPersistentGroup);
         }
 
         SECTION("Entity Indexes") {
-            REQUIRE(test.persistentEntityIndexes() != FOE_NULL_HANDLE);
-            REQUIRE(test.persistentEntityIndexes() == test.entityIndexes(foeIdPersistentGroup));
-            REQUIRE(foeEcsIndexesGetGroupID(test.persistentEntityIndexes()) ==
+            REQUIRE(foeSimulationPersistentEntityIndexes(test) != FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationPersistentEntityIndexes(test) ==
+                    foeSimulationEntityIndexes(test, foeIdPersistentGroup));
+            REQUIRE(foeEcsIndexesGetGroupID(foeSimulationPersistentEntityIndexes(test)) ==
                     foeIdPersistentGroup);
-            REQUIRE(test.persistentEntityIndexes() == test.entityIndexes("Persistent"));
 
-            REQUIRE(test.entityIndexes(foeIdPersistentGroup) != FOE_NULL_HANDLE);
-            REQUIRE(test.entityIndexes(foeIdPersistentGroup) ==
-                    test.entityIndexes(foeIdPersistentGroup));
-            REQUIRE(foeEcsIndexesGetGroupID(test.entityIndexes(foeIdPersistentGroup)) ==
-                    foeIdPersistentGroup);
-            REQUIRE(test.entityIndexes(foeIdPersistentGroup) == test.entityIndexes("Persistent"));
+            REQUIRE(foeSimulationEntityIndexes(test, foeIdPersistentGroup) != FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationEntityIndexes(test, foeIdPersistentGroup) ==
+                    foeSimulationEntityIndexes(test, foeIdPersistentGroup));
+            REQUIRE(foeEcsIndexesGetGroupID(foeSimulationEntityIndexes(
+                        test, foeIdPersistentGroup)) == foeIdPersistentGroup);
         }
 
         SECTION("Importer") {
-            REQUIRE(test.persistentImporter() == FOE_NULL_HANDLE);
-            REQUIRE(test.persistentImporter() == test.importer(foeIdPersistentGroup));
-            REQUIRE(test.persistentImporter() == test.importer("Persistent"));
+            REQUIRE(foeSimulationPersistentImporter(test) == FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationPersistentImporter(test) ==
+                    foeSimulationImporter(test, foeIdPersistentGroup));
 
-            REQUIRE(test.importer(foeIdPersistentGroup) == FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationImporter(test, foeIdPersistentGroup) == FOE_NULL_HANDLE);
         }
     }
 
     SECTION("Temporary Group") {
         SECTION("Resource Indexes") {
-            REQUIRE(test.temporaryResourceIndexes() != FOE_NULL_HANDLE);
-            REQUIRE(test.temporaryResourceIndexes() == test.resourceIndexes(foeIdTemporaryGroup));
-            REQUIRE(foeEcsIndexesGetGroupID(test.temporaryResourceIndexes()) ==
+            REQUIRE(foeSimulationTemporaryResourceIndexes(test) != FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationTemporaryResourceIndexes(test) ==
+                    foeSimulationResourceIndexes(test, foeIdTemporaryGroup));
+            REQUIRE(foeEcsIndexesGetGroupID(foeSimulationTemporaryResourceIndexes(test)) ==
                     foeIdTemporaryGroup);
-            REQUIRE(test.temporaryResourceIndexes() == test.resourceIndexes("Temporary"));
 
-            REQUIRE(test.resourceIndexes(foeIdTemporaryGroup) != FOE_NULL_HANDLE);
-            REQUIRE(test.resourceIndexes(foeIdTemporaryGroup) ==
-                    test.resourceIndexes(foeIdTemporaryGroup));
-            REQUIRE(foeEcsIndexesGetGroupID(test.resourceIndexes(foeIdTemporaryGroup)) ==
-                    foeIdTemporaryGroup);
-            REQUIRE(test.resourceIndexes(foeIdTemporaryGroup) == test.resourceIndexes("Temporary"));
+            REQUIRE(foeSimulationResourceIndexes(test, foeIdTemporaryGroup) != FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationResourceIndexes(test, foeIdTemporaryGroup) ==
+                    foeSimulationResourceIndexes(test, foeIdTemporaryGroup));
+            REQUIRE(foeEcsIndexesGetGroupID(foeSimulationResourceIndexes(
+                        test, foeIdTemporaryGroup)) == foeIdTemporaryGroup);
         }
 
         SECTION("Entity Indexes") {
-            REQUIRE(test.temporaryEntityIndexes() != FOE_NULL_HANDLE);
-            REQUIRE(test.temporaryEntityIndexes() == test.entityIndexes(foeIdTemporaryGroup));
-            REQUIRE(foeEcsIndexesGetGroupID(test.temporaryEntityIndexes()) == foeIdTemporaryGroup);
-            REQUIRE(test.temporaryEntityIndexes() == test.entityIndexes("Temporary"));
-
-            REQUIRE(test.entityIndexes(foeIdTemporaryGroup) != FOE_NULL_HANDLE);
-            REQUIRE(test.entityIndexes(foeIdTemporaryGroup) ==
-                    test.entityIndexes(foeIdTemporaryGroup));
-            REQUIRE(foeEcsIndexesGetGroupID(test.entityIndexes(foeIdTemporaryGroup)) ==
+            REQUIRE(foeSimulationTemporaryEntityIndexes(test) != FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationTemporaryEntityIndexes(test) ==
+                    foeSimulationEntityIndexes(test, foeIdTemporaryGroup));
+            REQUIRE(foeEcsIndexesGetGroupID(foeSimulationTemporaryEntityIndexes(test)) ==
                     foeIdTemporaryGroup);
-            REQUIRE(test.entityIndexes(foeIdTemporaryGroup) == test.entityIndexes("Temporary"));
+
+            REQUIRE(foeSimulationEntityIndexes(test, foeIdTemporaryGroup) != FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationEntityIndexes(test, foeIdTemporaryGroup) ==
+                    foeSimulationEntityIndexes(test, foeIdTemporaryGroup));
+            REQUIRE(foeEcsIndexesGetGroupID(foeSimulationEntityIndexes(
+                        test, foeIdTemporaryGroup)) == foeIdTemporaryGroup);
         }
 
         SECTION("Never an importer for the Temporary Group") {
-            REQUIRE(test.importer(foeIdTemporaryGroup) == nullptr);
+            REQUIRE(foeSimulationImporter(test, foeIdTemporaryGroup) == nullptr);
         }
     }
 
     SECTION("Dynamic Groups are all empty/nullptr") {
         for (uint32_t i = 0; i < (foeIdGroupMaxValue - 2); ++i) {
-            REQUIRE(test.resourceIndexes(foeIdValueToGroup(i)) == FOE_NULL_HANDLE);
-            REQUIRE(test.entityIndexes(foeIdValueToGroup(i)) == FOE_NULL_HANDLE);
-            REQUIRE(test.importer(foeIdValueToGroup(i)) == nullptr);
+            REQUIRE(foeSimulationResourceIndexes(test, foeIdValueToGroup(i)) == FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationEntityIndexes(test, foeIdValueToGroup(i)) == FOE_NULL_HANDLE);
+            REQUIRE(foeSimulationImporter(test, foeIdValueToGroup(i)) == nullptr);
         }
     }
+
+    foeSimulationDestroyGroupData(test);
 }
 
 TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     DummyImporterData dummyImporter, dummyImporter2;
-    foeGroupData test;
+    foeGroupData test = FOE_NULL_HANDLE;
+    foeResultSet result;
+
+    result = foeSimulationCreateGroupData(&test);
+    REQUIRE(result.value == FOE_SIMULATION_SUCCESS);
+    REQUIRE(test != FOE_NULL_HANDLE);
 
     SECTION("No EntityIndexes given") {
         foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
@@ -161,7 +169,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
     }
@@ -180,7 +189,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testEntityIndexes);
     }
@@ -194,8 +204,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, FOE_NULL_HANDLE));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   FOE_NULL_HANDLE));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -217,8 +227,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   std::move(testImporter)));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -240,7 +250,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -262,7 +273,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -284,7 +296,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -306,7 +319,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -328,7 +342,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -350,7 +365,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                             testImporter));
 
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testEntityIndexes).value ==
                 FOE_ECS_SUCCESS);
@@ -364,7 +380,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter2);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -386,7 +403,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                             testImporter));
 
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x2), &testEntityIndexes).value ==
                 FOE_ECS_SUCCESS);
@@ -400,19 +418,29 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         };
         testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter2);
 
-        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+        REQUIRE_FALSE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                   testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
     }
+
+    foeSimulationDestroyGroupData(test);
 }
 
 TEST_CASE("foeGroupData - setPersistentImporter failure cases", "[foe]") {
     DummyImporterData dummyImporter;
     foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
-    foeGroupData test;
+    foeGroupData test = FOE_NULL_HANDLE;
+    foeResultSet result;
 
-    SECTION("Giving a nullptr") { REQUIRE_FALSE(test.setPersistentImporter(nullptr)); }
+    result = foeSimulationCreateGroupData(&test);
+    REQUIRE(result.value == FOE_SIMULATION_SUCCESS);
+    REQUIRE(test != FOE_NULL_HANDLE);
+
+    SECTION("Giving a nullptr") {
+        REQUIRE_FALSE(foeSimulationSetPersistentImporter(test, nullptr));
+    }
 
     SECTION("Giving an importer that is not foeIdPersistentGroup") {
         SECTION("Dynamic Groups") {
@@ -423,7 +451,7 @@ TEST_CASE("foeGroupData - setPersistentImporter failure cases", "[foe]") {
                     .group = group,
                 };
 
-                REQUIRE_FALSE(test.setPersistentImporter(testImporter));
+                REQUIRE_FALSE(foeSimulationSetPersistentImporter(test, testImporter));
             }
         }
 
@@ -434,9 +462,11 @@ TEST_CASE("foeGroupData - setPersistentImporter failure cases", "[foe]") {
                 .group = foeIdTemporaryGroup,
             };
 
-            REQUIRE_FALSE(test.setPersistentImporter(testImporter));
+            REQUIRE_FALSE(foeSimulationSetPersistentImporter(test, testImporter));
         }
     }
+
+    foeSimulationDestroyGroupData(test);
 }
 
 TEST_CASE("foeGroupData - setPersistentImporter success cases", "[foe]") {
@@ -446,23 +476,31 @@ TEST_CASE("foeGroupData - setPersistentImporter success cases", "[foe]") {
         .group = foeIdPersistentGroup,
     };
     foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
-    foeGroupData test;
+    foeGroupData test = FOE_NULL_HANDLE;
+    foeResultSet result;
 
-    REQUIRE(test.setPersistentImporter(testImporter));
+    result = foeSimulationCreateGroupData(&test);
+    REQUIRE(result.value == FOE_SIMULATION_SUCCESS);
+    REQUIRE(test != FOE_NULL_HANDLE);
 
-    REQUIRE(test.importer(foeIdPersistentGroup) == testImporter);
+    REQUIRE(foeSimulationSetPersistentImporter(test, testImporter));
 
-    SECTION("Persistent importer with a different importer name also works") {
-        REQUIRE(test.importer("testPersistentImporter") == testImporter);
-    }
+    REQUIRE(foeSimulationImporter(test, foeIdPersistentGroup) == testImporter);
+
+    foeSimulationDestroyGroupData(test);
 }
 
 TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
     DummyImporterData dummyImporter, dummyImporter2;
-    foeGroupData test;
+    foeGroupData test = FOE_NULL_HANDLE;
+    foeResultSet result;
 
     foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
     foeEcsIndexes testResourceIndexes = FOE_NULL_HANDLE;
+
+    result = foeSimulationCreateGroupData(&test);
+    REQUIRE(result.value == FOE_SIMULATION_SUCCESS);
+    REQUIRE(test != FOE_NULL_HANDLE);
 
     REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testEntityIndexes).value ==
             FOE_ECS_SUCCESS);
@@ -476,17 +514,15 @@ TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
     };
     foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-    REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+    REQUIRE(
+        foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes, testImporter));
 
     SECTION("0x1 Group Data") {
-        REQUIRE(test.resourceIndexes(foeIdValueToGroup(0x1)) != nullptr);
-        REQUIRE(test.resourceIndexes("0x1") != nullptr);
+        REQUIRE(foeSimulationResourceIndexes(test, foeIdValueToGroup(0x1)) != nullptr);
 
-        REQUIRE(test.entityIndexes(foeIdValueToGroup(0x1)) != nullptr);
-        REQUIRE(test.entityIndexes("0x1") != nullptr);
+        REQUIRE(foeSimulationEntityIndexes(test, foeIdValueToGroup(0x1)) != nullptr);
 
-        REQUIRE(test.importer(foeIdValueToGroup(0x1)) != nullptr);
-        REQUIRE(test.importer("0x1") != nullptr);
+        REQUIRE(foeSimulationImporter(test, foeIdValueToGroup(0x1)) != nullptr);
     }
 
     REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(foeIdMaxDynamicGroupValue), &testEntityIndexes)
@@ -501,35 +537,21 @@ TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
     };
     testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter2);
 
-    REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+    REQUIRE(
+        foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes, testImporter));
 
     SECTION("MaxDynamic Group Data") {
-        REQUIRE(test.resourceIndexes(foeIdValueToGroup(foeIdMaxDynamicGroupValue)) != nullptr);
-        REQUIRE(test.resourceIndexes("MaxDynamic") != nullptr);
+        REQUIRE(foeSimulationResourceIndexes(test, foeIdValueToGroup(foeIdMaxDynamicGroupValue)) !=
+                nullptr);
 
-        REQUIRE(test.entityIndexes(foeIdValueToGroup(foeIdMaxDynamicGroupValue)) != nullptr);
-        REQUIRE(test.entityIndexes("MaxDynamic") != nullptr);
+        REQUIRE(foeSimulationEntityIndexes(test, foeIdValueToGroup(foeIdMaxDynamicGroupValue)) !=
+                nullptr);
 
-        REQUIRE(test.importer(foeIdValueToGroup(foeIdMaxDynamicGroupValue)) != nullptr);
-        REQUIRE(test.importer("MaxDynamic") != nullptr);
+        REQUIRE(foeSimulationImporter(test, foeIdValueToGroup(foeIdMaxDynamicGroupValue)) !=
+                nullptr);
     }
 
-    SECTION("Failure cases") {
-        SECTION("Temporary importer by name fails") {
-            REQUIRE(test.importer("Temporary") == nullptr);
-        }
-
-        SECTION("Name not added") {
-            REQUIRE(test.resourceIndexes("foeIdNumDynamicGroups") == nullptr);
-            REQUIRE(test.resourceIndexes("foeIdNumDynamicGroups") == nullptr);
-
-            REQUIRE(test.entityIndexes("foeIdNumDynamicGroups") == nullptr);
-            REQUIRE(test.entityIndexes("foeIdNumDynamicGroups") == nullptr);
-
-            REQUIRE(test.importer("foeIdNumDynamicGroups") == nullptr);
-            REQUIRE(test.importer("foeIdNumDynamicGroups") == nullptr);
-        }
-    }
+    foeSimulationDestroyGroupData(test);
 }
 
 #if defined(__clang__) || defined(__GNUC__)
@@ -538,11 +560,15 @@ __attribute__((no_sanitize("pointer-overflow"))) // pointer arithmetic with null
 TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
     DummyImporterData dummyImporter;
     foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
+    foeGroupData test = FOE_NULL_HANDLE;
+    foeResultSet result;
 
-    foeGroupData test;
+    result = foeSimulationCreateGroupData(&test);
+    REQUIRE(result.value == FOE_SIMULATION_SUCCESS);
+    REQUIRE(test != FOE_NULL_HANDLE);
 
     SECTION("No importers always fails") {
-        REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) == nullptr);
+        REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
     }
 
     SECTION("Persistent importer added") {
@@ -554,9 +580,9 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
                 .resReturn = static_cast<int *>(NULL) + 1,
             };
 
-            REQUIRE(test.setPersistentImporter(testImporter));
+            REQUIRE(foeSimulationSetPersistentImporter(test, testImporter));
 
-            REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) != nullptr);
+            REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
             dummyImporter = {
@@ -565,9 +591,9 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
                 .group = foeIdPersistentGroup,
             };
 
-            REQUIRE(test.setPersistentImporter(testImporter));
+            REQUIRE(foeSimulationSetPersistentImporter(test, testImporter));
 
-            REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) == nullptr);
+            REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
         }
     }
 
@@ -588,9 +614,10 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
                 .resReturn = static_cast<int *>(NULL) + 1,
             };
 
-            REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
+            REQUIRE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                 testImporter));
 
-            REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) != nullptr);
+            REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
             foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
@@ -607,8 +634,11 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
                 .group = foeIdValueToGroup(0x1),
             };
 
-            REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
-            REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) == nullptr);
+            REQUIRE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
+                                                 testImporter));
+            REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
         }
     }
+
+    foeSimulationDestroyGroupData(test);
 }

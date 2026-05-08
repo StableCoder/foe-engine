@@ -36,7 +36,7 @@ target_sources(
          ${CMAKE_CURRENT_SOURCE_DIR}/include
          FILES
          ${CMAKE_CURRENT_BINARY_DIR}/foe/simulation/export.h
-         include/foe/simulation/group_data.hpp
+         include/foe/simulation/group_data.h
          include/foe/simulation/registration.h
          include/foe/simulation/resource_create_info_history.h
          include/foe/simulation/resource_create_info_pool.h

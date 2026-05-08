@@ -505,7 +505,9 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER);
 
-        result = pLoader->initialize(pSimulation->resourcePool, pInitInfo->externalFileSearchFn);
+        result =
+            pLoader->initialize(pSimulation->resourcePool, pInitInfo->pExternalFileSearchContext,
+                                pInitInfo->pfnExternalFileSearch);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,29 +18,31 @@
 
 #include <cassert>
 
-foeResultSet foeImageLoader::initialize(
-    foeResourcePool resourcePool,
-    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn) {
-    if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
+foeResultSet foeImageLoader::initialize(foeResourcePool resourcePool,
+                                        void *pExternalFileSearchContext,
+                                        PFN_foeSimulationExternalFileSearch pfnExternalFileSearch) {
+    if (resourcePool == FOE_NULL_HANDLE || !pfnExternalFileSearch)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_INITIALIZATION_FAILED);
 
     MagickBooleanType magickFalse = MagickFalse;
     MagickCoreGenesis(nullptr, magickFalse);
 
     mResourcePool = resourcePool;
-    mExternalFileSearchFn = externalFileSearchFn;
+    this->pExternalFileSearchContext = pExternalFileSearchContext;
+    this->pfnExternalFileSearch = pfnExternalFileSearch;
 
     return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
 void foeImageLoader::deinitialize() {
-    mExternalFileSearchFn = {};
+    pExternalFileSearchContext = nullptr;
+    pfnExternalFileSearch = nullptr;
     mResourcePool = FOE_NULL_HANDLE;
 
     MagickCoreTerminus();
 }
 
-bool foeImageLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
+bool foeImageLoader::initialized() const noexcept { return pfnExternalFileSearch != nullptr; }
 
 foeResultSet foeImageLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized()) {
@@ -254,7 +256,7 @@ void foeImageLoader::load(foeResource resource,
 
     { // Import the data
         foeManagedMemory managedMemory = FOE_NULL_HANDLE;
-        result = mExternalFileSearchFn(pImageCI->pFile, &managedMemory);
+        result = pfnExternalFileSearch(pExternalFileSearchContext, pImageCI->pFile, &managedMemory);
         if (result.value != FOE_SUCCESS)
             goto LOADING_FAILED;
 

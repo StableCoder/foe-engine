@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,23 +11,21 @@
 #include <foe/graphics/upload_buffer.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/upload_request.h>
-#include <foe/managed_memory.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/result.h>
+#include <foe/simulation/simulation.hpp>
 
 #include <array>
-#include <filesystem>
-#include <functional>
 #include <mutex>
 #include <vector>
 
 class foeMeshLoader {
   public:
-    foeResultSet initialize(
-        foeResourcePool resourcePool,
-        std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn);
+    foeResultSet initialize(foeResourcePool resourcePool,
+                            void *pExternalFileSearchContext,
+                            PFN_foeSimulationExternalFileSearch pfnExternalFileSearch);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -55,7 +53,8 @@ class foeMeshLoader {
               PFN_foeResourcePostLoad postLoadFn);
 
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
-    std::function<foeResultSet(char const *, foeManagedMemory *)> mExternalFileSearchFn;
+    void *pExternalFileSearchContext = nullptr;
+    PFN_foeSimulationExternalFileSearch pfnExternalFileSearch = nullptr;
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -148,7 +148,7 @@ foeResultSet exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
         for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
             foeIdGroup groupID = foeIdValueToGroup(i);
 
-            foeImexImporter group = pSimState->groupData.importer(groupID);
+            foeImexImporter group = foeSimulationImporter(pSimState->groupData, groupID);
             if (group == FOE_NULL_HANDLE)
                 continue;
 
@@ -187,14 +187,14 @@ bool exportIndexDataToFile(foeEcsIndexes indexes, YAML::Node &data) {
 }
 
 foeResultSet exportGroupResourceIndexData(foeSimulation *pSimState, YAML::Node &data) {
-    if (exportIndexDataToFile(pSimState->groupData.persistentResourceIndexes(), data))
+    if (exportIndexDataToFile(foeSimulationPersistentResourceIndexes(pSimState->groupData), data))
         return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 
     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_INDEX_DATA);
 }
 
 foeResultSet exportGroupEntityIndexData(foeSimulation *pSimState, YAML::Node &data) {
-    if (exportIndexDataToFile(pSimState->groupData.persistentEntityIndexes(), data))
+    if (exportIndexDataToFile(foeSimulationPersistentEntityIndexes(pSimState->groupData), data))
         return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 
     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_INDEX_DATA);
@@ -208,11 +208,12 @@ foeResultSet exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::N
 
     do {
         uint32_t count;
-        foeEcsExportIndexes(pSimState->groupData.resourceIndexes(group), nullptr, &count, nullptr);
+        foeEcsExportIndexes(foeSimulationResourceIndexes(pSimState->groupData, group), nullptr,
+                            &count, nullptr);
 
         unusedIndices.resize(count);
-        result = foeEcsExportIndexes(pSimState->groupData.resourceIndexes(group), &maxIndices,
-                                     &count, unusedIndices.data());
+        result = foeEcsExportIndexes(foeSimulationResourceIndexes(pSimState->groupData, group),
+                                     &maxIndices, &count, unusedIndices.data());
         unusedIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
     std::sort(unusedIndices.begin(), unusedIndices.end());
@@ -273,11 +274,12 @@ foeResultSet exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAM
 
     do {
         uint32_t count;
-        foeEcsExportIndexes(pSimState->groupData.entityIndexes(group), nullptr, &count, nullptr);
+        foeEcsExportIndexes(foeSimulationEntityIndexes(pSimState->groupData, group), nullptr,
+                            &count, nullptr);
 
         unusedIndices.resize(count);
-        result = foeEcsExportIndexes(pSimState->groupData.entityIndexes(group), &maxIndices, &count,
-                                     unusedIndices.data());
+        result = foeEcsExportIndexes(foeSimulationEntityIndexes(pSimState->groupData, group),
+                                     &maxIndices, &count, unusedIndices.data());
         unusedIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
     std::sort(unusedIndices.begin(), unusedIndices.end());

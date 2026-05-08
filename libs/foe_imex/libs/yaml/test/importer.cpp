@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,6 +14,7 @@
 #include "test_common.hpp"
 
 #include <cstring>
+#include <filesystem>
 
 #ifndef TEST_DATA_DIR
 #define TEST_DATA_DIR nullptr

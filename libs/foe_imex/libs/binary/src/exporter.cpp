@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -50,7 +50,7 @@ foeResultSet exportDependencyData(foeSimulation *pSimulation, uint32_t *pDataSiz
     for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
         foeIdGroup groupID = foeIdValueToGroup(i);
 
-        foeImexImporter group = pSimulation->groupData.importer(groupID);
+        foeImexImporter group = foeSimulationImporter(pSimulation->groupData, groupID);
         if (group == FOE_NULL_HANDLE)
             continue;
 
@@ -218,12 +218,12 @@ foeResultSet exportResourceData(foeIdGroup groupID,
 
     do {
         uint32_t count;
-        foeEcsExportIndexes(pSimulation->groupData.resourceIndexes(groupID), nullptr, &count,
-                            nullptr);
+        foeEcsExportIndexes(foeSimulationResourceIndexes(pSimulation->groupData, groupID), nullptr,
+                            &count, nullptr);
 
         unusedIndices.resize(count);
-        result = foeEcsExportIndexes(pSimulation->groupData.resourceIndexes(groupID), &maxIndices,
-                                     &count, unusedIndices.data());
+        result = foeEcsExportIndexes(foeSimulationResourceIndexes(pSimulation->groupData, groupID),
+                                     &maxIndices, &count, unusedIndices.data());
         unusedIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
     std::sort(unusedIndices.begin(), unusedIndices.end());
@@ -303,12 +303,12 @@ foeResultSet exportComponentData(foeIdGroup groupID,
 
     do {
         uint32_t count;
-        foeEcsExportIndexes(pSimulation->groupData.entityIndexes(groupID), nullptr, &count,
-                            nullptr);
+        foeEcsExportIndexes(foeSimulationEntityIndexes(pSimulation->groupData, groupID), nullptr,
+                            &count, nullptr);
 
         unusedIndices.resize(count);
-        result = foeEcsExportIndexes(pSimulation->groupData.entityIndexes(groupID), &maxIndices,
-                                     &count, unusedIndices.data());
+        result = foeEcsExportIndexes(foeSimulationEntityIndexes(pSimulation->groupData, groupID),
+                                     &maxIndices, &count, unusedIndices.data());
         unusedIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
     std::sort(unusedIndices.begin(), unusedIndices.end());
@@ -462,14 +462,14 @@ extern "C" foeResultSet foeImexBinaryExport(char const *pExportPath, foeSimulati
     }
 
     { // Resource Index Data
-        resultSet = exportIndexData(pSimState->groupData.persistentResourceIndexes(),
+        resultSet = exportIndexData(foeSimulationPersistentResourceIndexes(pSimState->groupData),
                                     &resourceIndexDataSize, &pResourceIndexData);
         if (resultSet.value != FOE_SUCCESS)
             goto EXPORT_FAILED;
     }
 
     { // Entity Index Data
-        resultSet = exportIndexData(pSimState->groupData.persistentEntityIndexes(),
+        resultSet = exportIndexData(foeSimulationPersistentEntityIndexes(pSimState->groupData),
                                     &entityIndexDataSize, &pEntityIndexData);
         if (resultSet.value != FOE_SUCCESS)
             goto EXPORT_FAILED;
@@ -525,12 +525,13 @@ EXPORT_FAILED:
 
             do {
                 uint32_t count;
-                foeEcsExportIndexes(pSimState->groupData.persistentResourceIndexes(), nullptr,
-                                    &count, nullptr);
+                foeEcsExportIndexes(foeSimulationPersistentResourceIndexes(pSimState->groupData),
+                                    nullptr, &count, nullptr);
 
                 unusedIndices.resize(count);
-                result = foeEcsExportIndexes(pSimState->groupData.persistentResourceIndexes(),
-                                             &maxIndex, &count, unusedIndices.data());
+                result = foeEcsExportIndexes(
+                    foeSimulationPersistentResourceIndexes(pSimState->groupData), &maxIndex, &count,
+                    unusedIndices.data());
                 unusedIndices.resize(count);
             } while (result.value != FOE_SUCCESS);
             std::sort(unusedIndices.begin(), unusedIndices.end());
@@ -550,12 +551,13 @@ EXPORT_FAILED:
 
             do {
                 uint32_t count;
-                foeEcsExportIndexes(pSimState->groupData.persistentEntityIndexes(), nullptr, &count,
-                                    nullptr);
+                foeEcsExportIndexes(foeSimulationPersistentEntityIndexes(pSimState->groupData),
+                                    nullptr, &count, nullptr);
 
                 unusedIndices.resize(count);
-                result = foeEcsExportIndexes(pSimState->groupData.persistentEntityIndexes(),
-                                             &maxIndex, &count, unusedIndices.data());
+                result =
+                    foeEcsExportIndexes(foeSimulationPersistentEntityIndexes(pSimState->groupData),
+                                        &maxIndex, &count, unusedIndices.data());
                 unusedIndices.resize(count);
             } while (result.value != FOE_SUCCESS);
             std::sort(unusedIndices.begin(), unusedIndices.end());
@@ -739,7 +741,7 @@ EXPORT_FAILED:
             for (auto const &it : externalFiles) {
                 foeManagedMemory managedMemory = FOE_NULL_HANDLE;
                 foeResultSet result =
-                    pSimState->groupData.findExternalFile(it.c_str(), &managedMemory);
+                    foeSimulationFindExternalFile(pSimState->groupData, it.c_str(), &managedMemory);
                 if (result.value != FOE_SUCCESS) {
                     std::abort();
                 }

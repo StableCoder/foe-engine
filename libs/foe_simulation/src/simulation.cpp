@@ -296,7 +296,7 @@ extern "C" foeResultSet foeDeregisterFunctionality(foeSimulationUUID functionali
 }
 
 bool foeSimulationIsInitialized(foeSimulation const *pSimulation) {
-    return !!pSimulation->initInfo.externalFileSearchFn;
+    return pSimulation->initInfo.pfnExternalFileSearch != nullptr;
 }
 
 bool foeSimulationIsGraphicsInitialzied(foeSimulation const *pSimulation) {
@@ -311,11 +311,23 @@ foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationS
     if (newSimState == nullptr)
         return to_foeResult(FOE_SIMULATION_ERROR_OUT_OF_MEMORY);
 
+    newSimState->groupData = FOE_NULL_HANDLE;
     newSimState->gfxSession = FOE_NULL_HANDLE;
     newSimState->resourceCreateInfoSavedBaseData = FOE_NULL_HANDLE;
     newSimState->resourceCreateInfoSavedPersistentData = FOE_NULL_HANDLE;
     newSimState->resourceCreateInfoSessionPersistentData = FOE_NULL_HANDLE;
     newSimState->resourcePool = FOE_NULL_HANDLE;
+
+    // Group Data
+    result = foeSimulationCreateGroupData(&newSimState->groupData);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
+                "foeSimulation - Failed to create foeGroupData due to: {}", buffer);
+
+        return result;
+    }
 
     // Saved Base Data
     result = foeCreateResourceCreateInfoPool(&newSimState->resourceCreateInfoSavedBaseData);
@@ -483,6 +495,10 @@ foeResultSet foeDestroySimulation(foeSimulation *pSimulation) {
         foeDestroyResourceCreateInfoPool(pSimulation->resourceCreateInfoSavedPersistentData);
     if (pSimulation->resourceCreateInfoSavedBaseData != FOE_NULL_HANDLE)
         foeDestroyResourceCreateInfoPool(pSimulation->resourceCreateInfoSavedBaseData);
+
+    // destroy GroupData
+    if (pSimulation->groupData != FOE_NULL_HANDLE)
+        foeSimulationDestroyGroupData(pSimulation->groupData);
 
     // Delete it
     delete pSimulation;

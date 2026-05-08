@@ -1,15 +1,15 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #ifndef ARMATURE_LOADER_HPP
 #define ARMATURE_LOADER_HPP
 
-#include <foe/managed_memory.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/result.h>
+#include <foe/simulation/simulation.hpp>
 
 #include "armature.hpp"
 
@@ -21,9 +21,9 @@
 
 class foeArmatureLoader {
   public:
-    foeResultSet initialize(
-        foeResourcePool resourcePool,
-        std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn);
+    foeResultSet initialize(foeResourcePool resourcePool,
+                            void *pExternalFileSearchContext,
+                            PFN_foeSimulationExternalFileSearch pfnExternalFileSearch);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -47,7 +47,8 @@ class foeArmatureLoader {
               PFN_foeResourcePostLoad postLoadFn);
 
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
-    std::function<foeResultSet(char const *, foeManagedMemory *)> mExternalFileSearchFn;
+    void *pExternalFileSearchContext;
+    PFN_foeSimulationExternalFileSearch pfnExternalFileSearch;
 
     struct LoadData {
         foeResource resource;

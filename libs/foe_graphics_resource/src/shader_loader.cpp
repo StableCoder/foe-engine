@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,19 +14,24 @@
 
 foeResultSet foeShaderLoader::initialize(
     foeResourcePool resourcePool,
-    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn) {
-    if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
+    void *pExternalFileSearchContext,
+    PFN_foeSimulationExternalFileSearch pfnExternalFileSearch) {
+    if (resourcePool == FOE_NULL_HANDLE || !pfnExternalFileSearch)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_INITIALIZATION_FAILED);
 
     mResourcePool = resourcePool;
-    mExternalFileSearchFn = externalFileSearchFn;
+    this->pExternalFileSearchContext = pExternalFileSearchContext;
+    this->pfnExternalFileSearch = pfnExternalFileSearch;
 
     return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
-void foeShaderLoader::deinitialize() { mExternalFileSearchFn = {}; }
+void foeShaderLoader::deinitialize() {
+    pfnExternalFileSearch = nullptr;
+    pExternalFileSearchContext = nullptr;
+}
 
-bool foeShaderLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
+bool foeShaderLoader::initialized() const noexcept { return pfnExternalFileSearch != nullptr; }
 
 foeResultSet foeShaderLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
@@ -175,7 +180,8 @@ void foeShaderLoader::load(foeResource resource,
 
     { // Load Shader SPIR-V from external file
         foeManagedMemory managedMemory = FOE_NULL_HANDLE;
-        result = mExternalFileSearchFn(pShaderCI->pFile, &managedMemory);
+        result =
+            pfnExternalFileSearch(pExternalFileSearchContext, pShaderCI->pFile, &managedMemory);
         if (result.value != FOE_SUCCESS) {
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_BINARY_FILE_NOT_FOUND);
             goto LOAD_FAILED;

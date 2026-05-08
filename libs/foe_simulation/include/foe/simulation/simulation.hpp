@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,13 +11,11 @@
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/simulation/export.h>
-#include <foe/simulation/group_data.hpp>
+#include <foe/simulation/group_data.h>
 #include <foe/simulation/resource_create_info_history.h>
 #include <foe/simulation/resource_create_info_pool.h>
 #include <foe/simulation/type_defs.h>
 
-#include <filesystem>
-#include <functional>
 #include <shared_mutex>
 #include <vector>
 
@@ -38,8 +36,13 @@ struct foeResourceLoaderBase;
 struct foeComponentPoolBase;
 struct foeSystemBase;
 
+typedef foeResultSet (*PFN_foeSimulationExternalFileSearch)(void *,
+                                                            char const *,
+                                                            foeManagedMemory *);
+
 struct foeSimulationInitInfo {
-    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn;
+    void *pExternalFileSearchContext;
+    PFN_foeSimulationExternalFileSearch pfnExternalFileSearch;
 };
 
 struct foeSimulationLoaderData {
@@ -90,7 +93,7 @@ struct foeSimulation {
      */
     std::shared_mutex simSync;
 
-    foeGroupData groupData;
+    foeGroupData groupData = FOE_NULL_HANDLE;
 
     // Information used to initialize functionality (used when functionality added during runtime)
     foeSimulationInitInfo initInfo{};

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -94,7 +94,7 @@ void foeImGuiEntityList::customUI() {
     for (foeIdGroup groupValue = 0; groupValue <= foeIdGroupMaxValue; ++groupValue) {
 
         foeIdGroup group = foeIdValueToGroup(groupValue);
-        foeEcsIndexes indexes = mpSimulationState->groupData.entityIndexes(group);
+        foeEcsIndexes indexes = foeSimulationEntityIndexes(mpSimulationState->groupData, group);
         if (indexes == FOE_NULL_HANDLE)
             continue;
 

@@ -7,7 +7,6 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource_fns.h>
-#include <foe/simulation/group_data.hpp>
 #include <foe/simulation/registration.h>
 #include <foe/simulation/simulation.hpp>
 
@@ -394,7 +393,9 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         auto *pLoader = (foeImageLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
 
-        result = pLoader->initialize(pSimulation->resourcePool, pInitInfo->externalFileSearchFn);
+        result =
+            pLoader->initialize(pSimulation->resourcePool, pInitInfo->pExternalFileSearchContext,
+                                pInitInfo->pfnExternalFileSearch);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -448,7 +449,9 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         auto *pLoader = (foeShaderLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
 
-        result = pLoader->initialize(pSimulation->resourcePool, pInitInfo->externalFileSearchFn);
+        result =
+            pLoader->initialize(pSimulation->resourcePool, pInitInfo->pExternalFileSearchContext,
+                                pInitInfo->pfnExternalFileSearch);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -506,7 +509,9 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         auto *pLoader = (foeMeshLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
 
-        result = pLoader->initialize(pSimulation->resourcePool, pInitInfo->externalFileSearchFn);
+        result =
+            pLoader->initialize(pSimulation->resourcePool, pInitInfo->pExternalFileSearchContext,
+                                pInitInfo->pfnExternalFileSearch);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

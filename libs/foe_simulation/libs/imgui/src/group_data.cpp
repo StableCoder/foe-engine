@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -182,7 +182,7 @@ void foeSimulationImGuiGroupData::customUI() {
         for (foeIdGroupValue gv = 0; gv < foeIdMaxDynamicGroupValue; ++gv) {
             foeIdGroup group = foeIdValueToGroup(gv);
 
-            foeImexImporter importer = mpSimulationState->groupData.importer(group);
+            foeImexImporter importer = foeSimulationImporter(mpSimulationState->groupData, group);
             if (importer == FOE_NULL_HANDLE)
                 continue;
 
@@ -219,7 +219,7 @@ void foeSimulationImGuiGroupData::customUI() {
         ImGui::Text("Group Value: %u", foeIdGroupToValue(mSelected));
         ImGui::Text("GroupID: %s", foeIdToString(mSelected).c_str());
 
-        foeImexImporter importer = mpSimulationState->groupData.importer(mSelected);
+        foeImexImporter importer = foeSimulationImporter(mpSimulationState->groupData, mSelected);
         if (importer != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Importer Data");
@@ -227,7 +227,8 @@ void foeSimulationImGuiGroupData::customUI() {
             renderImporterData(importer);
         }
 
-        foeEcsIndexes entityIndexes = mpSimulationState->groupData.entityIndexes(mSelected);
+        foeEcsIndexes entityIndexes =
+            foeSimulationEntityIndexes(mpSimulationState->groupData, mSelected);
         if (entityIndexes != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Entity Index Data");
@@ -235,7 +236,8 @@ void foeSimulationImGuiGroupData::customUI() {
             renderIndexData(entityIndexes, "EntityIndexes");
         }
 
-        foeEcsIndexes resourceIndexes = mpSimulationState->groupData.resourceIndexes(mSelected);
+        foeEcsIndexes resourceIndexes =
+            foeSimulationResourceIndexes(mpSimulationState->groupData, mSelected);
         if (resourceIndexes != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Resource Index Data");

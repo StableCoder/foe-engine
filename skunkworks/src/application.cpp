@@ -480,9 +480,9 @@ int Application::initialize(int argc, char **argv) {
 
     { // Initialize simulation
         foeSimulationInitInfo simInitInfo{
-            .externalFileSearchFn =
-                std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
-                          std::placeholders::_1, std::placeholders::_2),
+            .pExternalFileSearchContext = pSimulationSet->groupData,
+            .pfnExternalFileSearch =
+                (PFN_foeSimulationExternalFileSearch)foeSimulationFindExternalFile,
         };
         foeInitializeSimulation(pSimulationSet, &simInitInfo);
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,14 +15,16 @@
 
 foeResultSet foeArmatureLoader::initialize(
     foeResourcePool resourcePool,
-    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn) {
-    if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
+    void *pExternalFileSearchContext,
+    PFN_foeSimulationExternalFileSearch pfnExternalFileSearch) {
+    if (resourcePool == FOE_NULL_HANDLE || !pfnExternalFileSearch)
         return to_foeResult(FOE_SKUNKWORKS_ERROR_LOADER_INITIALIZATION_FAILED);
 
     foeResultSet result{.value = FOE_SUCCESS, .toString = NULL};
 
     mResourcePool = resourcePool;
-    mExternalFileSearchFn = externalFileSearchFn;
+    this->pExternalFileSearchContext = pExternalFileSearchContext;
+    this->pfnExternalFileSearch = pfnExternalFileSearch;
 
     if (result.value != FOE_SUCCESS) {
         deinitialize();
@@ -50,11 +52,12 @@ void foeArmatureLoader::deinitialize() {
     } while (upcomingWork);
 
     // External
-    mExternalFileSearchFn = {};
+    pfnExternalFileSearch = nullptr;
+    pExternalFileSearchContext = nullptr;
     mResourcePool = FOE_NULL_HANDLE;
 }
 
-bool foeArmatureLoader::initialized() const noexcept { return bool(mExternalFileSearchFn); }
+bool foeArmatureLoader::initialized() const noexcept { return pfnExternalFileSearch != nullptr; }
 
 void foeArmatureLoader::maintenance() {
     // Process Unloads
@@ -104,13 +107,14 @@ bool foeArmatureLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
 
 namespace {
 
-bool processCreateInfo(
-    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn,
-    foeArmatureCreateInfo const *pCreateInfo,
-    foeArmature &data) {
+bool processCreateInfo(void *pExternalFileSearchContext,
+                       PFN_foeSimulationExternalFileSearch pfnExternalFileSearch,
+                       foeArmatureCreateInfo const *pCreateInfo,
+                       foeArmature &data) {
     { // Armature
         foeManagedMemory managedMemory = FOE_NULL_HANDLE;
-        foeResultSet result = externalFileSearchFn(pCreateInfo->pFile, &managedMemory);
+        foeResultSet result =
+            pfnExternalFileSearch(pExternalFileSearchContext, pCreateInfo->pFile, &managedMemory);
         if (result.value != FOE_SUCCESS) {
             std::abort();
         }
@@ -141,7 +145,8 @@ bool processCreateInfo(
         for (uint32_t i = 0; i < pCreateInfo->animationCount; ++i) {
             auto const &animation = pCreateInfo->pAnimations[i];
             foeManagedMemory managedMemory = FOE_NULL_HANDLE;
-            foeResultSet result = externalFileSearchFn(animation.pFile, &managedMemory);
+            foeResultSet result =
+                pfnExternalFileSearch(pExternalFileSearchContext, animation.pFile, &managedMemory);
             if (result.value != FOE_SUCCESS) {
                 std::abort();
             }
@@ -212,7 +217,8 @@ void foeArmatureLoader::load(foeResource resource,
         .rType = FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE,
     };
 
-    if (!processCreateInfo(mExternalFileSearchFn, pArmatureCreateInfo, data)) {
+    if (!processCreateInfo(pExternalFileSearchContext, pfnExternalFileSearch, pArmatureCreateInfo,
+                           data)) {
         postLoadFn(resource, to_foeResult(FOE_SKUNKWORKS_ERROR_IMPORT_FAILED), nullptr, nullptr,
                    nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
