@@ -662,7 +662,7 @@ foeResultSet foeSkunkworksRegisterFunctionality() {
     FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_VERBOSE,
             "foeSkunkworksRegisterFunctionality - Starting to register functionality")
 
-    foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeSimulationFunctionalty functionality = {
         .id = 0,
         .pCreateFn = create,
         .pDestroyFn = destroy,
@@ -670,7 +670,9 @@ foeResultSet foeSkunkworksRegisterFunctionality() {
         .pDeinitializeFn = deinitialize,
         .pInitializeGraphicsFn = initializeGraphics,
         .pDeinitializeGraphicsFn = deinitializeGraphics,
-    });
+    };
+
+    foeResultSet result = foeRegisterFunctionality(&functionality);
 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

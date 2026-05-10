@@ -375,13 +375,15 @@ extern "C" foeResultSet foePhysicsRegisterFunctionality() {
     FOE_LOG(foePhysics, FOE_LOG_LEVEL_VERBOSE,
             "foePhysicsRegisterFunctionality - Starting to register functionality")
 
-    foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeSimulationFunctionalty functionality = {
         .id = foePhysicsFunctionalityID(),
         .pCreateFn = create,
         .pDestroyFn = destroy,
         .pInitializeFn = initialize,
         .pDeinitializeFn = deinitialize,
-    });
+    };
+
+    foeResultSet result = foeRegisterFunctionality(&functionality);
 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

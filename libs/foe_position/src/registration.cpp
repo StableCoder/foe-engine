@@ -103,11 +103,13 @@ extern "C" foeResultSet foePositionRegisterFunctionality() {
     FOE_LOG(foePosition, FOE_LOG_LEVEL_VERBOSE,
             "foePositionRegisterFunctionality - Starting to register functionality")
 
-    foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeSimulationFunctionalty functionality = {
         .id = foePositionFunctionalityID(),
         .pCreateFn = create,
         .pDestroyFn = destroy,
-    });
+    };
+
+    foeResultSet result = foeRegisterFunctionality(&functionality);
 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

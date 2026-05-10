@@ -175,17 +175,18 @@ void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad 
 
 } // namespace
 
-extern "C" foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
+extern "C" foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const *pFunctionality) {
     std::scoped_lock lock{mSync};
 
-    if (functionality.id != 0 && (functionality.id < 1000000000 || functionality.id % 1000 != 0)) {
+    if (pFunctionality->id != 0 &&
+        (pFunctionality->id < 1000000000 || pFunctionality->id % 1000 != 0)) {
         FOE_LOG(foeSimulation, FOE_LOG_LEVEL_WARNING,
                 "foeRegisterFunctionality - Attempted to register functionality with invalid ID");
         return to_foeResult(FOE_SIMULATION_ERROR_ID_INVALID);
     }
 
     for (auto const &it : mRegistered) {
-        if (it.id == functionality.id) {
+        if (it.id == pFunctionality->id) {
             FOE_LOG(foeSimulation, FOE_LOG_LEVEL_WARNING,
                     "foeRegisterFunctionality - Attempted to register functionality with an ID "
                     "already in use");
@@ -194,7 +195,7 @@ extern "C" foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const
     }
 
     // Not already registered, add it.
-    mRegistered.emplace_back(functionality);
+    mRegistered.emplace_back(*pFunctionality);
 
     // Go through any already existing Simulation's and add this new functionality to them.
     struct {
@@ -213,24 +214,23 @@ extern "C" foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const
 
         acquireExclusiveLock(*ppSimState, "functionality registration");
 
-        if (functionality.pCreateFn) {
-            result = functionality.pCreateFn(simulation_to_handle(*ppSimState));
+        if (pFunctionality->pCreateFn) {
+            result = pFunctionality->pCreateFn(simulation_to_handle(*ppSimState));
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
                 FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                         "foeRegisterFunctionality - Failed creating functionality on "
-                        "foeSimulation: {} due "
-                        "to error: {}",
+                        "foeSimulation: {} due to error: {}",
                         static_cast<void *>(*ppSimState), buffer);
                 break;
             }
             passedStates.created = true;
         }
         if (foeSimulationIsInitialized(simulation_to_handle(*ppSimState)) &&
-            functionality.pInitializeFn) {
-            result = functionality.pInitializeFn(simulation_to_handle(*ppSimState),
-                                                 &(*ppSimState)->initInfo);
+            pFunctionality->pInitializeFn) {
+            result = pFunctionality->pInitializeFn(simulation_to_handle(*ppSimState),
+                                                   &(*ppSimState)->initInfo);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -243,9 +243,9 @@ extern "C" foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const
             passedStates.initialized = true;
         }
         if (foeSimulationIsGraphicsInitialzied(simulation_to_handle(*ppSimState)) &&
-            functionality.pInitializeGraphicsFn) {
-            result = functionality.pInitializeGraphicsFn(simulation_to_handle(*ppSimState),
-                                                         (*ppSimState)->gfxSession);
+            pFunctionality->pInitializeGraphicsFn) {
+            result = pFunctionality->pInitializeGraphicsFn(simulation_to_handle(*ppSimState),
+                                                           (*ppSimState)->gfxSession);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -267,16 +267,16 @@ extern "C" foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const
     // deinitialize/destroy this functionality in all the ones it was already added to successfully
     if (result.value != FOE_SUCCESS && ppSimState != mStates.data()) {
         // Deal with the potential half-initialized simState that was being worked on
-        if (passedStates.gfxInitialized && functionality.pDeinitializeGraphicsFn &&
+        if (passedStates.gfxInitialized && pFunctionality->pDeinitializeGraphicsFn &&
             foeSimulationIsGraphicsInitialzied(simulation_to_handle(*ppSimState))) {
-            functionality.pDeinitializeGraphicsFn(simulation_to_handle(*ppSimState));
+            pFunctionality->pDeinitializeGraphicsFn(simulation_to_handle(*ppSimState));
         }
-        if (passedStates.initialized && functionality.pDeinitializeFn &&
+        if (passedStates.initialized && pFunctionality->pDeinitializeFn &&
             foeSimulationIsInitialized(simulation_to_handle(*ppSimState))) {
-            functionality.pDeinitializeFn(simulation_to_handle(*ppSimState));
+            pFunctionality->pDeinitializeFn(simulation_to_handle(*ppSimState));
         }
-        if (passedStates.created && functionality.pDestroyFn) {
-            functionality.pDeinitializeFn(simulation_to_handle(*ppSimState));
+        if (passedStates.created && pFunctionality->pDestroyFn) {
+            pFunctionality->pDeinitializeFn(simulation_to_handle(*ppSimState));
         }
 
         (*ppSimState)->simSync.unlock();
@@ -287,18 +287,18 @@ extern "C" foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const
         for (; ppSimState != ppEndSimState; --ppSimState) {
             acquireExclusiveLock(*ppSimState, "functionality deregistration");
 
-            if (functionality.pDeinitializeGraphicsFn &&
+            if (pFunctionality->pDeinitializeGraphicsFn &&
                 foeSimulationIsGraphicsInitialzied(simulation_to_handle(*ppSimState))) {
-                functionality.pDeinitializeGraphicsFn(simulation_to_handle(*ppSimState));
+                pFunctionality->pDeinitializeGraphicsFn(simulation_to_handle(*ppSimState));
             }
 
-            if (functionality.pDeinitializeFn &&
+            if (pFunctionality->pDeinitializeFn &&
                 foeSimulationIsInitialized(simulation_to_handle(*ppSimState))) {
-                functionality.pDeinitializeFn(simulation_to_handle(*ppSimState));
+                pFunctionality->pDeinitializeFn(simulation_to_handle(*ppSimState));
             }
 
-            if (functionality.pDestroyFn) {
-                functionality.pDestroyFn(simulation_to_handle(*ppSimState));
+            if (pFunctionality->pDestroyFn) {
+                pFunctionality->pDestroyFn(simulation_to_handle(*ppSimState));
             }
             (*ppSimState)->simSync.unlock();
         }

@@ -36,7 +36,7 @@ typedef foeResultSet (*PFN_foeSimulationInitializeGraphics)(foeSimulation, foeGf
 /// @return Number of warnings/errors the occurred during the call.
 typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulation);
 
-struct foeSimulationFunctionalty {
+typedef struct foeSimulationFunctionalty {
     /// The UUID of the functionality, must be valid/derived from the FOE_PLUGIN_ID macro
     foeSimulationUUID id;
     /// Called on any created SimulationState, to create related data pools, uninitialized systems.
@@ -56,7 +56,7 @@ struct foeSimulationFunctionalty {
     /// To be called when a graphics session is being removed from a simulation. Bool returns
     /// whether it completed cleanly.
     PFN_foeSimulationDeinitializeGraphics pDeinitializeGraphicsFn;
-};
+} foeSimulationFunctionalty;
 
 /**
  * @brief Attempts to register a set of simulation functionality globally
@@ -75,7 +75,7 @@ struct foeSimulationFunctionalty {
  * and is then not considered registered.
  */
 FOE_SIM_EXPORT
-foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
+foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const *pFunctionality);
 
 /**
  * @brief Attempts to deregister a set of simulation functionality globally

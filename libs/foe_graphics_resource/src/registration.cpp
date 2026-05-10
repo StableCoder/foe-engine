@@ -702,7 +702,7 @@ extern "C" foeResultSet foeGraphicsResourceRegisterFunctionality() {
     FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_VERBOSE,
             "foeGraphicsResourceRegisterFunctionality - Starting to register functionality")
 
-    foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeSimulationFunctionalty functionality = {
         .id = foeGraphicsResourceFunctionalityID(),
         .pCreateFn = create,
         .pDestroyFn = destroy,
@@ -710,7 +710,9 @@ extern "C" foeResultSet foeGraphicsResourceRegisterFunctionality() {
         .pDeinitializeFn = deinitialize,
         .pInitializeGraphicsFn = initializeGraphics,
         .pDeinitializeGraphicsFn = deinitializeGraphics,
-    });
+    };
+
+    foeResultSet result = foeRegisterFunctionality(&functionality);
 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

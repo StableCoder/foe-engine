@@ -17,44 +17,49 @@ constexpr foeSimulationUUID cTestFunctionalityID = FOE_PLUGIN_ID(0);
 
 TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
     SECTION("Registering and deregistering the same set succeeds") {
-        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                                             .id = cTestFunctionalityID,
-                                             .pCreateFn = pCreateFn,
-                                             .pDestroyFn = pDestroyFn,
-                                         })
-                    .value == FOE_SUCCESS);
+        foeSimulationFunctionalty functionality = {
+            .id = cTestFunctionalityID,
+            .pCreateFn = pCreateFn,
+            .pDestroyFn = pDestroyFn,
+        };
+
+        REQUIRE(foeRegisterFunctionality(&functionality).value == FOE_SUCCESS);
 
         REQUIRE(foeDeregisterFunctionality(cTestFunctionalityID).value == FOE_SUCCESS);
     }
 
     SECTION("Registering functionality with a invalid IDs fails") {
-        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                                             .id = -1,
-                                             .pCreateFn = pCreateFn,
-                                             .pDestroyFn = pDestroyFn,
-                                         })
-                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
+        foeSimulationFunctionalty functionality = {
+            .id = -1,
+            .pCreateFn = pCreateFn,
+            .pDestroyFn = pDestroyFn,
+        };
 
-        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                                             .id = -cTestFunctionalityID,
-                                             .pCreateFn = pCreateFn,
-                                             .pDestroyFn = pDestroyFn,
-                                         })
-                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
+        REQUIRE(foeRegisterFunctionality(&functionality).value == FOE_SIMULATION_ERROR_ID_INVALID);
 
-        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                                             .id = cTestFunctionalityID + 1,
-                                             .pCreateFn = pCreateFn,
-                                             .pDestroyFn = pDestroyFn,
-                                         })
-                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
+        functionality = {
+            .id = -cTestFunctionalityID,
+            .pCreateFn = pCreateFn,
+            .pDestroyFn = pDestroyFn,
+        };
 
-        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                                             .id = cTestFunctionalityID - 1,
-                                             .pCreateFn = pCreateFn,
-                                             .pDestroyFn = pDestroyFn,
-                                         })
-                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
+        REQUIRE(foeRegisterFunctionality(&functionality).value == FOE_SIMULATION_ERROR_ID_INVALID);
+
+        functionality = {
+            .id = cTestFunctionalityID + 1,
+            .pCreateFn = pCreateFn,
+            .pDestroyFn = pDestroyFn,
+        };
+
+        REQUIRE(foeRegisterFunctionality(&functionality).value == FOE_SIMULATION_ERROR_ID_INVALID);
+
+        functionality = {
+            .id = cTestFunctionalityID - 1,
+            .pCreateFn = pCreateFn,
+            .pDestroyFn = pDestroyFn,
+        };
+
+        REQUIRE(foeRegisterFunctionality(&functionality).value == FOE_SIMULATION_ERROR_ID_INVALID);
     }
 
     SECTION("Deregistering what wasn't registered fails") {
