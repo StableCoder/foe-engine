@@ -5,12 +5,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include <foe/simulation/registration.h>
 #include <foe/simulation/result.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 #include <foe/type_defs.h>
 
 namespace {
-foeResultSet pCreateFn(foeSimulation *) { return {}; }
-size_t pDestroyFn(foeSimulation *) { return 0; }
+foeResultSet pCreateFn(foeSimulation) { return {}; }
+size_t pDestroyFn(foeSimulation) { return 0; }
 } // namespace
 
 constexpr foeSimulationUUID cTestFunctionalityID = FOE_PLUGIN_ID(0);
@@ -65,25 +65,25 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
 
 TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
           "[foe][simulation]") {
-    foeSimulation *pSimState{nullptr};
+    foeSimulation testSimulation{FOE_NULL_HANDLE};
 
-    REQUIRE(foeCreateSimulation(false, &pSimState).value == FOE_SUCCESS);
+    REQUIRE(foeCreateSimulation(false, &testSimulation).value == FOE_SUCCESS);
 
-    REQUIRE(pSimState != nullptr);
-    REQUIRE(pSimState->resourceNameMap == FOE_NULL_HANDLE);
-    REQUIRE(pSimState->entityNameMap == FOE_NULL_HANDLE);
+    REQUIRE(testSimulation != nullptr);
+    REQUIRE(foeSimulationGetResourceNameMap(testSimulation) == FOE_NULL_HANDLE);
+    REQUIRE(foeSimulationGetEntityNameMap(testSimulation) == FOE_NULL_HANDLE);
 
-    REQUIRE(foeDestroySimulation(pSimState).value == FOE_SUCCESS);
+    REQUIRE(foeDestroySimulation(testSimulation).value == FOE_SUCCESS);
 }
 
 TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe][simulation]") {
-    foeSimulation *pSimState{nullptr};
+    foeSimulation testSimulation{FOE_NULL_HANDLE};
 
-    REQUIRE(foeCreateSimulation(true, &pSimState).value == FOE_SUCCESS);
+    REQUIRE(foeCreateSimulation(true, &testSimulation).value == FOE_SUCCESS);
 
-    REQUIRE(pSimState != nullptr);
-    REQUIRE(pSimState->resourceNameMap != FOE_NULL_HANDLE);
-    REQUIRE(pSimState->entityNameMap != FOE_NULL_HANDLE);
+    REQUIRE(testSimulation != nullptr);
+    REQUIRE(foeSimulationGetResourceNameMap(testSimulation) != FOE_NULL_HANDLE);
+    REQUIRE(foeSimulationGetEntityNameMap(testSimulation) != FOE_NULL_HANDLE);
 
-    REQUIRE(foeDestroySimulation(pSimState).value == FOE_SUCCESS);
+    REQUIRE(foeDestroySimulation(testSimulation).value == FOE_SUCCESS);
 }

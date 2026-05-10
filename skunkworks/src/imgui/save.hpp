@@ -1,21 +1,23 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #ifndef IMGUI_SAVE_HPP
 #define IMGUI_SAVE_HPP
 
+#include <foe/handle.h>
 #include <foe/imex/exporters.h>
 
 #include <memory>
 
+FOE_DEFINE_HANDLE(foeSimulation)
+
 struct ImGuiContext;
 class foeImGuiState;
-struct foeSimulation;
 
 class foeImGuiSave {
   public:
-    void setSimulationState(foeSimulation *pSimulation);
+    void setSimulationState(foeSimulation simulation);
     void clearSimulationState();
 
     bool registerUI(foeImGuiState *pState);
@@ -27,7 +29,7 @@ class foeImGuiSave {
                                    char const *pMenuName);
     static void renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData);
 
-    foeSimulation *mpSimulationState{nullptr};
+    foeSimulation mSimulation{FOE_NULL_HANDLE};
 
     uint32_t mNumExporters{0};
     uint32_t mSelectedExporter{0};

@@ -1,11 +1,11 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "bringup_registration.hpp"
 
 #include <foe/simulation/imgui/registrar.hpp>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "../simulation/armature_state.h"
 #include "../simulation/armature_state_pool.h"
@@ -16,10 +16,10 @@
 
 namespace {
 
-void imgui_foeSkunkworksComponents(foeEntityID entity, foeSimulation const *pSimulation) {
+void imgui_foeSkunkworksComponents(foeEntityID entity, foeSimulation simulation) {
     // foeArmatureState
     if (foeArmatureStatePool componentPool = (foeArmatureStatePool)foeSimulationGetComponentPool(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
         componentPool != FOE_NULL_HANDLE) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
@@ -36,7 +36,7 @@ void imgui_foeSkunkworksComponents(foeEntityID entity, foeSimulation const *pSim
 
     // foeRenderState
     if (foeRenderStatePool componentPool = (foeRenderStatePool)foeSimulationGetComponentPool(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
         componentPool != FOE_NULL_HANDLE) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);

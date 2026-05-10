@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,15 +6,16 @@
 #define FOE_SIMULATION_IMGUI_REGISTRAR_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/handle.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/resource.h>
 #include <foe/simulation/imgui/export.h>
 
-#include <functional>
 #include <mutex>
 #include <vector>
 
-struct foeSimulation;
+FOE_DEFINE_HANDLE(foeSimulation)
+
 struct foeComponentPoolBase;
 struct foeResourceLoaderBase;
 
@@ -32,7 +33,7 @@ struct foeResourceLoaderBase;
  */
 class foeSimulationImGuiRegistrar {
   public:
-    using ComponentFn = void (*)(foeEntityID, foeSimulation const *);
+    using ComponentFn = void (*)(foeEntityID, foeSimulation);
     using ResourceFn = void (*)(foeResourceBase const *);
     using ResourceCreateInfoFn = void (*)(foeResourceCreateInfo);
     using LoaderFn = void (*)(foeResourceID, foeResourceLoaderBase **, size_t);
@@ -70,7 +71,7 @@ class foeSimulationImGuiRegistrar {
      * @param pSimulation is a pointer to the simulation to search for the entity
      */
     FOE_SIM_IMGUI_EXPORT
-    void displayEntity(foeEntityID entity, foeSimulation const *pSimulation);
+    void displayEntity(foeEntityID entity, foeSimulation simulation);
 
     /** @brief Attempts to render resources associated with the ID
      * @param pResourceData The resource data to be displayed

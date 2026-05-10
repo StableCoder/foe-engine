@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,17 +13,17 @@
 extern "C" {
 #endif
 
-typedef struct foeSimulation foeSimulation;
+FOE_DEFINE_HANDLE(foeSimulation)
 
 foeResultSet export_foeRenderState(foeEntityID entity,
-                                   foeSimulation const *pSimulation,
+                                   foeSimulation simulation,
                                    foeImexBinarySet *pBinarySet);
 
 foeResultSet import_foeRenderState(void const *pReadBuffer,
                                    uint32_t *pReadSize,
                                    foeEcsGroupTranslator groupTranslator,
                                    foeEntityID entity,
-                                   foeSimulation const *pSimulation);
+                                   foeSimulation simulation);
 
 #ifdef __cplusplus
 }

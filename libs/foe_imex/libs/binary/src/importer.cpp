@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -261,7 +261,7 @@ foeResultSet binary_read_EditorName(foeIdIndex indexID,
 
 foeResultSet importStateData(foeImexImporter importer,
                              foeEcsNameMap nameMap,
-                             foeSimulation const *pSimulation) {
+                             foeSimulation simulation) {
     foeBinaryImporter *pImporter = importer_from_handle(importer);
     size_t totalDataSize =
         pImporter->fileHeader.fileDataOffset - pImporter->fileHeader.entityDataOffset;
@@ -350,7 +350,7 @@ foeResultSet importStateData(foeImexImporter importer,
 
             uint32_t processedSize = dataSize;
             result = importSearchIt->second(pData, &processedSize, pImporter->groupTranslator,
-                                            entity, pSimulation);
+                                            entity, simulation);
             if (result.value != FOE_SUCCESS)
                 return result;
 

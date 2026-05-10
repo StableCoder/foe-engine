@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,7 @@
 
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.h"
@@ -39,12 +39,12 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceCreateInfo createInfo) {
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation const *pSimulation) {
+std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation simulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     // ArmatureState
     foeArmatureStatePool armatureStatePool = (foeArmatureStatePool)foeSimulationGetComponentPool(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
     if (armatureStatePool) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(armatureStatePool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(armatureStatePool);
@@ -65,7 +65,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation c
 
     // RenderState
     foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
     if (renderStatePool) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(renderStatePool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(renderStatePool);

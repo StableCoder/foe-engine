@@ -18,6 +18,8 @@
 #include "log.hpp"
 #include "result.h"
 
+#include <memory>
+
 foeResultSet foeMeshLoader::initialize(foeResourcePool resourcePool,
                                        void *pExternalFileSearchContext,
                                        PFN_foeSimulationExternalFileSearch pfnExternalFileSearch) {

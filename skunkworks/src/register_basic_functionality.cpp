@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,7 +9,7 @@
 #include <foe/graphics/resource/registration.h>
 #include <foe/physics/registration.h>
 #include <foe/position/registration.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "result.h"
 #include "simulation/registration.h"

@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,11 +20,9 @@ std::array<char const *, 1> menuNameArr{
 
 }
 
-void foeImGuiSave::setSimulationState(foeSimulation *pSimulation) {
-    mpSimulationState = pSimulation;
-}
+void foeImGuiSave::setSimulationState(foeSimulation simulation) { mSimulation = simulation; }
 
-void foeImGuiSave::clearSimulationState() { mpSimulationState = nullptr; }
+void foeImGuiSave::clearSimulationState() { mSimulation = nullptr; }
 
 bool foeImGuiSave::registerUI(foeImGuiState *pState) {
     return pState->addUI(this, foeImGuiSave::renderMenuElements, foeImGuiSave::renderCustomUI,
@@ -44,10 +42,10 @@ bool foeImGuiSave::renderMenuElements(ImGuiContext *pImGuiContext,
     std::string_view menuName{pMenuName};
 
     if (menuName == "File") {
-        if (ImGui::MenuItem("Save", nullptr, false, pData->mpSimulationState != nullptr)) {
+        if (ImGui::MenuItem("Save", nullptr, false, pData->mSimulation != nullptr)) {
             pData->mSaveConfirmDialog = true;
         }
-        if (ImGui::MenuItem("Save As...", nullptr, false, pData->mpSimulationState != nullptr)) {
+        if (ImGui::MenuItem("Save As...", nullptr, false, pData->mSimulation != nullptr)) {
             pData->mChooseExporterDialog = true;
         }
 
@@ -127,7 +125,7 @@ void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) 
             std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
 
             pData->mpExporters[pData->mSelectedExporter].pExportFn(filePathName.data(),
-                                                                   pData->mpSimulationState);
+                                                                   pData->mSimulation);
 
             // action
             ImGui::CloseCurrentPopup();
@@ -159,7 +157,7 @@ void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) 
                 // Need to deal with case of having no available exporters
                 std::abort();
             }
-            pExporters[0].pExportFn("testExport", pData->mpSimulationState);
+            pExporters[0].pExportFn("testExport", pData->mSimulation);
 
             ImGui::CloseCurrentPopup();
         }

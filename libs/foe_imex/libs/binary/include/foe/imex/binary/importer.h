@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2023 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-typedef struct foeSimulation foeSimulation;
+FOE_DEFINE_HANDLE(foeSimulation)
 
 typedef foeResultSet (*PFN_foeImexBinaryImportResource)(void const *,
                                                         uint32_t *,
@@ -22,7 +22,7 @@ typedef foeResultSet (*PFN_foeImexBinaryImportResource)(void const *,
                                                         foeResourceCreateInfo *);
 
 typedef foeResultSet (*PFN_foeImexBinaryImportComponent)(
-    void const *, uint32_t *, foeEcsGroupTranslator, foeEntityID, foeSimulation const *);
+    void const *, uint32_t *, foeEcsGroupTranslator, foeEntityID, foeSimulation);
 
 FOE_IMEX_BINARY_EXPORT
 foeResultSet foeCreateBinaryImporter(foeIdGroup group,

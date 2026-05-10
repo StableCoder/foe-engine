@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,17 +6,19 @@
 #define IMGUI_RESOURCE_LIST_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/handle.h>
 
 #include <vector>
 
+FOE_DEFINE_HANDLE(foeSimulation)
+
 class foeImGuiState;
-struct foeSimulation;
 class foeSimulationImGuiRegistrar;
 struct ImGuiContext;
 
 class foeImGuiResourceList {
   public:
-    foeImGuiResourceList(foeSimulation *pSimulation, foeSimulationImGuiRegistrar *pRegistrar);
+    foeImGuiResourceList(foeSimulation simulation, foeSimulationImGuiRegistrar *pRegistrar);
 
     bool registerUI(foeImGuiState *pState);
     void deregisterUI(foeImGuiState *pState);
@@ -37,7 +39,7 @@ class foeImGuiResourceList {
     void displayOpenResources();
     bool displayResource(ResourceDisplayData *pData);
 
-    foeSimulation *mpSimulationState;
+    foeSimulation mSimulation;
     foeSimulationImGuiRegistrar *mpRegistrar;
 
     bool mOpen{false};

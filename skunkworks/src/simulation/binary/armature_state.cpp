@@ -1,10 +1,10 @@
-// Copyright (C) 2022-2023 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "armature_state.h"
 
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "../armature.hpp"
 #include "../armature_state.h"
@@ -13,13 +13,13 @@
 #include "result.h"
 
 extern "C" foeResultSet export_foeArmatureState(foeEntityID entity,
-                                                foeSimulation const *pSimulation,
+                                                foeSimulation simulation,
                                                 foeImexBinarySet *pBinarySet) {
     foeResultSet result = to_foeResult(FOE_SKUNKWORKS_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
     foeArmatureStatePool componentPool = (foeArmatureStatePool)foeSimulationGetComponentPool(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
     if (componentPool != FOE_NULL_HANDLE) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
@@ -59,9 +59,9 @@ extern "C" foeResultSet import_foeArmatureState(void const *pReadBuffer,
                                                 uint32_t *pReadSize,
                                                 foeEcsGroupTranslator groupTranslator,
                                                 foeEntityID entity,
-                                                foeSimulation const *pSimulation) {
+                                                foeSimulation simulation) {
     foeArmatureStatePool componentPool = (foeArmatureStatePool)foeSimulationGetComponentPool(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
     if (componentPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_SKUNKWORKS_BINARY_ERROR_ARMATURE_STATE_POOL_NOT_FOUND);
 

@@ -41,8 +41,7 @@ target_sources(
          include/foe/simulation/resource_create_info_history.h
          include/foe/simulation/resource_create_info_pool.h
          include/foe/simulation/result.h
-         include/foe/simulation/simulation.hpp
-         include/foe/simulation/type_defs.h)
+         include/foe/simulation/simulation.h)
 
 add_subdirectory(src)
 

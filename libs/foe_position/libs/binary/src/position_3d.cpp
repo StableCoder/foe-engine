@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2023 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,18 +8,20 @@
 #include <foe/position/component/3d.hpp>
 #include <foe/position/component/3d_pool.h>
 #include <foe/position/type_defs.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "result.h"
 
+#include <memory>
+
 extern "C" foeResultSet export_foePosition3D(foeEntityID entity,
-                                             foeSimulation const *pSimulation,
+                                             foeSimulation simulation,
                                              foeImexBinarySet *pBinarySets) {
     foeResultSet result = to_foeResult(FOE_POSITION_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
     foePosition3dPool componentPool = (foePosition3dPool)foeSimulationGetComponentPool(
-        pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+        simulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
     if (componentPool != FOE_NULL_HANDLE) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
@@ -60,9 +62,9 @@ extern "C" foeResultSet import_foePosition3D(void const *pReadBuffer,
                                              uint32_t *pReadSize,
                                              foeEcsGroupTranslator groupTranslator,
                                              foeEntityID entity,
-                                             foeSimulation const *pSimulation) {
+                                             foeSimulation simulation) {
     foePosition3dPool componentPool = (foePosition3dPool)foeSimulationGetComponentPool(
-        pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+        simulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
     if (componentPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_POSITION_BINARY_ERROR_POSITION_3D_POOL_NOT_FOUND);
 

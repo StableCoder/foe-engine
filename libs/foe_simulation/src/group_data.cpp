@@ -288,8 +288,8 @@ extern "C" foeEcsIndexes foeSimulationTemporaryResourceIndexes(foeGroupData grou
     return pGroupData->mTemporaryResourceIndexes;
 }
 
-extern "C" foeResourceCreateInfo foeSimulationGetResourceCreateInfo(foeGroupData groupData,
-                                                                    foeId id) {
+extern "C" foeResourceCreateInfo foeSimulationGetGroupDataResourceCreateInfo(foeGroupData groupData,
+                                                                             foeId id) {
     GroupData *pGroupData = group_data_from_handle(groupData);
 
     if (pGroupData->mPersistentImporter != nullptr) {

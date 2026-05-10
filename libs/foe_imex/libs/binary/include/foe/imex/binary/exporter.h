@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,17 +6,18 @@
 #define FOE_IMEX_BINARY_EXPORTER_H
 
 #include <foe/ecs/id.h>
+#include <foe/handle.h>
 #include <foe/imex/binary/export.h>
 #include <foe/resource/create_info.h>
 #include <foe/result.h>
 
 #include <stdint.h>
 
-typedef struct foeSimulation foeSimulation;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+FOE_DEFINE_HANDLE(foeSimulation)
 
 typedef struct foeImexBinarySet {
     char const *pKey;
@@ -34,7 +35,7 @@ typedef foeResultSet (*PFN_foeImexBinaryExportResource)(foeResourceCreateInfo,
                                                         foeImexBinaryFiles *);
 
 typedef foeResultSet (*PFN_foeImexBinaryExportComponent)(foeEntityID,
-                                                         foeSimulation const *,
+                                                         foeSimulation,
                                                          foeImexBinarySet *);
 
 FOE_IMEX_BINARY_EXPORT

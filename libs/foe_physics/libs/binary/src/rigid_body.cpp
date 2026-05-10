@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2023 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,20 +7,20 @@
 #include <foe/physics/binary.h>
 #include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/type_defs.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "result.h"
 
 #include <algorithm>
 
 extern "C" foeResultSet export_foeRigidBody(foeEntityID entity,
-                                            foeSimulation const *pSimulation,
+                                            foeSimulation simulation,
                                             foeImexBinarySet *pBinarySets) {
     foeResultSet result = to_foeResult(FOE_PHYSICS_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
     foeRigidBodyPool rigidBodyPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
-        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+        simulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
     if (rigidBodyPool != FOE_NULL_HANDLE) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(rigidBodyPool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(rigidBodyPool);
@@ -62,9 +62,9 @@ extern "C" foeResultSet import_foeRigidBody(void const *pReadBuffer,
                                             uint32_t *pReadSize,
                                             foeEcsGroupTranslator groupTranslator,
                                             foeEntityID entity,
-                                            foeSimulation const *pSimulation) {
+                                            foeSimulation simulation) {
     foeRigidBodyPool componentPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
-        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+        simulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
     if (componentPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_PHYSICS_BINARY_ERROR_RIGID_BODY_POOL_NOT_FOUND);
 

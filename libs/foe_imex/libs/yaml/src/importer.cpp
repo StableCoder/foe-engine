@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -237,7 +237,7 @@ foeResultSet getGroupResourceIndexData(foeImexImporter importer, foeEcsIndexes i
 
 foeResultSet importStateData(foeImexImporter importer,
                              foeEcsNameMap nameMap,
-                             foeSimulation const *pSimulation) {
+                             foeSimulation simulation) {
     foeYamlImporter *pImporter = importer_from_handle(importer);
 
     if (!std::filesystem::exists(pImporter->mRootDir / entityDirectoryPath))
@@ -289,7 +289,7 @@ foeResultSet importStateData(foeImexImporter importer,
 
                 auto searchIt = componentFnMap.find(key);
                 if (searchIt != componentFnMap.end()) {
-                    searchIt->second(entityNode, pImporter->mGroupTranslator, entity, pSimulation);
+                    searchIt->second(entityNode, pImporter->mGroupTranslator, entity, simulation);
                 } else {
                     FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                             "Failed to find importer for '{}' component key for {} entity ({})",

@@ -1,10 +1,10 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/imex/yaml/importer.hpp>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 #include <foe/yaml/exception.hpp>
 
 #include "test_common.hpp"
@@ -15,7 +15,7 @@ namespace {
 bool importIdComponent(YAML::Node const &node,
                        foeEcsGroupTranslator groupTranslator,
                        foeEntityID entity,
-                       foeSimulation const *pSimulation) {
+                       foeSimulation simulation) {
     if (auto dataNode = node[cNodeKey]; dataNode) {
         try {
             foeId readID;

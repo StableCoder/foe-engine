@@ -11,7 +11,7 @@
 #include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include <array>
 #include <mutex>

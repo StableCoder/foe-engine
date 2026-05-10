@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,18 +8,18 @@
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/position/component/3d_pool.h>
 #include <foe/position/type_defs.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "3d.hpp"
 #include "result.h"
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation const *pSimulation) {
+std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation simulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     foePosition3dPool componentPool = (foePosition3dPool)foeSimulationGetComponentPool(
-        pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+        simulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
     if (componentPool != FOE_NULL_HANDLE) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);

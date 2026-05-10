@@ -59,7 +59,7 @@ FOE_SIM_EXPORT
 foeEcsIndexes foeSimulationTemporaryResourceIndexes(foeGroupData groupData);
 
 FOE_SIM_EXPORT
-foeResourceCreateInfo foeSimulationGetResourceCreateInfo(foeGroupData groupData, foeId id);
+foeResourceCreateInfo foeSimulationGetGroupDataResourceCreateInfo(foeGroupData groupData, foeId id);
 
 FOE_SIM_EXPORT
 foeResultSet foeSimulationFindExternalFile(foeGroupData groupData,

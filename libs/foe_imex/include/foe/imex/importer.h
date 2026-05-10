@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,8 +17,7 @@
 #include <foe/type_defs.h>
 
 FOE_DEFINE_HANDLE(foeImexImporter)
-
-struct foeSimulation;
+FOE_DEFINE_HANDLE(foeSimulation)
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +36,7 @@ typedef struct foeImexImporterCalls {
     foeResultSet (*getDependencies)(foeImexImporter, uint32_t *, foeIdGroup *, uint32_t *, char *);
     foeResultSet (*getGroupEntityIndexData)(foeImexImporter, foeEcsIndexes);
     foeResultSet (*getGroupResourceIndexData)(foeImexImporter, foeEcsIndexes);
-    foeResultSet (*importStateData)(foeImexImporter, foeEcsNameMap, struct foeSimulation const *);
+    foeResultSet (*importStateData)(foeImexImporter, foeEcsNameMap, foeSimulation);
 
     foeResultSet (*getResourceEditorName)(foeImexImporter, foeResourceID, uint32_t *, char *);
     foeResultSet (*getResourceCreateInfo)(foeImexImporter, foeResourceID, foeResourceCreateInfo *);
@@ -75,7 +74,7 @@ foeResultSet foeImexImporterGetGroupResourceIndexData(foeImexImporter importer,
 FOE_IMEX_EXPORT
 foeResultSet foeImexImporterGetStateData(foeImexImporter importer,
                                          foeEcsNameMap entityNameMap,
-                                         struct foeSimulation const *pSimulation);
+                                         foeSimulation simulation);
 
 FOE_IMEX_EXPORT
 foeResultSet foeImexImporterGetResourceEditorName(foeImexImporter importer,

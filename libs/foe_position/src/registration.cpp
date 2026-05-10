@@ -8,18 +8,18 @@
 #include <foe/position/component/3d_pool.h>
 #include <foe/position/type_defs.h>
 #include <foe/simulation/registration.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "log.hpp"
 #include "result.h"
 
 namespace {
 
-foeResultSet create(foeSimulation *pSimulation) {
+foeResultSet create(foeSimulation simulation) {
     foeResultSet result;
 
     // Components Pools
-    result = foeSimulationIncrementRefCount(pSimulation,
+    result = foeSimulationIncrementRefCount(simulation,
                                             FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, nullptr);
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
@@ -40,7 +40,7 @@ foeResultSet create(foeSimulation *pSimulation) {
             goto CREATE_FAILED;
         }
 
-        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        result = foeSimulationInsertComponentPool(simulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             foeEcsDestroyComponentPool((foeEcsComponentPool)createInfo.pComponentPool);
 
@@ -48,11 +48,11 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foePosition, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foePosition3dPool on Simulation {} due to {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL,
+        foeSimulationIncrementRefCount(simulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL,
                                        nullptr);
     }
 
@@ -60,13 +60,13 @@ CREATE_FAILED:
     return result;
 }
 
-size_t destroy(foeSimulation *pSimulation) {
+size_t destroy(foeSimulation simulation) {
     size_t count;
     size_t errors = 0;
     foeResultSet result;
 
     // Component Pools
-    result = foeSimulationDecrementRefCount(pSimulation,
+    result = foeSimulationDecrementRefCount(simulation,
                                             FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, &count);
     if (result.value != FOE_SUCCESS) {
         // Trying to destroy something that doesn't exist? Not optimal
@@ -79,7 +79,7 @@ size_t destroy(foeSimulation *pSimulation) {
     } else if (count == 0) {
         foePosition3dPool componentPool;
         result = foeSimulationReleaseComponentPool(
-            pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, (void **)&componentPool);
+            simulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, (void **)&componentPool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

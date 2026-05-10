@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,9 +7,10 @@
 
 #include <foe/ecs/id.h>
 #include <foe/graphics/vk/render_graph.hpp>
+#include <foe/handle.h>
 #include <foe/result.h>
 
-struct foeSimulation;
+FOE_DEFINE_HANDLE(foeSimulation)
 
 foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                             char const *pJobName,
@@ -23,7 +24,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                             foeGfxVkRenderGraphJob const *pDepthRenderTargetUpstreamJobs,
                             VkImageLayout finalDepthLayout,
                             VkSampleCountFlags renderTargetSamples,
-                            foeSimulation *pSimulation,
+                            foeSimulation simulation,
                             VkDescriptorSet cameraDescriptor,
                             uint32_t frameIndex,
                             foeGfxVkRenderGraphJob *pRenderGraphJob);

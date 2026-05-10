@@ -9,7 +9,7 @@
 #include <foe/imex/result.h>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/imex/yaml/result.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "test_common.hpp"
 
@@ -190,34 +190,35 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     }
 
     SECTION("Entity State Data (foeImexImporterGetStateData)") {
-        foeSimulation *pTestSimulation{nullptr};
+        foeSimulation testSimulation = FOE_NULL_HANDLE;
 
-        foeResultSet result = foeCreateSimulation(true, &pTestSimulation);
+        foeResultSet result = foeCreateSimulation(true, &testSimulation);
         REQUIRE(result.value == FOE_SUCCESS);
-        REQUIRE(pTestSimulation != nullptr);
+        REQUIRE(testSimulation != nullptr);
 
         SECTION("With the importer plugin data not registered, the import fails") {
-            result = foeImexImporterGetStateData(testImporter, pTestSimulation->entityNameMap,
-                                                 pTestSimulation);
+            result = foeImexImporterGetStateData(
+                testImporter, foeSimulationGetEntityNameMap(testSimulation), testSimulation);
             CHECK(result.value == FOE_IMEX_YAML_ERROR_FAILED_TO_FIND_COMPONENT_IMPORTER);
         }
 
         SECTION("With the importer plugin data registered, the import succeeds") {
             REQUIRE(registerTestImporterContent());
 
-            result = foeImexImporterGetStateData(testImporter, pTestSimulation->entityNameMap,
-                                                 pTestSimulation);
+            result = foeImexImporterGetStateData(
+                testImporter, foeSimulationGetEntityNameMap(testSimulation), testSimulation);
             CHECK(result.value == FOE_SUCCESS);
 
             foeId id;
-            CHECK(foeEcsNameMapFindID(pTestSimulation->entityNameMap, "Entity-0x2", &id).value ==
-                  FOE_ECS_SUCCESS);
+            CHECK(foeEcsNameMapFindID(foeSimulationGetEntityNameMap(testSimulation), "Entity-0x2",
+                                      &id)
+                      .value == FOE_ECS_SUCCESS);
             REQUIRE(id == (foeIdPersistentGroup | 0x2));
 
             uint32_t strLength = 15;
             char cmpStr[15];
-            CHECK(foeEcsNameMapFindName(pTestSimulation->entityNameMap, foeIdPersistentGroup | 0x2,
-                                        &strLength, cmpStr)
+            CHECK(foeEcsNameMapFindName(foeSimulationGetEntityNameMap(testSimulation),
+                                        foeIdPersistentGroup | 0x2, &strLength, cmpStr)
                       .value == FOE_ECS_SUCCESS);
             CHECK(strLength == 11);
             CHECK(memcmp(cmpStr, "Entity-0x2", 11) == 0);
@@ -225,7 +226,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             deregisterTestImporterContent();
         }
 
-        foeDestroySimulation(pTestSimulation);
+        foeDestroySimulation(testSimulation);
     }
 
     SECTION("Finding external data file (foeImexImporterFindExternalFile)") {

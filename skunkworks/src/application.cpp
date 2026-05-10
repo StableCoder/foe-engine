@@ -25,7 +25,6 @@
 #include <foe/physics/system.h>
 #include <foe/physics/type_defs.h>
 #include <foe/quaternion_math.hpp>
-#include <foe/simulation/simulation.hpp>
 
 #include "graphics.hpp"
 #include "log.hpp"
@@ -150,7 +149,7 @@ int Application::initialize(int argc, char **argv) {
     if (result.value != FOE_SUCCESS)
         ERRC_END_PROGRAM
 
-    result = importState("persistent", &searchPaths, &pSimulationSet);
+    result = importState("persistent", &searchPaths, &simulation);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -182,16 +181,16 @@ int Application::initialize(int argc, char **argv) {
     demo.registerUI(&imguiState);
 #endif
 
-    uiSave.setSimulationState(pSimulationSet);
+    uiSave.setSimulationState(simulation);
 
     // Per SimState UI
-    pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{pSimulationSet});
+    pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{simulation});
     pSimGroupDataUI->registerUI(&imguiState);
 
-    pEntityListUI.reset(new foeImGuiEntityList{pSimulationSet, &imguiRegistrar});
+    pEntityListUI.reset(new foeImGuiEntityList{simulation, &imguiRegistrar});
     pEntityListUI->registerUI(&imguiState);
 
-    pResourceListUI.reset(new foeImGuiResourceList{pSimulationSet, &imguiRegistrar});
+    pResourceListUI.reset(new foeImGuiResourceList{simulation, &imguiRegistrar});
     pResourceListUI->registerUI(&imguiState);
 #endif
 
@@ -480,13 +479,13 @@ int Application::initialize(int argc, char **argv) {
 
     { // Initialize simulation
         foeSimulationInitInfo simInitInfo{
-            .pExternalFileSearchContext = pSimulationSet->groupData,
+            .pExternalFileSearchContext = foeSimulationGetGroupData(simulation),
             .pfnExternalFileSearch =
                 (PFN_foeSimulationExternalFileSearch)foeSimulationFindExternalFile,
         };
-        foeInitializeSimulation(pSimulationSet, &simInitInfo);
+        foeInitializeSimulation(simulation, &simInitInfo);
 
-        foeInitializeSimulationGraphics(pSimulationSet, gfxSession);
+        foeInitializeSimulationGraphics(simulation, gfxSession);
     }
 
     { // Load all available resources
@@ -496,8 +495,8 @@ int Application::initialize(int argc, char **argv) {
             foeScheduleAsyncTask(threadPool, task, pTaskContext);
         };
 
-        foeResourcePoolSetAsyncTaskCallback(pSimulationSet->resourcePool, (void *)threadPool,
-                                            asyncTaskFunc);
+        foeResourcePoolSetAsyncTaskCallback(foeSimulationGetResourcePool(simulation),
+                                            (void *)threadPool, asyncTaskFunc);
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -524,9 +523,9 @@ void Application::deinitialize() {
         foeGfxWaitIdle(gfxSession);
 
     // Deinit simulation
-    if (pSimulationSet) {
-        foeDeinitializeSimulationGraphics(pSimulationSet);
-        foeDeinitializeSimulation(pSimulationSet);
+    if (simulation) {
+        foeDeinitializeSimulationGraphics(simulation);
+        foeDeinitializeSimulation(simulation);
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -607,9 +606,9 @@ void Application::deinitialize() {
     deregisterImGui(&imguiRegistrar);
 #endif
 
-    if (pSimulationSet != nullptr)
-        foeDestroySimulation(pSimulationSet);
-    pSimulationSet = nullptr;
+    if (simulation != nullptr)
+        foeDestroySimulation(simulation);
+    simulation = nullptr;
 
     // Deregister functionality
     deregisterBasicFunctionality();
@@ -669,31 +668,32 @@ int Application::mainloop() {
             nextFireTime =
                 programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(6);
 
-            if constexpr (false) {
-                // Import the desired content
-                foeSimulation *tempSimulation = nullptr;
-                result = importState("theDataA", &searchPaths, &tempSimulation);
-                if (result.value != FOE_SUCCESS)
-                    std::abort();
+            // TEST SAVE
+            // if constexpr (false) {
+            //     // Import the desired content
+            //     foeSimulation *tempSimulation = nullptr;
+            //     result = importState("theDataA", &searchPaths, &tempSimulation);
+            //     if (result.value != FOE_SUCCESS)
+            //         std::abort();
 
-                for (auto &it : tempSimulation->componentPools) {
-                    if (it.pMaintenanceFn) {
-                        it.pMaintenanceFn(it.pComponentPool);
-                    }
-                }
+            //     for (auto &it : tempSimulation->componentPools) {
+            //         if (it.pMaintenanceFn) {
+            //             it.pMaintenanceFn(it.pComponentPool);
+            //         }
+            //     }
 
-                // Export the content
-                uint32_t numExporters;
-                foeImexGetExporters(&numExporters, nullptr);
-                std::unique_ptr<foeExporter[]> exporters(new foeExporter[numExporters]);
-                foeImexGetExporters(&numExporters, exporters.get());
+            //     // Export the content
+            //     uint32_t numExporters;
+            //     foeImexGetExporters(&numExporters, nullptr);
+            //     std::unique_ptr<foeExporter[]> exporters(new foeExporter[numExporters]);
+            //     foeImexGetExporters(&numExporters, exporters.get());
 
-                result = exporters[1].pExportFn("test-save", tempSimulation);
-                if (result.value != FOE_SUCCESS)
-                    std::abort();
+            //     result = exporters[1].pExportFn("test-save", tempSimulation);
+            //     if (result.value != FOE_SUCCESS)
+            //         std::abort();
 
-                foeDestroySimulation(tempSimulation);
-            }
+            //     foeDestroySimulation(tempSimulation);
+            // }
 
 #ifdef FOE_XR_SUPPORT
             if constexpr (false) {
@@ -722,31 +722,39 @@ int Application::mainloop() {
         }
 
         // Component Pool Maintenance
-        for (auto &it : pSimulationSet->componentPools) {
-            if (it.pMaintenanceFn) {
-                it.pMaintenanceFn(it.pComponentPool);
+        size_t componentPoolCount;
+        foeSimulationComponentPoolData *pComponentPools;
+        foeSimulationGetComponentPools(simulation, &componentPoolCount, &pComponentPools);
+        for (size_t i = 0; i < componentPoolCount; ++i) {
+            foeSimulationComponentPoolData *pComponentPool = pComponentPools + i;
+            if (pComponentPool->pMaintenanceFn) {
+                pComponentPool->pMaintenanceFn(pComponentPool->pComponentPool);
             }
         }
 
         // Resource Loader Maintenance
-        for (auto &it : pSimulationSet->resourceLoaders) {
-            if (it.pMaintenanceFn) {
-                it.pMaintenanceFn(it.pLoader);
+        size_t resourceLoaderCount;
+        foeSimulationLoaderData *pResourceLoaders;
+        foeSimulationGetResourceLoaders(simulation, &resourceLoaderCount, &pResourceLoaders);
+        for (size_t i = 0; i < resourceLoaderCount; ++i) {
+            foeSimulationLoaderData *pLoader = pResourceLoaders + i;
+            if (pLoader->pMaintenanceFn) {
+                pLoader->pMaintenanceFn(pLoader->pLoader);
             }
         }
 
         // Process systems
         foeProcessAnimatedBoneSystem(
             (foeAnimatedBoneSystem)foeSimulationGetSystem(
-                pSimulationSet, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM),
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM),
             timeElapsedInSec);
 
         foePhysicsProcessSystem((foePhysicsSystem)foeSimulationGetSystem(
-                                    pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM),
+                                    simulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM),
                                 timeElapsedInSec);
 
         foeProcessRenderSystem((foeRenderSystem)foeSimulationGetSystem(
-            pSimulationSet, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM));
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM));
 
         // Process Window Events
 #ifdef FOE_SKUNKWORKS_GLFW
@@ -1095,9 +1103,14 @@ int Application::mainloop() {
                 }
 
                 // Resource Loader Gfx Maintenance
-                for (auto &it : pSimulationSet->resourceLoaders) {
-                    if (it.pGfxMaintenanceFn) {
-                        it.pGfxMaintenanceFn(it.pLoader);
+                size_t resourceLoaderCount;
+                foeSimulationLoaderData *pResourceLoaders;
+                foeSimulationGetResourceLoaders(simulation, &resourceLoaderCount,
+                                                &pResourceLoaders);
+                for (size_t i = 0; i < resourceLoaderCount; ++i) {
+                    foeSimulationLoaderData *pResourceLoader = pResourceLoaders + i;
+                    if (pResourceLoader->pGfxMaintenanceFn) {
+                        pResourceLoader->pGfxMaintenanceFn(pResourceLoader->pLoader);
                     }
                 }
 
@@ -1399,7 +1412,7 @@ int Application::mainloop() {
             // Run Systems that generate graphics data
             foeProcessRenderSystemGraphics(
                 (foeRenderSystem)foeSimulationGetSystem(
-                    pSimulationSet, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM),
+                    simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM),
                 frameIndex);
 
 #ifdef FOE_XR_SUPPORT
@@ -1579,7 +1592,7 @@ int Application::mainloop() {
                             renderTargetColourImageResource, 1, &renderTargetColourImportJob,
                             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource, 1,
                             &renderTargetDepthImportJob, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                            xrData.sampleCount, pSimulationSet, viewDescriptorSet, frameIndex,
+                            xrData.sampleCount, simulation, viewDescriptorSet, frameIndex,
                             &xrRenderSceneJob);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
@@ -1731,7 +1744,7 @@ int Application::mainloop() {
                     renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource,
                     1, &renderTargetColourImportJob, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     renderTargetDepthImageResource, 1, &renderTargetDepthImportJob,
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, window.sampleCount, pSimulationSet,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, window.sampleCount, simulation,
                     cameraProjViewDescriptor, frameIndex, &renderSceneJobHandle);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM

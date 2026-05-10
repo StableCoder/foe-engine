@@ -1,11 +1,11 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "import_registration.h"
 
 #include <foe/imex/yaml/importer.hpp>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 #include <foe/yaml/exception.hpp>
 
 #include "../armature_state_imex.hpp"
@@ -23,11 +23,11 @@ namespace {
 bool importArmatureState(YAML::Node const &node,
                          foeEcsGroupTranslator groupTranslator,
                          foeEntityID entity,
-                         foeSimulation const *pSimulation) {
+                         foeSimulation simulation) {
     if (auto dataNode = node[yaml_armature_state_key()]; dataNode) {
         foeArmatureStatePool armatureStatePool =
             (foeArmatureStatePool)foeSimulationGetComponentPool(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
         if (armatureStatePool == FOE_NULL_HANDLE)
             return false;
@@ -52,10 +52,10 @@ bool importArmatureState(YAML::Node const &node,
 bool importRenderState(YAML::Node const &node,
                        foeEcsGroupTranslator groupTranslator,
                        foeEntityID entity,
-                       foeSimulation const *pSimulation) {
+                       foeSimulation simulation) {
     if (auto dataNode = node[yaml_render_state_key()]; dataNode) {
         foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
         if (renderStatePool == FOE_NULL_HANDLE)
             return false;

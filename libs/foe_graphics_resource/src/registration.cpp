@@ -8,7 +8,7 @@
 #include <foe/resource/pool.h>
 #include <foe/resource/resource_fns.h>
 #include <foe/simulation/registration.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "image_loader.hpp"
 #include "material_loader.hpp"
@@ -31,12 +31,12 @@ struct TypeSelection {
 };
 
 template <typename T>
-foeResultSet destroyItem(foeSimulation *pSimulation,
+foeResultSet destroyItem(foeSimulation simulation,
                          foeSimulationStructureType sType,
                          char const *pTypeName) {
     size_t count;
 
-    foeResultSet result = foeSimulationDecrementRefCount(pSimulation, sType, &count);
+    foeResultSet result = foeSimulationDecrementRefCount(simulation, sType, &count);
     if (result.value != FOE_SUCCESS) {
         // Trying to destroy something that doesn't exist? Not optimal
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
@@ -47,7 +47,7 @@ foeResultSet destroyItem(foeSimulation *pSimulation,
         return result;
     } else if (count == 0) {
         T *pLoader;
-        result = foeSimulationReleaseResourceLoader(pSimulation, sType, (void **)&pLoader);
+        result = foeSimulationReleaseResourceLoader(simulation, sType, (void **)&pLoader);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -63,21 +63,21 @@ foeResultSet destroyItem(foeSimulation *pSimulation,
     return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
-size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
+size_t destroySelection(foeSimulation simulation, TypeSelection const *pSelection) {
     size_t errors = 0;
     foeResultSet result;
 
     // Loaders
     if (pSelection == nullptr || pSelection->meshLoader) {
         result = destroyItem<foeMeshLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->vertexDescriptorLoader) {
         result = destroyItem<foeVertexDescriptorLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
             "foeVertexDescriptorLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
@@ -85,21 +85,21 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     if (pSelection == nullptr || pSelection->shaderLoader) {
         result = destroyItem<foeShaderLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, "foeShaderLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, "foeShaderLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->materialLoader) {
         result = destroyItem<foeMaterialLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, "foeMaterialLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, "foeMaterialLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->imageLoader) {
         result = destroyItem<foeImageLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, "foeImageLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, "foeImageLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
@@ -107,13 +107,13 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     return errors;
 }
 
-foeResultSet create(foeSimulation *pSimulation) {
+foeResultSet create(foeSimulation simulation) {
     foeResultSet result;
     TypeSelection selection = {};
 
     // Loaders
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, nullptr);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, nullptr);
     if (result.value != FOE_SUCCESS) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
@@ -128,7 +128,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         };
 
         if (loaderCI.pLoader != nullptr)
-            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+            result = foeSimulationInsertResourceLoader(simulation, &loaderCI);
         else
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
 
@@ -139,17 +139,17 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeImageLoader on Simulation {} due to {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation,
+        foeSimulationIncrementRefCount(simulation,
                                        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, nullptr);
     }
     selection.imageLoader = true;
 
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, nullptr);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, nullptr);
     if (result.value != FOE_SUCCESS) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
@@ -164,7 +164,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         };
 
         if (loaderCI.pLoader != nullptr)
-            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+            result = foeSimulationInsertResourceLoader(simulation, &loaderCI);
         else
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
 
@@ -175,17 +175,17 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeMaterialLoader on Simulation {} due to {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, nullptr);
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, nullptr);
     }
     selection.materialLoader = true;
 
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, nullptr);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, nullptr);
     if (result.value != FOE_SUCCESS) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
@@ -200,7 +200,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         };
 
         if (loaderCI.pLoader != nullptr)
-            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+            result = foeSimulationInsertResourceLoader(simulation, &loaderCI);
         else
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
 
@@ -211,17 +211,17 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeShaderLoader on Simulation {} due to {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation,
+        foeSimulationIncrementRefCount(simulation,
                                        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, nullptr);
     }
     selection.shaderLoader = true;
 
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER, nullptr);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER, nullptr);
     if (result.value != FOE_SUCCESS) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
@@ -236,7 +236,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         };
 
         if (loaderCI.pLoader != nullptr)
-            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+            result = foeSimulationInsertResourceLoader(simulation, &loaderCI);
         else
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
 
@@ -248,17 +248,17 @@ foeResultSet create(foeSimulation *pSimulation) {
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeVertexDescriptorLoader on Simulation {} "
                     "due to {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER, nullptr);
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER, nullptr);
     }
     selection.vertexDescriptorLoader = true;
 
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, nullptr);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, nullptr);
     if (result.value != FOE_SUCCESS) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
@@ -271,7 +271,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         };
 
         if (loaderCI.pLoader != nullptr)
-            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+            result = foeSimulationInsertResourceLoader(simulation, &loaderCI);
         else
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
 
@@ -282,18 +282,18 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeMeshLoader on Simulation {} due to {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation,
-                                       FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, nullptr);
+        foeSimulationIncrementRefCount(simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER,
+                                       nullptr);
     }
     selection.meshLoader = true;
 
 CREATE_FAILED:
     if (result.value != FOE_SUCCESS) {
-        size_t errors = destroySelection(pSimulation, &selection);
+        size_t errors = destroySelection(simulation, &selection);
         if (errors > 0)
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues destroying after failed creation", errors);
@@ -302,61 +302,61 @@ CREATE_FAILED:
     return result;
 }
 
-size_t destroy(foeSimulation *pSimulation) { return destroySelection(pSimulation, nullptr); }
+size_t destroy(foeSimulation simulation) { return destroySelection(simulation, nullptr); }
 
 template <typename T>
-foeResultSet deinitializeItem(foeSimulation *pSimulation,
+foeResultSet deinitializeItem(foeSimulation simulation,
                               foeSimulationStructureType sType,
                               char const *pTypeName) {
     size_t count;
 
-    foeResultSet result = foeSimulationDecrementInitCount(pSimulation, sType, &count);
+    foeResultSet result = foeSimulationDecrementInitCount(simulation, sType, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                 "Failed to decrement {} initialization count on Simulation {} "
                 "with error {}",
-                pTypeName, (void *)pSimulation, buffer);
+                pTypeName, (void *)simulation, buffer);
 
         return result;
     } else if (count == 0) {
-        auto pItem = (T *)foeSimulationGetResourceLoader(pSimulation, sType);
+        auto pItem = (T *)foeSimulationGetResourceLoader(simulation, sType);
         pItem->deinitialize();
     }
 
     return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
-size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
+size_t deinitializeSelection(foeSimulation simulation, TypeSelection const *pSelection) {
     size_t errors = 0;
     foeResultSet result;
 
     // Loaders
     if (pSelection == nullptr || pSelection->imageLoader) {
         result = deinitializeItem<foeImageLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, "foeImageLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, "foeImageLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->materialLoader) {
         result = deinitializeItem<foeMaterialLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, "foeMaterialLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, "foeMaterialLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->shaderLoader) {
         result = deinitializeItem<foeShaderLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, "foeShaderLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, "foeShaderLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->vertexDescriptorLoader) {
         result = deinitializeItem<foeVertexDescriptorLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
             "foeVertexDescriptorLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
@@ -364,7 +364,7 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
 
     if (pSelection == nullptr || pSelection->meshLoader) {
         result = deinitializeItem<foeMeshLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
@@ -372,14 +372,14 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     return errors;
 }
 
-foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
+foeResultSet initialize(foeSimulation simulation, foeSimulationInitInfo const *pInitInfo) {
     foeResultSet result;
     size_t count;
     TypeSelection selection = {};
 
     // Loaders
     result = foeSimulationIncrementInitCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, &count);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -391,11 +391,11 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     selection.imageLoader = true;
     if (count == 1) {
         auto *pLoader = (foeImageLoader *)foeSimulationGetResourceLoader(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
 
-        result =
-            pLoader->initialize(pSimulation->resourcePool, pInitInfo->pExternalFileSearchContext,
-                                pInitInfo->pfnExternalFileSearch);
+        result = pLoader->initialize(foeSimulationGetResourcePool(simulation),
+                                     pInitInfo->pExternalFileSearchContext,
+                                     pInitInfo->pfnExternalFileSearch);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -407,7 +407,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     }
 
     result = foeSimulationIncrementInitCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, &count);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -419,9 +419,9 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     selection.materialLoader = true;
     if (count == 1) {
         auto *pLoader = (foeMaterialLoader *)foeSimulationGetResourceLoader(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
 
-        result = pLoader->initialize(pSimulation->resourcePool);
+        result = pLoader->initialize(foeSimulationGetResourcePool(simulation));
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -433,91 +433,91 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     }
 
     result = foeSimulationIncrementInitCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, &count);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeShaderLoader initialization count on Simulation {} with "
                 "error {}",
-                (void *)pSimulation, buffer);
+                (void *)simulation, buffer);
 
         goto INITIALIZATION_FAILED;
     }
     selection.shaderLoader = true;
     if (count == 1) {
         auto *pLoader = (foeShaderLoader *)foeSimulationGetResourceLoader(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
 
-        result =
-            pLoader->initialize(pSimulation->resourcePool, pInitInfo->pExternalFileSearchContext,
-                                pInitInfo->pfnExternalFileSearch);
+        result = pLoader->initialize(foeSimulationGetResourcePool(simulation),
+                                     pInitInfo->pExternalFileSearchContext,
+                                     pInitInfo->pfnExternalFileSearch);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeShaderLoader on Simulation {} with error {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto INITIALIZATION_FAILED;
         }
     }
 
     result = foeSimulationIncrementInitCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER, &count);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeVertexDescriptorLoader initialization count on Simulation "
                 "{} with error {}",
-                (void *)pSimulation, buffer);
+                (void *)simulation, buffer);
 
         goto INITIALIZATION_FAILED;
     }
     selection.vertexDescriptorLoader = true;
     if (count == 1) {
         auto *pLoader = (foeVertexDescriptorLoader *)foeSimulationGetResourceLoader(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
 
-        result = pLoader->initialize(pSimulation->resourcePool);
+        result = pLoader->initialize(foeSimulationGetResourcePool(simulation));
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeVertexDescriptorLoader on Simulation {} with error {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto INITIALIZATION_FAILED;
         }
     }
 
     result = foeSimulationIncrementInitCount(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, &count);
+        simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeMeshLoader initialization count on Simulation {} with "
                 "error {}",
-                (void *)pSimulation, buffer);
+                (void *)simulation, buffer);
 
         goto INITIALIZATION_FAILED;
     }
     selection.meshLoader = true;
     if (count == 1) {
         auto *pLoader = (foeMeshLoader *)foeSimulationGetResourceLoader(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
 
-        result =
-            pLoader->initialize(pSimulation->resourcePool, pInitInfo->pExternalFileSearchContext,
-                                pInitInfo->pfnExternalFileSearch);
+        result = pLoader->initialize(foeSimulationGetResourcePool(simulation),
+                                     pInitInfo->pExternalFileSearchContext,
+                                     pInitInfo->pfnExternalFileSearch);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeMeshLoader on Simulation {} with error {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto INITIALIZATION_FAILED;
         }
@@ -525,7 +525,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
 
 INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
-        size_t errors = deinitializeSelection(pSimulation, &selection);
+        size_t errors = deinitializeSelection(simulation, &selection);
         if (errors > 0)
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues while deinitializing after failed initialization",
@@ -535,56 +535,54 @@ INITIALIZATION_FAILED:
     return result;
 }
 
-size_t deinitialize(foeSimulation *pSimulation) {
-    return deinitializeSelection(pSimulation, nullptr);
-}
+size_t deinitialize(foeSimulation simulation) { return deinitializeSelection(simulation, nullptr); }
 
 template <typename T>
-foeResultSet deinitializeGraphicsItem(foeSimulation *pSimulation,
+foeResultSet deinitializeGraphicsItem(foeSimulation simulation,
                                       foeSimulationStructureType sType,
                                       char const *pTypeName) {
     size_t count;
 
-    foeResultSet result = foeSimulationDecrementGfxInitCount(pSimulation, sType, &count);
+    foeResultSet result = foeSimulationDecrementGfxInitCount(simulation, sType, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                 "Failed to decrement {} graphics initialization count on Simulation {} with "
                 "error {}",
-                pTypeName, (void *)pSimulation, buffer);
+                pTypeName, (void *)simulation, buffer);
 
         return result;
     } else if (count == 0) {
-        auto *pItem = (T *)foeSimulationGetResourceLoader(pSimulation, sType);
+        auto *pItem = (T *)foeSimulationGetResourceLoader(simulation, sType);
         pItem->deinitializeGraphics();
     }
 
     return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
-size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
+size_t deinitializeGraphicsSelection(foeSimulation simulation, TypeSelection const *pSelection) {
     size_t errors = 0;
     foeResultSet result;
 
     // Loaders
     if (pSelection == nullptr || pSelection->imageLoader) {
         result = deinitializeGraphicsItem<foeImageLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, "foeImageLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, "foeImageLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->materialLoader) {
         result = deinitializeGraphicsItem<foeMaterialLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, "foeMaterialLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, "foeMaterialLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->vertexDescriptorLoader) {
         result = deinitializeGraphicsItem<foeVertexDescriptorLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
             "foeVertexDescriptorLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
@@ -592,14 +590,14 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
 
     if (pSelection == nullptr || pSelection->shaderLoader) {
         result = deinitializeGraphicsItem<foeShaderLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, "foeShaderLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, "foeShaderLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->meshLoader) {
         result = deinitializeGraphicsItem<foeMeshLoader>(
-            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");
+            simulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");
         if (result.value != FOE_SUCCESS)
             ++errors;
     }
@@ -608,31 +606,31 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
 }
 
 template <typename T>
-foeResultSet initializeGraphicsItem(foeSimulation *pSimulation,
+foeResultSet initializeGraphicsItem(foeSimulation simulation,
                                     foeGfxSession gfxSession,
                                     foeSimulationStructureType sType,
                                     char const *pTypeName) {
     size_t count;
 
-    foeResultSet result = foeSimulationIncrementGfxInitCount(pSimulation, sType, &count);
+    foeResultSet result = foeSimulationIncrementGfxInitCount(simulation, sType, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment graphics initialization for {} count on Simulation {} with "
                 "error {}",
-                pTypeName, (void *)pSimulation, buffer);
+                pTypeName, (void *)simulation, buffer);
 
         return result;
     } else if (count == 1) {
-        auto *pLoader = (T *)foeSimulationGetResourceLoader(pSimulation, sType);
+        auto *pLoader = (T *)foeSimulationGetResourceLoader(simulation, sType);
         result = pLoader->initializeGraphics(gfxSession);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed graphics initialization for {} on Simulation {} with error {}",
-                    pTypeName, (void *)pSimulation, buffer);
+                    pTypeName, (void *)simulation, buffer);
 
             return result;
         }
@@ -641,48 +639,48 @@ foeResultSet initializeGraphicsItem(foeSimulation *pSimulation,
     return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
-foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
+foeResultSet initializeGraphics(foeSimulation simulation, foeGfxSession gfxSession) {
     foeResultSet result;
     TypeSelection selection = {};
 
     // Loaders
     result = initializeGraphicsItem<foeImageLoader>(
-        pSimulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER,
+        simulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER,
         "foeImageLoader");
     if (result.value != FOE_SUCCESS)
         goto INITIALIZATION_FAILED;
     selection.imageLoader = true;
 
     result = initializeGraphicsItem<foeMaterialLoader>(
-        pSimulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER,
+        simulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER,
         "foeMaterialLoader");
     if (result.value != FOE_SUCCESS)
         goto INITIALIZATION_FAILED;
     selection.materialLoader = true;
 
     result = initializeGraphicsItem<foeShaderLoader>(
-        pSimulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER,
+        simulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER,
         "foeShaderLoader");
     if (result.value != FOE_SUCCESS)
         goto INITIALIZATION_FAILED;
     selection.shaderLoader = true;
 
     result = initializeGraphicsItem<foeVertexDescriptorLoader>(
-        pSimulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
+        simulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
         "foeVertexDescriptorLoader");
     if (result.value != FOE_SUCCESS)
         goto INITIALIZATION_FAILED;
     selection.vertexDescriptorLoader = true;
 
     result = initializeGraphicsItem<foeMeshLoader>(
-        pSimulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");
+        simulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");
     if (result.value != FOE_SUCCESS)
         goto INITIALIZATION_FAILED;
     selection.meshLoader = true;
 
 INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
-        size_t errors = deinitializeGraphicsSelection(pSimulation, &selection);
+        size_t errors = deinitializeGraphicsSelection(simulation, &selection);
         if (errors > 0)
             FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues deinitializing graphics after failed initialization",
@@ -692,8 +690,8 @@ INITIALIZATION_FAILED:
     return result;
 }
 
-size_t deinitializeGraphics(foeSimulation *pSimulation) {
-    return deinitializeGraphicsSelection(pSimulation, nullptr);
+size_t deinitializeGraphics(foeSimulation simulation) {
+    return deinitializeGraphicsSelection(simulation, nullptr);
 }
 
 } // namespace

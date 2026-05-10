@@ -13,6 +13,7 @@
 #include <foe/graphics/upload_context.h>
 #include <foe/result.h>
 #include <foe/search_paths.hpp>
+#include <foe/simulation/simulation.h>
 #include <foe/split_thread_pool.h>
 #include <foe/xr/runtime.h>
 
@@ -58,8 +59,6 @@
 #endif
 #endif
 
-struct foeSimulation;
-
 struct Application {
 #ifdef FOE_SKUNKWORKS_QT
     void setQtGuiApplication(QGuiApplication *pQtGuiApplication);
@@ -85,7 +84,7 @@ struct Application {
     foeSearchPaths searchPaths;
 
     // Groups/Entities
-    foeSimulation *pSimulationSet{nullptr};
+    foeSimulation simulation{FOE_NULL_HANDLE};
 
     // I/O
 #ifdef FOE_SKUNKWORKS_GLFW

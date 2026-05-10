@@ -1,24 +1,26 @@
-// Copyright (C) 2022-2023 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "render_state.h"
 
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "../binary.h"
 #include "../render_state.h"
 #include "../render_state_pool.h"
 #include "result.h"
 
+#include <algorithm>
+
 extern "C" foeResultSet export_foeRenderState(foeEntityID entity,
-                                              foeSimulation const *pSimulation,
+                                              foeSimulation simulation,
                                               foeImexBinarySet *pBinarySet) {
     foeResultSet result = to_foeResult(FOE_SKUNKWORKS_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
     foeRenderStatePool componentPool = (foeRenderStatePool)foeSimulationGetComponentPool(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
     if (componentPool != FOE_NULL_HANDLE) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
@@ -58,9 +60,9 @@ extern "C" foeResultSet import_foeRenderState(void const *pReadBuffer,
                                               uint32_t *pReadSize,
                                               foeEcsGroupTranslator groupTranslator,
                                               foeEntityID entity,
-                                              foeSimulation const *pSimulation) {
+                                              foeSimulation simulation) {
     foeRenderStatePool componentPool = (foeRenderStatePool)foeSimulationGetComponentPool(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
     if (componentPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_SKUNKWORKS_BINARY_ERROR_RENDER_STATE_POOL_NOT_FOUND);
 

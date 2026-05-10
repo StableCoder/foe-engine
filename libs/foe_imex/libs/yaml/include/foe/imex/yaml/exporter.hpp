@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,16 +6,16 @@
 #define FOE_IMEX_YAML_EXPORTER_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/handle.h>
 #include <foe/imex/yaml/export.h>
 #include <foe/resource/create_info.h>
 #include <foe/result.h>
 #include <yaml-cpp/yaml.h>
 
-#include <filesystem>
 #include <string>
 #include <vector>
 
-struct foeSimulation;
+FOE_DEFINE_HANDLE(foeSimulation)
 
 struct foeKeyYamlPair {
     std::string key;
@@ -32,10 +32,10 @@ foeResultSet foeImexYamlDeregisterResourceFn(
 
 FOE_IMEX_YAML_EXPORT
 foeResultSet foeImexYamlRegisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *));
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation));
 
 FOE_IMEX_YAML_EXPORT
 foeResultSet foeImexYamlDeregisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *));
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation));
 
 #endif // FOE_IMEX_YAML_EXPORTER_HPP

@@ -17,6 +17,8 @@
 #include "vk_result.h"
 
 #include <cassert>
+#include <cstdint>
+#include <memory>
 
 foeResultSet foeImageLoader::initialize(foeResourcePool resourcePool,
                                         void *pExternalFileSearchContext,

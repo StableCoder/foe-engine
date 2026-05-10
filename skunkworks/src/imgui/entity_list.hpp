@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,17 +6,19 @@
 #define IMGUI_ENTITY_LIST_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/handle.h>
 
 #include <vector>
 
+FOE_DEFINE_HANDLE(foeSimulation)
+
 class foeImGuiState;
-struct foeSimulation;
 class foeSimulationImGuiRegistrar;
 struct ImGuiContext;
 
 class foeImGuiEntityList {
   public:
-    foeImGuiEntityList(foeSimulation *pSimulation, foeSimulationImGuiRegistrar *pRegistrar);
+    foeImGuiEntityList(foeSimulation simulation, foeSimulationImGuiRegistrar *pRegistrar);
 
     bool registerUI(foeImGuiState *pState);
     void deregisterUI(foeImGuiState *pState);
@@ -37,7 +39,7 @@ class foeImGuiEntityList {
     void displayOpenEntities();
     bool displayEntity(EntityDisplayData *pData);
 
-    foeSimulation *mpSimulationState;
+    foeSimulation mSimulation;
     foeSimulationImGuiRegistrar *mpRegistrar;
 
     bool mOpen{false};

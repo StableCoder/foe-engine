@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/type_defs.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "collision_shape.hpp"
 #include "result.h"
@@ -36,11 +36,11 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceCreateInfo createInfo) {
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation const *pSimulation) {
+std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation simulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     foeRigidBodyPool rigidBodyPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
-        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+        simulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
     if (rigidBodyPool != FOE_NULL_HANDLE) {
         foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(rigidBodyPool);
         foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(rigidBodyPool);

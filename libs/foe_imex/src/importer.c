@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -128,13 +128,13 @@ foeResultSet foeImexImporterGetGroupResourceIndexData(foeImexImporter importer,
 
 foeResultSet foeImexImporterGetStateData(foeImexImporter importer,
                                          foeEcsNameMap entityNameMap,
-                                         struct foeSimulation const *pSimulation) {
+                                         foeSimulation simulation) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
     if (pBaseFns != NULL) {
         if (pBaseFns->importStateData != NULL) {
-            return pBaseFns->importStateData(importer, entityNameMap, pSimulation);
+            return pBaseFns->importStateData(importer, entityNameMap, simulation);
         } else {
             return to_foeResult(FOE_IMEX_ERROR_FUNCTION_NOT_DEFINED);
         }

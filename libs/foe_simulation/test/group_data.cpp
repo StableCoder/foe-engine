@@ -568,7 +568,7 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
     REQUIRE(test != FOE_NULL_HANDLE);
 
     SECTION("No importers always fails") {
-        REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
+        REQUIRE(foeSimulationGetGroupDataResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
     }
 
     SECTION("Persistent importer added") {
@@ -582,7 +582,7 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
 
             REQUIRE(foeSimulationSetPersistentImporter(test, testImporter));
 
-            REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) != nullptr);
+            REQUIRE(foeSimulationGetGroupDataResourceCreateInfo(test, FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
             dummyImporter = {
@@ -593,7 +593,7 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
 
             REQUIRE(foeSimulationSetPersistentImporter(test, testImporter));
 
-            REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
+            REQUIRE(foeSimulationGetGroupDataResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
         }
     }
 
@@ -617,7 +617,7 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
             REQUIRE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
                                                  testImporter));
 
-            REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) != nullptr);
+            REQUIRE(foeSimulationGetGroupDataResourceCreateInfo(test, FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
             foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
@@ -636,7 +636,7 @@ TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
 
             REQUIRE(foeSimulationAddDynamicGroup(test, testEntityIndexes, testResourceIndexes,
                                                  testImporter));
-            REQUIRE(foeSimulationGetResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
+            REQUIRE(foeSimulationGetGroupDataResourceCreateInfo(test, FOE_INVALID_ID) == nullptr);
         }
     }
 

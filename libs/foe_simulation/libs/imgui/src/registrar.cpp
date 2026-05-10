@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -65,13 +65,12 @@ foeResultSet foeSimulationImGuiRegistrar::deregisterElements(
     return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_NOT_REGISTERED);
 }
 
-void foeSimulationImGuiRegistrar::displayEntity(foeEntityID entity,
-                                                foeSimulation const *pSimulation) {
+void foeSimulationImGuiRegistrar::displayEntity(foeEntityID entity, foeSimulation simulation) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
         if (it.componentFn)
-            it.componentFn(entity, pSimulation);
+            it.componentFn(entity, simulation);
     }
 }
 

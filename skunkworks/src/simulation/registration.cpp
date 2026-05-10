@@ -10,7 +10,7 @@
 #include <foe/resource/pool.h>
 #include <foe/resource/resource_fns.h>
 #include <foe/simulation/registration.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "../log.hpp"
 #include "../result.h"
@@ -38,7 +38,7 @@ struct TypeSelection {
     bool renderSystem;
 };
 
-size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
+size_t destroySelection(foeSimulation simulation, TypeSelection const *pSelection) {
     size_t count;
     size_t errors = 0;
     foeResultSet result;
@@ -46,7 +46,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     // Systems
     if (pSelection == nullptr || pSelection->renderSystem) {
         result = foeSimulationDecrementRefCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -58,7 +58,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         } else if (count == 0) {
             foeRenderSystem renderSystem;
             result = foeSimulationReleaseSystem(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, (void **)&renderSystem);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, (void **)&renderSystem);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -74,7 +74,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     if (pSelection == nullptr || pSelection->animatedBoneSystem) {
         result = foeSimulationDecrementRefCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -86,7 +86,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         } else if (count == 0) {
             foeAnimatedBoneSystem system;
             result = foeSimulationReleaseSystem(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, (void **)&system);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, (void **)&system);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -103,7 +103,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     // Components
     if (pSelection == nullptr || pSelection->renderStateComponents) {
         result = foeSimulationDecrementRefCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -115,7 +115,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         } else if (count == 0) {
             foeRenderStatePool pool;
             result = foeSimulationReleaseComponentPool(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL, (void **)&pool);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL, (void **)&pool);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -131,7 +131,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     if (pSelection == nullptr || pSelection->animatedBoneStateComponents) {
         result = foeSimulationDecrementRefCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -144,7 +144,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         } else if (count == 0) {
             foeAnimatedBoneStatePool componentPool;
             result = foeSimulationReleaseComponentPool(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL,
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL,
                 (void **)&componentPool);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
@@ -161,7 +161,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     if (pSelection == nullptr || pSelection->armatureComponents) {
         result = foeSimulationDecrementRefCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -173,7 +173,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         } else if (count == 0) {
             foeArmatureStatePool componentPool;
             result = foeSimulationReleaseComponentPool(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
                 (void **)&componentPool);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
@@ -191,7 +191,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     // Loaders
     if (pSelection == nullptr || pSelection->armatureLoader) {
         result = foeSimulationDecrementRefCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
         if (result.value != FOE_SUCCESS) {
             // Trying to destroy something that doesn't exist? Not optimal
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
@@ -204,7 +204,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         } else if (count == 0) {
             foeArmatureLoader *pLoader;
             result = foeSimulationReleaseResourceLoader(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER, (void **)&pLoader);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER, (void **)&pLoader);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -221,12 +221,12 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     return errors;
 }
 
-foeResultSet create(foeSimulation *pSimulation) {
+foeResultSet create(foeSimulation simulation) {
     foeResultSet result;
     TypeSelection created = {};
 
     // Loaders
-    result = foeSimulationIncrementRefCount(pSimulation,
+    result = foeSimulationIncrementRefCount(simulation,
                                             FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER, nullptr);
     if (result.value != FOE_SUCCESS) {
         // Couldn't incement it, doesn't exist yet
@@ -245,7 +245,7 @@ foeResultSet create(foeSimulation *pSimulation) {
             goto CREATE_FAILED;
         }
 
-        result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+        result = foeSimulationInsertResourceLoader(simulation, &loaderCI);
         if (result.value != FOE_SUCCESS) {
             delete (foeArmatureLoader *)loaderCI.pLoader;
 
@@ -253,18 +253,18 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeArmatureLoader on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER,
+        foeSimulationIncrementRefCount(simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER,
                                        nullptr);
     }
     created.armatureLoader = true;
 
     // Components
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL, nullptr);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL, nullptr);
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
@@ -278,7 +278,7 @@ foeResultSet create(foeSimulation *pSimulation) {
             goto CREATE_FAILED;
         }
 
-        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        result = foeSimulationInsertComponentPool(simulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeArmatureStatePool *)createInfo.pComponentPool;
 
@@ -286,17 +286,17 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeArmatureStatePool on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation,
+        foeSimulationIncrementRefCount(simulation,
                                        FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL, nullptr);
     }
     created.armatureComponents = true;
 
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, nullptr);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, nullptr);
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL,
@@ -314,7 +314,7 @@ foeResultSet create(foeSimulation *pSimulation) {
             goto CREATE_FAILED;
         }
 
-        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        result = foeSimulationInsertComponentPool(simulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeAnimatedBoneStatePool *)createInfo.pComponentPool;
 
@@ -322,17 +322,17 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeAnimatedBoneStatePool on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, nullptr);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, nullptr);
     }
     created.animatedBoneStateComponents = true;
 
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL, nullptr);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL, nullptr);
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL,
@@ -348,7 +348,7 @@ foeResultSet create(foeSimulation *pSimulation) {
             goto CREATE_FAILED;
         }
 
-        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        result = foeSimulationInsertComponentPool(simulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeRenderStatePool *)createInfo.pComponentPool;
 
@@ -356,18 +356,18 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeRenderStatePool on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL,
+        foeSimulationIncrementRefCount(simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL,
                                        nullptr);
     }
     created.renderStateComponents = true;
 
     // Systems
     result = foeSimulationIncrementRefCount(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, nullptr);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, nullptr);
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM,
@@ -378,7 +378,7 @@ foeResultSet create(foeSimulation *pSimulation) {
             goto CREATE_FAILED;
         }
 
-        result = foeSimulationInsertSystem(pSimulation, &createInfo);
+        result = foeSimulationInsertSystem(simulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             foeDestroyAnimatedBoneSystem((foeAnimatedBoneSystem)createInfo.pSystem);
 
@@ -386,17 +386,17 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeArmatureSystem on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation,
+        foeSimulationIncrementRefCount(simulation,
                                        FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, nullptr);
     }
     created.animatedBoneSystem = true;
 
-    result = foeSimulationIncrementRefCount(pSimulation,
-                                            FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, nullptr);
+    result = foeSimulationIncrementRefCount(simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM,
+                                            nullptr);
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM,
@@ -407,7 +407,7 @@ foeResultSet create(foeSimulation *pSimulation) {
             goto CREATE_FAILED;
         }
 
-        result = foeSimulationInsertSystem(pSimulation, &createInfo);
+        result = foeSimulationInsertSystem(simulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             foeDestroyRenderSystem((foeRenderSystem)createInfo.pSystem);
 
@@ -415,18 +415,18 @@ foeResultSet create(foeSimulation *pSimulation) {
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foeRenderSystem on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM,
+        foeSimulationIncrementRefCount(simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM,
                                        nullptr);
     }
     created.renderSystem = true;
 
 CREATE_FAILED:
     if (result.value != FOE_SUCCESS) {
-        size_t errors = destroySelection(pSimulation, &created);
+        size_t errors = destroySelection(simulation, &created);
         if (errors > 0)
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues destroying after failed creation", errors);
@@ -435,9 +435,9 @@ CREATE_FAILED:
     return result;
 }
 
-size_t destroy(foeSimulation *pSimulation) { return destroySelection(pSimulation, nullptr); }
+size_t destroy(foeSimulation simulation) { return destroySelection(simulation, nullptr); }
 
-size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
+size_t deinitializeSelection(foeSimulation simulation, TypeSelection const *pSelection) {
     foeResultSet result;
     size_t count;
     size_t errors = 0;
@@ -445,18 +445,18 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     // Systems
     if (pSelection == nullptr || pSelection->animatedBoneSystem) {
         result = foeSimulationDecrementInitCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Failed to decrement foeAnimatedBoneSystem initialization count on Simulation "
                     "{}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
             ++errors;
         } else if (count == 0) {
             foeAnimatedBoneSystem system = (foeAnimatedBoneSystem)foeSimulationGetSystem(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM);
             foeDeinitializeAnimatedBoneSystem(system);
         }
     }
@@ -464,18 +464,18 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     // Loaders
     if (pSelection == nullptr || pSelection->armatureLoader) {
         auto result = foeSimulationDecrementInitCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(
                 foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                 "Failed to decrement foeArmatureLoader initialization count on Simulation {}: {}",
-                (void *)pSimulation, buffer);
+                (void *)simulation, buffer);
             ++errors;
         } else if (count == 0) {
             auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER);
             pLoader->deinitialize();
         }
     }
@@ -483,37 +483,37 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     return errors;
 }
 
-foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
+foeResultSet initialize(foeSimulation simulation, foeSimulationInitInfo const *pInitInfo) {
     foeResultSet result;
     size_t count;
     TypeSelection selection = {};
 
     // Loaders
-    result = foeSimulationIncrementInitCount(pSimulation,
+    result = foeSimulationIncrementInitCount(simulation,
                                              FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeArmatureLoader initialization count on Simulation {}: {}",
-                (void *)pSimulation, buffer);
+                (void *)simulation, buffer);
 
         goto INITIALIZATION_FAILED;
     }
     selection.armatureLoader = true;
     if (count == 1) {
         auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_LOADER);
 
-        result =
-            pLoader->initialize(pSimulation->resourcePool, pInitInfo->pExternalFileSearchContext,
-                                pInitInfo->pfnExternalFileSearch);
+        result = pLoader->initialize(foeSimulationGetResourcePool(simulation),
+                                     pInitInfo->pExternalFileSearchContext,
+                                     pInitInfo->pfnExternalFileSearch);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeArmatureLoader on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto INITIALIZATION_FAILED;
         }
@@ -521,13 +521,13 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
 
     // Systems
     result = foeSimulationIncrementInitCount(
-        (foeSimulation *)pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeArmatureSystem initialization count on Simulation {}: {}",
-                (void *)pSimulation, buffer);
+                (void *)simulation, buffer);
 
         goto INITIALIZATION_FAILED;
     }
@@ -535,21 +535,21 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (count == 1) {
         foeArmatureStatePool armatureStatePool =
             (foeArmatureStatePool)foeSimulationGetComponentPool(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
         foeAnimatedBoneStatePool animatedBoneStatePool =
             (foeAnimatedBoneStatePool)foeSimulationGetComponentPool(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL);
 
         foeAnimatedBoneSystem system = (foeAnimatedBoneSystem)foeSimulationGetSystem(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM);
-        result = foeInitializeAnimatedBoneSystem(system, pSimulation->resourcePool,
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM);
+        result = foeInitializeAnimatedBoneSystem(system, foeSimulationGetResourcePool(simulation),
                                                  armatureStatePool, animatedBoneStatePool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeAnimatedBoneSystem on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto INITIALIZATION_FAILED;
         }
@@ -557,7 +557,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
 
 INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
-        size_t errors = deinitializeSelection(pSimulation, &selection);
+        size_t errors = deinitializeSelection(simulation, &selection);
         if (errors > 0)
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues deinitializing after failed initialization", errors);
@@ -566,11 +566,9 @@ INITIALIZATION_FAILED:
     return result;
 }
 
-size_t deinitialize(foeSimulation *pSimulation) {
-    return deinitializeSelection(pSimulation, nullptr);
-}
+size_t deinitialize(foeSimulation simulation) { return deinitializeSelection(simulation, nullptr); }
 
-size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
+size_t deinitializeGraphicsSelection(foeSimulation simulation, TypeSelection const *pSelection) {
     foeResultSet result;
     size_t count;
     size_t errors = 0;
@@ -578,18 +576,18 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
     // Systems
     if (pSelection == nullptr || pSelection->renderSystem) {
         result = foeSimulationDecrementGfxInitCount(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, &count);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Failed to decrement foeRenderSystem graphics initialization count on "
                     "Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
             ++errors;
         } else if (count == 0) {
             foeRenderSystem renderSystem = (foeRenderSystem)foeSimulationGetSystem(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM);
             foeDeinitializeRenderSystemGraphics(renderSystem);
         }
     }
@@ -597,46 +595,46 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
     return errors;
 }
 
-foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
+foeResultSet initializeGraphics(foeSimulation simulation, foeGfxSession gfxSession) {
     foeResultSet result;
     size_t count;
     TypeSelection selection = {};
 
     // Systems
     result = foeSimulationIncrementGfxInitCount(
-        pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, &count);
+        simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeRenderSystem graphics initialization count on "
                 "Simulation {}: {}",
-                (void *)pSimulation, buffer);
+                (void *)simulation, buffer);
 
         goto INITIALIZATION_FAILED;
     }
     selection.renderSystem = true;
     if (count == 1) {
         foeRenderSystem renderSystem = (foeRenderSystem)foeSimulationGetSystem(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM);
 
         foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
-            pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
+            simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL);
         foePosition3dPool positionPool = (foeRenderStatePool)foeSimulationGetComponentPool(
-            pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+            simulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
         foeAnimatedBoneStatePool animatedBoneStatePool =
             (foeAnimatedBoneStatePool)foeSimulationGetComponentPool(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL);
 
-        result =
-            foeInitializeRenderSystemGraphics(renderSystem, gfxSession, pSimulation->resourcePool,
-                                              renderStatePool, positionPool, animatedBoneStatePool);
+        result = foeInitializeRenderSystemGraphics(
+            renderSystem, gfxSession, foeSimulationGetResourcePool(simulation), renderStatePool,
+            positionPool, animatedBoneStatePool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize graphics foeRenderSystem on Simulation {}: {}",
-                    (void *)pSimulation, buffer);
+                    (void *)simulation, buffer);
 
             goto INITIALIZATION_FAILED;
         }
@@ -644,7 +642,7 @@ foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSes
 
 INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
-        size_t errors = deinitializeGraphicsSelection(pSimulation, &selection);
+        size_t errors = deinitializeGraphicsSelection(simulation, &selection);
         if (errors > 0)
             FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues deinitializing graphics after failed initialization",
@@ -654,8 +652,8 @@ INITIALIZATION_FAILED:
     return result;
 }
 
-size_t deinitializeGraphics(foeSimulation *pSimulation) {
-    return deinitializeGraphicsSelection(pSimulation, nullptr);
+size_t deinitializeGraphics(foeSimulation simulation) {
+    return deinitializeGraphicsSelection(simulation, nullptr);
 }
 
 } // namespace

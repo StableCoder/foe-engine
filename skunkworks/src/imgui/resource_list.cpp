@@ -12,7 +12,7 @@
 #include <foe/resource/imgui/create_info.h>
 #include <foe/resource/imgui/resource.h>
 #include <foe/simulation/imgui/registrar.hpp>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include <algorithm>
 #include <array>
@@ -26,9 +26,9 @@ std::array<char const *, 1> renderMenus{
 
 }
 
-foeImGuiResourceList::foeImGuiResourceList(foeSimulation *pSimulation,
+foeImGuiResourceList::foeImGuiResourceList(foeSimulation simulation,
                                            foeSimulationImGuiRegistrar *pRegistrar) :
-    mpSimulationState{pSimulation}, mpRegistrar{pRegistrar} {}
+    mSimulation{simulation}, mpRegistrar{pRegistrar} {}
 
 bool foeImGuiResourceList::registerUI(foeImGuiState *pState) {
     return pState->addUI(this, foeImGuiResourceList::renderMenuElements,
@@ -96,7 +96,8 @@ void foeImGuiResourceList::customUI() {
     for (foeIdGroup groupValue = 0; groupValue <= foeIdGroupMaxValue; ++groupValue) {
         foeIdGroup group = foeIdValueToGroup(groupValue);
 
-        foeEcsIndexes indexes = foeSimulationResourceIndexes(mpSimulationState->groupData, group);
+        foeEcsIndexes indexes =
+            foeSimulationResourceIndexes(foeSimulationGetGroupData(mSimulation), group);
         if (indexes == FOE_NULL_HANDLE)
             continue;
 
@@ -185,13 +186,14 @@ void foeImGuiResourceList::customUI() {
 
             // EditorName
             ImGui::TableNextColumn();
+
+            foeEcsNameMap nameMap = foeSimulationGetResourceNameMap(mSimulation);
             char const *pEditorName = "";
-            if (mpSimulationState->resourceNameMap != FOE_NULL_HANDLE) {
+            if (nameMap != FOE_NULL_HANDLE) {
                 uint32_t localStrLength = strLength;
                 foeResultSet result;
                 do {
-                    result = foeEcsNameMapFindName(mpSimulationState->resourceNameMap, resourceID,
-                                                   &localStrLength, pTempStr);
+                    result = foeEcsNameMapFindName(nameMap, resourceID, &localStrLength, pTempStr);
                     if (result.value == FOE_ECS_INCOMPLETE) {
                         strLength = localStrLength;
                         pTempStr = (char *)realloc(pTempStr, localStrLength);
@@ -263,13 +265,13 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
     }
 
     // EditorID
+    foeEcsNameMap nameMap = foeSimulationGetResourceNameMap(mSimulation);
     char *pEditorName = NULL;
-    if (mpSimulationState->resourceNameMap != FOE_NULL_HANDLE) {
+    if (nameMap != FOE_NULL_HANDLE) {
         uint32_t strLength = 0;
         foeResultSet result;
         do {
-            result = foeEcsNameMapFindName(mpSimulationState->resourceNameMap, pData->resourceID,
-                                           &strLength, pEditorName);
+            result = foeEcsNameMapFindName(nameMap, pData->resourceID, &strLength, pEditorName);
             if (result.value == FOE_ECS_SUCCESS && pEditorName != NULL) {
                 break;
             } else if ((result.value == FOE_ECS_SUCCESS && pEditorName == NULL) ||
@@ -284,7 +286,8 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
     free(pEditorName);
 
     // Display Resource Data
-    foeResource resource = foeResourcePoolFind(mpSimulationState->resourcePool, pData->resourceID);
+    foeResource resource =
+        foeResourcePoolFind(foeSimulationGetResourcePool(mSimulation), pData->resourceID);
     if (resource == FOE_NULL_HANDLE) {
         ImGui::Text("Resource handle does not exist");
         // @TODO - More info/option to load resource
@@ -315,7 +318,7 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
     // Display ResourceCreateInfo Data
     foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
     foeResultSet result =
-        foeSimulationGetResourceCreateInfo(mpSimulationState, pData->resourceID, &resourceCI);
+        foeSimulationGetResourceCreateInfo(mSimulation, pData->resourceID, &resourceCI);
     if (resourceCI == FOE_NULL_HANDLE) {
         ImGui::Text("ResourceCreateInfo does not exist");
         // @TODO - More info/option to load resource

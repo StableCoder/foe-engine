@@ -10,7 +10,7 @@
 #include <foe/external/imgui.h>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include <algorithm>
 #include <array>
@@ -24,9 +24,9 @@ std::array<char const *, 1> renderMenus{
 
 }
 
-foeImGuiEntityList::foeImGuiEntityList(foeSimulation *pSimulation,
+foeImGuiEntityList::foeImGuiEntityList(foeSimulation simulation,
                                        foeSimulationImGuiRegistrar *pRegistrar) :
-    mpSimulationState{pSimulation}, mpRegistrar{pRegistrar} {}
+    mSimulation{simulation}, mpRegistrar{pRegistrar} {}
 
 bool foeImGuiEntityList::registerUI(foeImGuiState *pState) {
     return pState->addUI(this, foeImGuiEntityList::renderMenuElements,
@@ -94,7 +94,8 @@ void foeImGuiEntityList::customUI() {
     for (foeIdGroup groupValue = 0; groupValue <= foeIdGroupMaxValue; ++groupValue) {
 
         foeIdGroup group = foeIdValueToGroup(groupValue);
-        foeEcsIndexes indexes = foeSimulationEntityIndexes(mpSimulationState->groupData, group);
+        foeEcsIndexes indexes =
+            foeSimulationEntityIndexes(foeSimulationGetGroupData(mSimulation), group);
         if (indexes == FOE_NULL_HANDLE)
             continue;
 
@@ -183,13 +184,14 @@ void foeImGuiEntityList::customUI() {
 
             // EditorName
             ImGui::TableNextColumn();
+
+            foeEcsNameMap nameMap = foeSimulationGetEntityNameMap(mSimulation);
             char const *pEditorName = "";
-            if (mpSimulationState->entityNameMap != FOE_NULL_HANDLE) {
+            if (nameMap != FOE_NULL_HANDLE) {
                 uint32_t localStrLength = strLength;
                 foeResultSet result;
                 do {
-                    result = foeEcsNameMapFindName(mpSimulationState->entityNameMap, entity,
-                                                   &localStrLength, pTempStr);
+                    result = foeEcsNameMapFindName(nameMap, entity, &localStrLength, pTempStr);
                     if (result.value == FOE_ECS_INCOMPLETE) {
                         strLength = localStrLength;
                         pTempStr = (char *)realloc(pTempStr, localStrLength);
@@ -261,13 +263,13 @@ bool foeImGuiEntityList::displayEntity(EntityDisplayData *pData) {
     }
 
     // EditorID
+    foeEcsNameMap nameMap = foeSimulationGetEntityNameMap(mSimulation);
     char *pEditorName = NULL;
-    if (mpSimulationState->entityNameMap != nullptr) {
+    if (nameMap != nullptr) {
         uint32_t strLength = 0;
         foeResultSet result;
         do {
-            result = foeEcsNameMapFindName(mpSimulationState->entityNameMap, pData->entity,
-                                           &strLength, pEditorName);
+            result = foeEcsNameMapFindName(nameMap, pData->entity, &strLength, pEditorName);
             if (result.value == FOE_ECS_SUCCESS && pEditorName != NULL) {
                 break;
             } else if ((result.value == FOE_ECS_SUCCESS && pEditorName == NULL) ||
@@ -281,7 +283,7 @@ bool foeImGuiEntityList::displayEntity(EntityDisplayData *pData) {
     ImGui::Text("EditorID: %s", pEditorName);
     free(pEditorName);
 
-    mpRegistrar->displayEntity(pData->entity, mpSimulationState);
+    mpRegistrar->displayEntity(pData->entity, mSimulation);
 
     ImGui::End();
 

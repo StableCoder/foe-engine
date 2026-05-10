@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_SIMULATION_CORE_HPP
-#define FOE_SIMULATION_CORE_HPP
+#ifndef FOE_SIMULATION_SIMULATION_H
+#define FOE_SIMULATION_SIMULATION_H
 
 #include <foe/ecs/id.h>
 #include <foe/ecs/name_map.h>
@@ -14,10 +14,10 @@
 #include <foe/simulation/group_data.h>
 #include <foe/simulation/resource_create_info_history.h>
 #include <foe/simulation/resource_create_info_pool.h>
-#include <foe/simulation/type_defs.h>
 
-#include <shared_mutex>
-#include <vector>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * The Simulation 'core' is a static global registry of all simulation functionality that has been
@@ -32,6 +32,15 @@
  * such as graphics.
  */
 
+FOE_DEFINE_HANDLE(foeSimulation)
+
+typedef int foeSimulationStructureType;
+
+struct foeSimulationBaseStruct {
+    foeSimulationStructureType sType;
+    void *pNext;
+};
+
 struct foeResourceLoaderBase;
 struct foeComponentPoolBase;
 struct foeSystemBase;
@@ -40,12 +49,12 @@ typedef foeResultSet (*PFN_foeSimulationExternalFileSearch)(void *,
                                                             char const *,
                                                             foeManagedMemory *);
 
-struct foeSimulationInitInfo {
+typedef struct foeSimulationInitInfo {
     void *pExternalFileSearchContext;
     PFN_foeSimulationExternalFileSearch pfnExternalFileSearch;
-};
+} foeSimulationInitInfo;
 
-struct foeSimulationLoaderData {
+typedef struct foeSimulationLoaderData {
     foeSimulationStructureType sType;
     size_t refCount;
     size_t initCount;
@@ -60,68 +69,28 @@ struct foeSimulationLoaderData {
     void (*pMaintenanceFn)(void *);
     /// Maintenance to be performed as part of the graphics loop
     void (*pGfxMaintenanceFn)(void *);
-};
+} foeSimulationLoaderData;
 
-struct foeSimulationComponentPoolData {
+typedef struct foeSimulationComponentPoolData {
     foeSimulationStructureType sType;
     size_t refCount;
     void *pComponentPool;
     void (*pMaintenanceFn)(void *);
-};
+} foeSimulationComponentPoolData;
 
-struct foeSimulationSystemData {
+typedef struct foeSimulationSystemData {
     foeSimulationStructureType sType;
     size_t refCount;
     size_t initCount;
     size_t gfxInitCount;
     void *pSystem;
-};
-
-struct foeSimulation {
-    /**
-     * @brief Used to synchronize core access to the SimulationState
-     *
-     * Because this needs to support the possibility of registered core functionality operating
-     * asynchronously, when it comes time to deinitialize or destroy functionality, we need to
-     * *absolutely* sure that nothing is running asynchronously.
-     *
-     * To that end, the idea is that any asynchronous task will acquire the shared mutex's 'shared'
-     * lock, and when the core needs to modify a SimulationState, then it acquires an exclusive lock
-     * once all async tasks are complete, and then performs these modifications.
-     *
-     * Acquiring the exclusive lock should be an incredibly rare operation.
-     */
-    std::shared_mutex simSync;
-
-    foeGroupData groupData = FOE_NULL_HANDLE;
-
-    // Information used to initialize functionality (used when functionality added during runtime)
-    foeSimulationInitInfo initInfo{};
-
-    // Optional Simulation
-    foeGfxSession gfxSession;
-
-    // Resource Data
-    foeEcsNameMap resourceNameMap = FOE_NULL_HANDLE;
-    foeResourceCreateInfoPool resourceCreateInfoSavedBaseData;
-    foeResourceCreateInfoPool resourceCreateInfoSavedPersistentData;
-    foeResourceCreateInfoHistory resourceCreateInfoSessionPersistentData;
-    foeResourcePool resourcePool;
-    std::vector<foeSimulationLoaderData> resourceLoaders;
-
-    // Entity / Component Data
-    foeEcsNameMap entityNameMap = FOE_NULL_HANDLE;
-    std::vector<foeSimulationComponentPoolData> componentPools;
-
-    // Systems
-    std::vector<foeSimulationSystemData> systems;
-};
+} foeSimulationSystemData;
 
 /// Return if a simulation has been successfully initialized
-bool foeSimulationIsInitialized(foeSimulation const *pSimulation);
+bool foeSimulationIsInitialized(foeSimulation simulation);
 
 /// Returns if a simulation has had graphics successfully initialized
-bool foeSimulationIsGraphicsInitialzied(foeSimulation const *pSimulation);
+bool foeSimulationIsGraphicsInitialzied(foeSimulation simulation);
 
 /**
  * @brief Creates a new SimulationState with any registered functionality available
@@ -133,7 +102,7 @@ bool foeSimulationIsGraphicsInitialzied(foeSimulation const *pSimulation);
  * The 'pCreateFn' of any previously registered functionality is called on the created simulation.
  */
 FOE_SIM_EXPORT
-foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState);
+foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation *pSimulation);
 
 /**
  * @brief Attempts to destroy a given SimulationState
@@ -147,7 +116,7 @@ foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationS
  * 'pDestroyFn' is called last and the object is then freed.
  */
 FOE_SIM_EXPORT
-foeResultSet foeDestroySimulation(foeSimulation *pSimulation);
+foeResultSet foeDestroySimulation(foeSimulation simulation);
 
 /**
  * @brief Initializes a SimulationState given InitInfo
@@ -162,7 +131,7 @@ foeResultSet foeDestroySimulation(foeSimulation *pSimulation);
  * returns a state fully deinitialized.
  */
 FOE_SIM_EXPORT
-foeResultSet foeInitializeSimulation(foeSimulation *pSimulation,
+foeResultSet foeInitializeSimulation(foeSimulation simulation,
                                      foeSimulationInitInfo const *pInitInfo);
 
 /**
@@ -175,7 +144,7 @@ foeResultSet foeInitializeSimulation(foeSimulation *pSimulation,
  * Iterates through any registered functionality and calls its 'pDeinitializeFn' function.
  */
 FOE_SIM_EXPORT
-foeResultSet foeDeinitializeSimulation(foeSimulation *pSimulation);
+foeResultSet foeDeinitializeSimulation(foeSimulation simulation);
 
 /**
  * @brief Initializes graphics for a SimulationState
@@ -189,7 +158,7 @@ foeResultSet foeDeinitializeSimulation(foeSimulation *pSimulation);
  *
  */
 FOE_SIM_EXPORT
-foeResultSet foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession);
+foeResultSet foeInitializeSimulationGraphics(foeSimulation simulation, foeGfxSession gfxSession);
 
 /**
  * @brief Deinitializes graphics from the given simulation
@@ -199,83 +168,120 @@ foeResultSet foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxS
  * simulation's graphics was not previously successfully initialized.
  */
 FOE_SIM_EXPORT
-foeResultSet foeDeinitializeSimulationGraphics(foeSimulation *pSimulation);
+foeResultSet foeDeinitializeSimulationGraphics(foeSimulation simulation);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationGetRefCount(foeSimulation const *pSimulation,
+foeResultSet foeSimulationGetRefCount(foeSimulation simulation,
                                       foeSimulationStructureType sType,
                                       size_t *pRefCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationIncrementRefCount(foeSimulation *pSimulation,
+foeResultSet foeSimulationIncrementRefCount(foeSimulation simulation,
                                             foeSimulationStructureType sType,
                                             size_t *pRefCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationDecrementRefCount(foeSimulation *pSimulation,
+foeResultSet foeSimulationDecrementRefCount(foeSimulation simulation,
                                             foeSimulationStructureType sType,
                                             size_t *pRefCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationGetInitCount(foeSimulation const *pSimulation,
+foeResultSet foeSimulationGetInitCount(foeSimulation simulation,
                                        foeSimulationStructureType sType,
                                        size_t *pInitCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationIncrementInitCount(foeSimulation *pSimulation,
+foeResultSet foeSimulationIncrementInitCount(foeSimulation simulation,
                                              foeSimulationStructureType sType,
                                              size_t *pInitCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationDecrementInitCount(foeSimulation *pSimulation,
+foeResultSet foeSimulationDecrementInitCount(foeSimulation simulation,
                                              foeSimulationStructureType sType,
                                              size_t *pInitCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
+foeResultSet foeSimulationGetGfxInitCount(foeSimulation simulation,
                                           foeSimulationStructureType sType,
                                           size_t *pGfxInitCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
+foeResultSet foeSimulationIncrementGfxInitCount(foeSimulation simulation,
                                                 foeSimulationStructureType sType,
                                                 size_t *pGfxInitCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
+foeResultSet foeSimulationDecrementGfxInitCount(foeSimulation simulation,
                                                 foeSimulationStructureType sType,
                                                 size_t *pGfxInitCount);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
+foeResultSet foeSimulationInsertResourceLoader(foeSimulation simulation,
                                                foeSimulationLoaderData const *pCreateInfo);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
+foeResultSet foeSimulationReleaseResourceLoader(foeSimulation simulation,
                                                 foeSimulationStructureType sType,
                                                 void **ppLoader);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationInsertComponentPool(foeSimulation *pSimulation,
+foeResultSet foeSimulationInsertComponentPool(foeSimulation simulation,
                                               foeSimulationComponentPoolData const *pCreateInfo);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
+foeResultSet foeSimulationReleaseComponentPool(foeSimulation simulation,
                                                foeSimulationStructureType sType,
                                                void **ppComponentPool);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationInsertSystem(foeSimulation *pSimulation,
+foeResultSet foeSimulationInsertSystem(foeSimulation simulation,
                                        foeSimulationSystemData const *pCreateInfo);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationReleaseSystem(foeSimulation *pSimulation,
+foeResultSet foeSimulationReleaseSystem(foeSimulation simulation,
                                         foeSimulationStructureType sType,
                                         void **ppSystem);
 
 FOE_SIM_EXPORT
-foeResultSet foeSimulationGetResourceCreateInfo(foeSimulation const *pSimulation,
+foeResultSet foeSimulationGetResourceCreateInfo(foeSimulation simulation,
                                                 foeResourceID resourceID,
                                                 foeResourceCreateInfo *pResourceCI);
 
-#endif // FOE_SIMULATION_CORE_HPP
+FOE_SIM_EXPORT foeResourcePool foeSimulationGetResourcePool(foeSimulation simulation);
+
+FOE_SIM_EXPORT foeGroupData foeSimulationGetGroupData(foeSimulation simulation);
+
+FOE_SIM_EXPORT foeEcsNameMap foeSimulationGetEntityNameMap(foeSimulation simulation);
+
+FOE_SIM_EXPORT foeEcsNameMap foeSimulationGetResourceNameMap(foeSimulation simulation);
+
+FOE_SIM_EXPORT void foeSimulationGetResourceLoaders(foeSimulation simulation,
+                                                    size_t *pCount,
+                                                    foeSimulationLoaderData **ppLoaders);
+
+FOE_SIM_EXPORT void foeSimulationGetComponentPools(
+    foeSimulation simulation, size_t *pCount, foeSimulationComponentPoolData **ppComponentPools);
+
+FOE_SIM_EXPORT foeResourceCreateInfoPool
+foeSimulationGetSavedBaseDataResourceCreateInfoPool(foeSimulation simulation);
+
+FOE_SIM_EXPORT foeResourceCreateInfoPool
+foeSimulationGetSavedPersistentDataResourceCreateInfoPool(foeSimulation simulation);
+
+FOE_SIM_EXPORT foeResourceCreateInfoHistory
+foeSimulationGetSessionPersistentDataResourceCreateInfoHistory(foeSimulation simulation);
+
+FOE_SIM_EXPORT
+void *foeSimulationGetResourceLoader(foeSimulation simulation, foeSimulationStructureType sType);
+
+FOE_SIM_EXPORT
+void *foeSimulationGetSystem(foeSimulation simulation, foeSimulationStructureType sType);
+
+FOE_SIM_EXPORT
+void *foeSimulationGetComponentPool(foeSimulation simulation, foeSimulationStructureType sType);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_SIMULATION_SIMULATION_H

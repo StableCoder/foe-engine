@@ -9,7 +9,7 @@
 #include <foe/ecs/name_map.h>
 #include <foe/imex/importer.h>
 #include <foe/search_paths.hpp>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include "../log.hpp"
 #include "result.h"
@@ -76,14 +76,11 @@ bool generateDependencyImporters(uint32_t dependencyCount,
 
 foeResultSet importState(std::string_view topLevelDataSet,
                          foeSearchPaths *pSearchPaths,
-                         foeSimulation **ppSimulationSet) {
-    foeSimulation *pTempSimSet;
-    foeResultSet result = foeCreateSimulation(true, &pTempSimSet);
+                         foeSimulation *pSimulation) {
+    foeSimulation newSimulation = FOE_NULL_HANDLE;
+    foeResultSet result = foeCreateSimulation(true, &newSimulation);
     if (result.value != FOE_SUCCESS)
         return result;
-
-    std::unique_ptr<foeSimulation, std::function<void(foeSimulation *)>> pSimulationSet{
-        pTempSimSet, [](foeSimulation *ptr) { foeDestroySimulation(ptr); }};
 
     // Find the to-level data set, initially as if the full path were given
     foeImexImporter persistentImporter =
@@ -270,8 +267,9 @@ foeResultSet importState(std::string_view topLevelDataSet,
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
             }
 
-            auto success = foeSimulationAddDynamicGroup(
-                pSimulationSet->groupData, newGroupEntityIndexes, newGroupResourceIndexes, it);
+            auto success =
+                foeSimulationAddDynamicGroup(foeSimulationGetGroupData(newSimulation),
+                                             newGroupEntityIndexes, newGroupResourceIndexes, it);
             if (!success) {
                 FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_ERROR, "Could not setup Group '{}'",
                         pGroupName);
@@ -280,44 +278,46 @@ foeResultSet importState(std::string_view topLevelDataSet,
             ++groupValue;
         }
 
-        foeSimulationSetPersistentImporter(pSimulationSet->groupData, persistentImporter);
+        foeSimulationSetPersistentImporter(foeSimulationGetGroupData(newSimulation),
+                                           persistentImporter);
     }
 
     // Dependency Indice Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-        foeImexImporter groupImporter =
-            foeSimulationImporter(pSimulationSet->groupData, foeIdValueToGroup(groupValue));
+        foeImexImporter groupImporter = foeSimulationImporter(
+            foeSimulationGetGroupData(newSimulation), foeIdValueToGroup(groupValue));
         if (groupImporter == FOE_NULL_HANDLE)
             continue;
 
         foeImexImporterGetGroupResourceIndexData(
-            groupImporter,
-            foeSimulationResourceIndexes(pSimulationSet->groupData, foeIdValueToGroup(groupValue)));
+            groupImporter, foeSimulationResourceIndexes(foeSimulationGetGroupData(newSimulation),
+                                                        foeIdValueToGroup(groupValue)));
 
         foeImexImporterGetGroupEntityIndexData(
-            groupImporter,
-            foeSimulationEntityIndexes(pSimulationSet->groupData, foeIdValueToGroup(groupValue)));
+            groupImporter, foeSimulationEntityIndexes(foeSimulationGetGroupData(newSimulation),
+                                                      foeIdValueToGroup(groupValue)));
     }
 
     // Persistent Indice Data
     result = foeImexImporterGetGroupEntityIndexData(
-        foeSimulationPersistentImporter(pSimulationSet->groupData),
-        foeSimulationPersistentEntityIndexes(pSimulationSet->groupData));
+        foeSimulationPersistentImporter(foeSimulationGetGroupData(newSimulation)),
+        foeSimulationPersistentEntityIndexes(foeSimulationGetGroupData(newSimulation)));
     if (result.value != FOE_SUCCESS)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
     result = foeImexImporterGetGroupResourceIndexData(
-        foeSimulationPersistentImporter(pSimulationSet->groupData),
-        foeSimulationPersistentResourceIndexes(pSimulationSet->groupData));
+        foeSimulationPersistentImporter(foeSimulationGetGroupData(newSimulation)),
+        foeSimulationPersistentResourceIndexes(foeSimulationGetGroupData(newSimulation)));
     if (result.value != FOE_SUCCESS)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
     // Read the Resource Editor Names
-    if (pSimulationSet->resourceNameMap != FOE_NULL_HANDLE) {
+    foeEcsNameMap resourceNameMap = foeSimulationGetResourceNameMap(newSimulation);
+    if (resourceNameMap != FOE_NULL_HANDLE) {
         // Dependent Groups
         for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-            foeImexImporter groupImporter =
-                foeSimulationImporter(pSimulationSet->groupData, foeIdValueToGroup(groupValue));
+            foeImexImporter groupImporter = foeSimulationImporter(
+                foeSimulationGetGroupData(newSimulation), foeIdValueToGroup(groupValue));
             if (groupImporter == FOE_NULL_HANDLE)
                 continue;
 
@@ -327,12 +327,12 @@ foeResultSet importState(std::string_view topLevelDataSet,
             };
             CallContext callContext = {
                 .importer = groupImporter,
-                .nameMap = pSimulationSet->resourceNameMap,
+                .nameMap = resourceNameMap,
             };
 
             // Go through all the indexes for the group, set any available editor names
             foeEcsForEachID(
-                foeSimulationResourceIndexes(pSimulationSet->groupData,
+                foeSimulationResourceIndexes(foeSimulationGetGroupData(newSimulation),
                                              foeIdValueToGroup(groupValue)),
                 [](void *pContext, foeId id) {
                     CallContext *pCallContext = (CallContext *)pContext;
@@ -356,7 +356,8 @@ foeResultSet importState(std::string_view topLevelDataSet,
         }
 
         // Persistent Group
-        foeImexImporter groupImporter = foeSimulationPersistentImporter(pSimulationSet->groupData);
+        foeImexImporter groupImporter =
+            foeSimulationPersistentImporter(foeSimulationGetGroupData(newSimulation));
 
         // Go through all the indexes for the group, set any available editor names
         std::vector<foeIdIndex> recycledIndexes;
@@ -367,11 +368,11 @@ foeResultSet importState(std::string_view topLevelDataSet,
         };
         CallContext callContext = {
             .importer = groupImporter,
-            .nameMap = pSimulationSet->resourceNameMap,
+            .nameMap = resourceNameMap,
         };
 
         foeEcsForEachID(
-            foeSimulationPersistentResourceIndexes(pSimulationSet->groupData),
+            foeSimulationPersistentResourceIndexes(foeSimulationGetGroupData(newSimulation)),
             [](void *pContext, foeId id) {
                 CallContext *pCallContext = (CallContext *)pContext;
 
@@ -397,16 +398,17 @@ foeResultSet importState(std::string_view topLevelDataSet,
     {
         // Dynamic Groups
         for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-            foeImexImporter groupImporter =
-                foeSimulationImporter(pSimulationSet->groupData, foeIdValueToGroup(groupValue));
+            foeImexImporter groupImporter = foeSimulationImporter(
+                foeSimulationGetGroupData(newSimulation), foeIdValueToGroup(groupValue));
             if (groupImporter == FOE_NULL_HANDLE)
                 continue;
 
             // Go through all GroupIDs upto this group, and import any resource data for all of it
             for (foeIdGroupValue resourceGroupValue = 0; resourceGroupValue <= groupValue;
                  ++resourceGroupValue) {
-                auto *pGroupIndexes = foeSimulationResourceIndexes(
-                    pSimulationSet->groupData, foeIdValueToGroup(resourceGroupValue));
+                auto *pGroupIndexes =
+                    foeSimulationResourceIndexes(foeSimulationGetGroupData(newSimulation),
+                                                 foeIdValueToGroup(resourceGroupValue));
                 if (pGroupIndexes == nullptr)
                     continue;
 
@@ -417,13 +419,13 @@ foeResultSet importState(std::string_view topLevelDataSet,
                 };
                 CallContext callContext = {
                     .importer = groupImporter,
-                    .pool = pSimulationSet->resourceCreateInfoSavedBaseData,
+                    .pool = foeSimulationGetSavedBaseDataResourceCreateInfoPool(newSimulation),
                     .groupValue = groupValue,
                 };
 
                 // Go through all the indexes for the group, set any available editor names
                 foeEcsForEachID(
-                    foeSimulationResourceIndexes(pSimulationSet->groupData,
+                    foeSimulationResourceIndexes(foeSimulationGetGroupData(newSimulation),
                                                  foeIdValueToGroup(groupValue)),
                     [](void *pContext, foeId id) {
                         CallContext *pCallContext = (CallContext *)pContext;
@@ -448,13 +450,13 @@ foeResultSet importState(std::string_view topLevelDataSet,
 
         // Persistent Group
         foeImexImporter persistentImporter =
-            foeSimulationPersistentImporter(pSimulationSet->groupData);
+            foeSimulationPersistentImporter(foeSimulationGetGroupData(newSimulation));
 
         // Go through all GroupIDs upto this group, and import any resource data for all of it
         for (foeIdGroupValue resourceGroupValue = 0;
              resourceGroupValue <= foeIdPersistentGroupValue; ++resourceGroupValue) {
             auto *pGroupIndexes = foeSimulationResourceIndexes(
-                pSimulationSet->groupData, foeIdValueToGroup(resourceGroupValue));
+                foeSimulationGetGroupData(newSimulation), foeIdValueToGroup(resourceGroupValue));
             if (pGroupIndexes == nullptr)
                 continue;
 
@@ -464,12 +466,12 @@ foeResultSet importState(std::string_view topLevelDataSet,
             };
             CallContext callContext = {
                 .importer = persistentImporter,
-                .pool = pSimulationSet->resourceCreateInfoSavedPersistentData,
+                .pool = foeSimulationGetSavedPersistentDataResourceCreateInfoPool(newSimulation),
             };
 
             // Go through all the indexes for the group, set any available editor names
             foeEcsForEachID(
-                foeSimulationResourceIndexes(pSimulationSet->groupData,
+                foeSimulationResourceIndexes(foeSimulationGetGroupData(newSimulation),
                                              foeIdValueToGroup(foeIdPersistentGroupValue)),
                 [](void *pContext, foeId id) {
                     CallContext *pCallContext = (CallContext *)pContext;
@@ -492,31 +494,36 @@ foeResultSet importState(std::string_view topLevelDataSet,
     }
 
     // Importing Dependency State Data
+    foeEcsNameMap entityNameMap = foeSimulationGetEntityNameMap(newSimulation);
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-        foeImexImporter groupImporter =
-            foeSimulationImporter(pSimulationSet->groupData, foeIdValueToGroup(groupValue));
+        foeImexImporter groupImporter = foeSimulationImporter(
+            foeSimulationGetGroupData(newSimulation), foeIdValueToGroup(groupValue));
         if (groupImporter == FOE_NULL_HANDLE)
             continue;
 
-        result = foeImexImporterGetStateData(groupImporter, pSimulationSet->entityNameMap,
-                                             pSimulationSet.get());
+        result = foeImexImporterGetStateData(groupImporter, entityNameMap, newSimulation);
         if (result.value != FOE_SUCCESS)
             return result;
     }
 
     // Importing Persistent State Data
-    result = foeImexImporterGetStateData(foeSimulationPersistentImporter(pSimulationSet->groupData),
-                                         pSimulationSet->entityNameMap, pSimulationSet.get());
+    result = foeImexImporterGetStateData(
+        foeSimulationPersistentImporter(foeSimulationGetGroupData(newSimulation)), entityNameMap,
+        newSimulation);
     if (result.value != FOE_SUCCESS)
         return result;
 
-    for (auto &it : pSimulationSet->componentPools) {
-        if (it.pMaintenanceFn) {
-            it.pMaintenanceFn(it.pComponentPool);
+    size_t componentPoolCount;
+    foeSimulationComponentPoolData *pComponentPools;
+    foeSimulationGetComponentPools(newSimulation, &componentPoolCount, &pComponentPools);
+    for (size_t i = 0; i < componentPoolCount; ++i) {
+        foeSimulationComponentPoolData *pComponentPool = pComponentPools + i;
+        if (pComponentPool->pMaintenanceFn) {
+            pComponentPool->pMaintenanceFn(pComponentPool->pComponentPool);
         }
     }
 
     // Successfully returning
-    *ppSimulationSet = pSimulationSet.release();
+    *pSimulation = newSimulation;
     return to_foeResult(FOE_STATE_IMPORT_SUCCESS);
 }

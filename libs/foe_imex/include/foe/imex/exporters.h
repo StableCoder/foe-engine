@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@
 #define FOE_IMEX_EXPORTERS_H
 
 #include <foe/ecs/id.h>
+#include <foe/handle.h>
 #include <foe/imex/export.h>
 #include <foe/result.h>
 
@@ -15,7 +16,7 @@
 extern "C" {
 #endif
 
-struct foeSimulation;
+FOE_DEFINE_HANDLE(foeSimulation)
 
 #define FOE_EXPORTER_VERSION(major, minor, patch)                                                  \
     ((((uint32_t)(major)) << 22) | (((uint32_t)(minor)) << 12) | ((uint32_t)(patch)))
@@ -25,7 +26,7 @@ typedef uint32_t foeExporterVersion;
 typedef struct foeExporter {
     char const *pName;
     foeExporterVersion version;
-    foeResultSet (*pExportFn)(char const *, struct foeSimulation *);
+    foeResultSet (*pExportFn)(char const *, foeSimulation);
 } foeExporter;
 
 FOE_IMEX_EXPORT

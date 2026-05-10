@@ -1,14 +1,15 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
-
-#include <foe/result.h>
 
 #ifndef EXPORTER_HPP
 #define EXPORTER_HPP
 
-struct foeSimulation;
+#include <foe/handle.h>
+#include <foe/result.h>
 
-foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState);
+FOE_DEFINE_HANDLE(foeSimulation)
+
+foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation simulation);
 
 #endif // EXPORTER_HPP

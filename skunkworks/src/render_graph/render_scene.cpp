@@ -19,13 +19,14 @@
 #include <foe/position/type_defs.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
-#include <foe/simulation/simulation.hpp>
-#include <vulkan/vulkan_core.h>
+#include <foe/simulation/simulation.h>
 
 #include "../log.hpp"
 #include "../result.h"
 #include "../simulation/render_system.hpp"
 #include "../vk_result.h"
+
+#include <array>
 
 namespace {
 
@@ -124,7 +125,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                             foeGfxVkRenderGraphJob const *pDepthRenderTargetUpstreamJobs,
                             VkImageLayout finalDepthLayout,
                             VkSampleCountFlags renderTargetSamples,
-                            foeSimulation *pSimulation,
+                            foeSimulation simulation,
                             VkDescriptorSet cameraDescriptor,
                             uint32_t frameIndex,
                             foeGfxVkRenderGraphJob *pRenderGraphJob) {
@@ -248,7 +249,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
 
         { // RENDER STUFF
             foeRenderSystem renderSystem = (foeRenderSystem)foeSimulationGetSystem(
-                pSimulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM);
+                simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM);
 
             auto renderDataSets = getRenderDataSets(renderSystem);
             VkDescriptorSet const *pPositionDescriptorSets =

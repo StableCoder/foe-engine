@@ -15,7 +15,7 @@
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/result.h>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include <array>
 #include <mutex>

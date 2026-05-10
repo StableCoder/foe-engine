@@ -6,8 +6,10 @@
 #define FOE_SIMULATION_REGISTRATION_H
 
 #include <foe/graphics/session.h>
+#include <foe/handle.h>
 #include <foe/result.h>
 #include <foe/simulation/export.h>
+#include <foe/simulation/simulation.h>
 
 #include <stddef.h>
 
@@ -15,25 +17,24 @@
 extern "C" {
 #endif
 
-struct foeSimulation;
 struct foeSimulationInitInfo;
 
 typedef int foeSimulationUUID;
 
-typedef foeResultSet (*PFN_foeSimulationCreate)(foeSimulation *);
+typedef foeResultSet (*PFN_foeSimulationCreate)(foeSimulation);
 
 /// @return Number of warnings/errors the occurred during the call.
-typedef size_t (*PFN_foeSimulationDestroy)(foeSimulation *);
+typedef size_t (*PFN_foeSimulationDestroy)(foeSimulation);
 
-typedef foeResultSet (*PFN_foeSimulationInitialize)(foeSimulation *, foeSimulationInitInfo const *);
-
-/// @return Number of warnings/errors the occurred during the call.
-typedef size_t (*PFN_foeSimulationDeinitialize)(foeSimulation *);
-
-typedef foeResultSet (*PFN_foeSimulationInitializeGraphics)(foeSimulation *, foeGfxSession);
+typedef foeResultSet (*PFN_foeSimulationInitialize)(foeSimulation, foeSimulationInitInfo const *);
 
 /// @return Number of warnings/errors the occurred during the call.
-typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulation *);
+typedef size_t (*PFN_foeSimulationDeinitialize)(foeSimulation);
+
+typedef foeResultSet (*PFN_foeSimulationInitializeGraphics)(foeSimulation, foeGfxSession);
+
+/// @return Number of warnings/errors the occurred during the call.
+typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulation);
 
 struct foeSimulationFunctionalty {
     /// The UUID of the functionality, must be valid/derived from the FOE_PLUGIN_ID macro

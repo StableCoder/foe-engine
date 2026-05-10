@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,7 +28,7 @@ using PFN_foeImexYamlResourceImport = void (*)(YAML::Node const &,
 using PFN_foeImexYamlComponent = bool (*)(YAML::Node const &,
                                           foeEcsGroupTranslator,
                                           foeEntityID,
-                                          foeSimulation const *);
+                                          foeSimulation);
 
 /**
  * @brief Adds a string/function pointer pair to the importer map

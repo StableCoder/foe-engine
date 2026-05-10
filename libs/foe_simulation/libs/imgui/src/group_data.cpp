@@ -7,7 +7,7 @@
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/external/imgui.h>
 #include <foe/imgui/state.hpp>
-#include <foe/simulation/simulation.hpp>
+#include <foe/simulation/simulation.h>
 
 #include <array>
 #include <iomanip>
@@ -65,8 +65,8 @@ void renderIndexData(foeEcsIndexes indexes, char const *subGroupName) {
 
 } // namespace
 
-foeSimulationImGuiGroupData::foeSimulationImGuiGroupData(foeSimulation *pSimulation) :
-    mpSimulationState{pSimulation} {}
+foeSimulationImGuiGroupData::foeSimulationImGuiGroupData(foeSimulation simulation) :
+    mSimulation{simulation} {}
 
 bool foeSimulationImGuiGroupData::registerUI(foeImGuiState *pState) {
     return pState->addUI(this, foeSimulationImGuiGroupData::renderMenuElements,
@@ -182,7 +182,8 @@ void foeSimulationImGuiGroupData::customUI() {
         for (foeIdGroupValue gv = 0; gv < foeIdMaxDynamicGroupValue; ++gv) {
             foeIdGroup group = foeIdValueToGroup(gv);
 
-            foeImexImporter importer = foeSimulationImporter(mpSimulationState->groupData, group);
+            foeImexImporter importer =
+                foeSimulationImporter(foeSimulationGetGroupData(mSimulation), group);
             if (importer == FOE_NULL_HANDLE)
                 continue;
 
@@ -219,7 +220,8 @@ void foeSimulationImGuiGroupData::customUI() {
         ImGui::Text("Group Value: %u", foeIdGroupToValue(mSelected));
         ImGui::Text("GroupID: %s", foeIdToString(mSelected).c_str());
 
-        foeImexImporter importer = foeSimulationImporter(mpSimulationState->groupData, mSelected);
+        foeImexImporter importer =
+            foeSimulationImporter(foeSimulationGetGroupData(mSimulation), mSelected);
         if (importer != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Importer Data");
@@ -228,7 +230,7 @@ void foeSimulationImGuiGroupData::customUI() {
         }
 
         foeEcsIndexes entityIndexes =
-            foeSimulationEntityIndexes(mpSimulationState->groupData, mSelected);
+            foeSimulationEntityIndexes(foeSimulationGetGroupData(mSimulation), mSelected);
         if (entityIndexes != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Entity Index Data");
@@ -237,7 +239,7 @@ void foeSimulationImGuiGroupData::customUI() {
         }
 
         foeEcsIndexes resourceIndexes =
-            foeSimulationResourceIndexes(mpSimulationState->groupData, mSelected);
+            foeSimulationResourceIndexes(foeSimulationGetGroupData(mSimulation), mSelected);
         if (resourceIndexes != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Resource Index Data");
