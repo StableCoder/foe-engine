@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,8 +21,8 @@ extern "C" {
  * name of the application.
  * @param applicationVersion is an unsigned integer variable containing the developer-supplied
  * version number of the application.
- * @param applicationApiVersion is supposed to be the highest version of Vulkan that the application
- * is designed to use, and thus the version the runtime will be created with
+ * @param applicationMaxVulkanApiVersion is supposed to be the highest version of Vulkan that the
+ * application is designed to use, and thus the maximum version the runtime will be created with
  * @param layerCount is the number of Vulkan layers to enable
  * @param ppLayerNames is a pointer to an array of layerCount null-terminated UTF-8 strings
  * containing the names of layers to enable in the created runtime.
@@ -35,7 +35,7 @@ extern "C" {
 FOE_GFX_EXPORT
 foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
                                    uint32_t applicationVersion,
-                                   uint32_t applicationApiVersion,
+                                   uint32_t applicationMaxVulkanApiVersion,
                                    uint32_t layerCount,
                                    char const *const *ppLayerNames,
                                    uint32_t extensionCount,

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,7 +31,7 @@ void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
 
 extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
                                               uint32_t applicationVersion,
-                                              uint32_t applicationApiVersion,
+                                              uint32_t applicationMaxVulkanApiVersion,
                                               uint32_t layerCount,
                                               char const *const *ppLayerNames,
                                               uint32_t extensionCount,
@@ -42,16 +42,20 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
     }
 
+    uint32_t instanceApiVersion;
+    vkEnumerateInstanceVersion(&instanceApiVersion);
+
     VkApplicationInfo appinfo{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = pApplicationName,
         .applicationVersion = applicationVersion,
         .pEngineName = FOE_ENGINE_NAME,
         .engineVersion = FOE_ENGINE_VERSION,
-        .apiVersion = applicationApiVersion,
+        .apiVersion = applicationMaxVulkanApiVersion,
     };
 
     // Layers / Extensions
+    VkInstanceCreateFlags createFlags = 0;
     std::vector<char const *> layers;
     std::vector<char const *> extensions;
 
@@ -61,10 +65,13 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
         extensions.emplace_back(ppExtensionNames[i]);
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
-    // From Vulkan Load 216+, for non-conforming implementations (such as MoltenVK),
+    // From Vulkan 216+, for non-conforming implementations (such as MoltenVK),
     // need to use the portability extension
-    extensions.emplace_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    if (VK_VERSION_PATCH(instanceApiVersion) >= 216) {
+        createFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        extensions.emplace_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    }
 #endif
 
     // Remove duplicate layers/extensions
@@ -88,9 +95,7 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
     // Create Instance
     VkInstanceCreateInfo instanceCI{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
-        .flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
-#endif
+        .flags = createFlags,
         .pApplicationInfo = &appinfo,
         .enabledLayerCount = static_cast<uint32_t>(layers.size()),
         .ppEnabledLayerNames = layers.data(),
@@ -102,8 +107,8 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
     if (vkResult != VK_SUCCESS)
         goto CREATE_FAILED;
 
-    // Se tthe runtime API version
-    pNewRuntime->apiVersion = applicationApiVersion;
+    // set the runtime API version
+    pNewRuntime->apiVersion = applicationMaxVulkanApiVersion;
 
     // Add layer/extension state to runtime struct for future queries
     foeCreateDelimitedString(layers.size(), layers.data(), '\0', &pNewRuntime->layerNamesLength,
