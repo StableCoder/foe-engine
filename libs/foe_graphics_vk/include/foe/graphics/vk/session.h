@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,7 +11,6 @@
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.h>
-#include <foe/graphics/vk/queue_family.h>
 #include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
@@ -117,9 +116,6 @@ uint32_t foeGfxVkGetNumQueueFamilies(foeGfxSession session);
 
 FOE_GFX_EXPORT
 uint32_t foeGfxVkGetBestQueueFamily(foeGfxSession session, VkQueueFlags flags);
-
-FOE_GFX_EXPORT
-foeGfxVkQueueFamily getFirstQueue(foeGfxSession session);
 
 FOE_GFX_EXPORT
 VkDescriptorSet foeGfxVkGetDummySet(foeGfxSession session);

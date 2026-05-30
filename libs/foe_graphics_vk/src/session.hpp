@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,7 +28,7 @@ struct foeGfxVkSession {
     VmaAllocator allocator{VK_NULL_HANDLE};
 
     uint32_t numQueueFamilies{0};
-    QueueFamily queueFamilies[FOE_GRAPHICS_MAX_QUEUE_FAMILIES];
+    QueueFamily *pQueueFamilies = nullptr;
 
     /// Length in bytes of pLayerNames
     uint32_t layerNamesLength{0};
@@ -63,5 +63,7 @@ struct foeGfxVkSession {
 };
 
 FOE_DEFINE_HANDLE_CASTS(session, foeGfxVkSession, foeGfxSession)
+
+QueueFamily *getFirstQueue(foeGfxSession session);
 
 #endif // SESSION_HPP

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -40,27 +40,6 @@ inline uint32_t popcount(uint32_t value) noexcept {
 #endif
 }
 
-void createQueueFamily(VkDevice device,
-                       VkQueueFlags flags,
-                       uint32_t family,
-                       uint32_t numQueues,
-                       QueueFamily *pQueueFamily) {
-    if (numQueues > FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY) {
-        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_FATAL,
-                "There are {} Vulkan queue families, when the maximum compiled support is {}",
-                numQueues, FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY)
-        std::abort();
-    }
-
-    pQueueFamily->flags = flags;
-    pQueueFamily->family = family;
-    pQueueFamily->numQueues = numQueues;
-
-    for (uint32_t i = 0; i < numQueues; ++i) {
-        vkGetDeviceQueue(device, family, i, &pQueueFamily->queue[i]);
-    }
-}
-
 void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
     // Internal Pools
     if (pSession->pipelinePool)
@@ -72,6 +51,11 @@ void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
     // State
     delete[] pSession->pExtensionNames;
     delete[] pSession->pLayerNames;
+
+    if (pSession->pQueueFamilies != nullptr)
+        for (uint32_t i = 0; i < pSession->numQueueFamilies; ++i)
+            delete[] pSession->pQueueFamilies[i].pQueues;
+    delete[] pSession->pQueueFamilies;
 
     if (pSession->allocator != VK_NULL_HANDLE)
         vmaDestroyAllocator(pSession->allocator);
@@ -582,9 +566,24 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     }
 
     // Retrieve the queues
+    pNewSession->pQueueFamilies = new (std::nothrow) QueueFamily[pNewSession->numQueueFamilies];
+    if (pNewSession->pQueueFamilies == nullptr)
+        goto CREATE_FAILED;
+
     for (uint32_t i = 0; i < pNewSession->numQueueFamilies; ++i) {
-        createQueueFamily(pNewSession->device, queueFamilyProperties[i].queueFlags, i,
-                          queueFamilyProperties[i].queueCount, &pNewSession->queueFamilies[i]);
+        pNewSession->pQueueFamilies[i] = {
+            .flags = queueFamilyProperties[i].queueFlags,
+            .family = i,
+            .numQueues = queueFamilyProperties[i].queueCount,
+            .pQueues = new QueueData[queueFamilyProperties[i].queueCount],
+        };
+        if (pNewSession->pQueueFamilies[i].pQueues == nullptr)
+            goto CREATE_FAILED;
+
+        for (uint32_t j = 0; j < queueFamilyProperties[i].queueCount; ++j) {
+            vkGetDeviceQueue(pNewSession->device, i, j,
+                             &pNewSession->pQueueFamilies[i].pQueues[j].queue);
+        }
     }
 
     { // Allocator
@@ -701,15 +700,12 @@ extern "C" uint32_t foeGfxVkGetBestQueueFamily(foeGfxSession session, VkQueueFla
     auto *pSession = session_from_handle(session);
     std::vector<std::pair<uint32_t, uint32_t>> compatibleQueueFamilies;
 
-    for (uint32_t i = 0; i < FOE_GRAPHICS_MAX_QUEUE_FAMILIES; ++i) {
-        if (pSession->queueFamilies[i].numQueues == 0)
-            continue;
-
-        if (pSession->queueFamilies[i].flags == flags) {
+    for (uint32_t i = 0; i < pSession->numQueueFamilies; ++i) {
+        if (pSession->pQueueFamilies[i].flags == flags) {
             return i;
         }
-        if ((pSession->queueFamilies[i].flags & flags) == flags) {
-            compatibleQueueFamilies.emplace_back(i, popcount(pSession->queueFamilies[i].flags));
+        if ((pSession->pQueueFamilies[i].flags & flags) == flags) {
+            compatibleQueueFamilies.emplace_back(i, popcount(pSession->pQueueFamilies[i].flags));
         }
     }
 
@@ -751,9 +747,9 @@ extern "C" VmaAllocator foeGfxVkGetAllocator(foeGfxSession session) {
     return pSession->allocator;
 }
 
-extern "C" foeGfxVkQueueFamily getFirstQueue(foeGfxSession session) {
+QueueFamily *getFirstQueue(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
-    return queue_family_to_handle(&pSession->queueFamilies[0]);
+    return &pSession->pQueueFamilies[0];
 }
 
 extern "C" void foeGfxDestroySession(foeGfxSession session) {

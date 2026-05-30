@@ -1,11 +1,10 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/graphics/upload_request.h>
 
 #include <foe/graphics/upload_context.h>
-#include <foe/graphics/vk/queue_family.h>
 
 #include "result.h"
 #include "upload_context.hpp"
@@ -105,9 +104,10 @@ extern "C" foeResultSet foeSubmitUploadDataCommands(foeGfxUploadContext uploadCo
             .pSignalSemaphores = &pUploadRequest->copyComplete,
         };
 
-        auto queue = foeGfxGetQueue(queue_family_to_handle(pUploadContext->pSrcQueueFamily));
+        auto queue = foeGfxGetQueue(pUploadContext->pSrcQueueFamily);
         vkResult = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->srcFence);
-        foeGfxReleaseQueue(queue_family_to_handle(pUploadContext->pSrcQueueFamily), queue);
+        queue.release();
+
         if (vkResult != VK_SUCCESS) {
             return vk_to_foeResult(vkResult);
         }
@@ -125,9 +125,10 @@ extern "C" foeResultSet foeSubmitUploadDataCommands(foeGfxUploadContext uploadCo
         .pCommandBuffers = &pUploadRequest->dstCmdBuffer,
     };
 
-    auto queue = foeGfxGetQueue(queue_family_to_handle(pUploadContext->pDstQueueFamily));
+    auto queue = foeGfxGetQueue(pUploadContext->pDstQueueFamily);
     vkResult = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->dstFence);
-    foeGfxReleaseQueue(queue_family_to_handle(pUploadContext->pDstQueueFamily), queue);
+    queue.release();
+
     if (vkResult == VK_SUCCESS) {
         pUploadRequest->dstSubmitted = true;
     }

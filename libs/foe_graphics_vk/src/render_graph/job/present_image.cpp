@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,7 @@
 #include <foe/graphics/vk/session.h>
 
 #include "../../result.h"
+#include "../../session.hpp"
 #include "../../vk_result.h"
 
 #include <functional>
@@ -194,7 +195,6 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGr
 
             auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
             vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
-            foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
             if (vkResult != VK_SUCCESS)
                 std::abort();
         }
@@ -214,7 +214,7 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGr
 
         auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
         vkResult = vkQueuePresentKHR(queue, &presentInfo);
-        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
+        queue.release();
 
         if (vkResult == VK_ERROR_OUT_OF_DATE_KHR || vkResult == VK_SUBOPTIMAL_KHR) {
             // The associated window has been resized, will be fixed for the next frame

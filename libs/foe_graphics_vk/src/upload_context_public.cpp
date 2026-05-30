@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -38,8 +38,8 @@ extern "C" foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
         .allocator = pSession->allocator,
         .pSrcQueueFamily = (transferQueue == graphicsQueue)
                                ? VK_NULL_HANDLE
-                               : &pSession->queueFamilies[transferQueue],
-        .pDstQueueFamily = &pSession->queueFamilies[graphicsQueue],
+                               : &pSession->pQueueFamilies[transferQueue],
+        .pDstQueueFamily = &pSession->pQueueFamilies[graphicsQueue],
     };
     if (pNewContext == nullptr)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);

@@ -1,10 +1,8 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/graphics/vk/model.h>
-
-#include <foe/graphics/vk/queue_family.h>
 
 #include "result.h"
 #include "upload_buffer.hpp"

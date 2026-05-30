@@ -1,39 +1,37 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/queue_family.h>
-
 #include "queue_family.hpp"
 
-extern "C" VkQueue foeGfxTryGetQueue(foeGfxVkQueueFamily queueFamily) {
-    QueueFamily *pQueueFamily = queue_family_from_handle(queueFamily);
+SecuredQueue::SecuredQueue() : lock(), queue(VK_NULL_HANDLE) {}
 
+SecuredQueue::SecuredQueue(VkQueue queue, std::unique_lock<std::mutex> &&lock) :
+    lock(std::move(lock)), queue(queue) {}
+
+void SecuredQueue::release() {
+    queue = VK_NULL_HANDLE;
+    lock.unlock();
+}
+
+SecuredQueue foeGfxTryGetQueue(QueueFamily *pQueueFamily) {
     for (uint32_t i = 0; i < pQueueFamily->numQueues; ++i) {
-        if (pQueueFamily->sync[i].try_lock()) {
-            return pQueueFamily->queue[i];
+        std::unique_lock<std::mutex> lock(pQueueFamily->pQueues[i].sync, std::try_to_lock);
+
+        if (lock) {
+            return SecuredQueue(pQueueFamily->pQueues[i].queue, std::move(lock));
         }
     }
 
-    return VK_NULL_HANDLE;
+    return SecuredQueue();
 }
 
-extern "C" VkQueue foeGfxGetQueue(foeGfxVkQueueFamily queueFamily) {
-    VkQueue queue = foeGfxTryGetQueue(queueFamily);
+SecuredQueue foeGfxGetQueue(QueueFamily *pQueueFamily) {
+    SecuredQueue queue;
 
-    while (queue == VK_NULL_HANDLE) {
-        queue = foeGfxTryGetQueue(queueFamily);
-    }
+    do {
+        queue = foeGfxTryGetQueue(pQueueFamily);
+    } while (!queue);
 
-    return queue;
-}
-
-extern "C" void foeGfxReleaseQueue(foeGfxVkQueueFamily queueFamily, VkQueue queue) {
-    QueueFamily *pQueueFamily = queue_family_from_handle(queueFamily);
-
-    for (uint32_t i = 0; i < pQueueFamily->numQueues; ++i) {
-        if (pQueueFamily->queue[i] == queue) {
-            pQueueFamily->sync[i].unlock();
-        }
-    }
+    return std::move(queue);
 }

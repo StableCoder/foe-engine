@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "result.h"
+#include "session.hpp"
 #include "vk_result.h"
 
 namespace {
@@ -690,7 +691,6 @@ foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
 
             auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
             vkResult = vkQueueSubmit(queue, 1, &submitInfo, pJob->fence);
-            foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
         } else {
             pJob->customSubmit(gfxSession, gfxDelayedDestructor, waitSemaphores.size(),
                                waitSemaphores.data(), (commandBuffer != VK_NULL_HANDLE) ? 1 : 0,

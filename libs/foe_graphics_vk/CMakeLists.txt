@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -66,7 +66,6 @@ target_sources(
          include/foe/graphics/vk/mesh.h
          include/foe/graphics/vk/model.h
          include/foe/graphics/vk/pipeline_pool.h
-         include/foe/graphics/vk/queue_family.h
          include/foe/graphics/vk/render_graph.hpp
          include/foe/graphics/vk/render_pass_pool.h
          include/foe/graphics/vk/render_target.h
