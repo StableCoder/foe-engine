@@ -210,9 +210,9 @@ int Application::initialize(int argc, char **argv) {
                     pNewWindow->pNeedSwapchainRebuild.reset(new std::atomic_bool{true});
                     pNewWindow->renderSurfaceData.pActive.reset(new std::atomic_bool{false});
 
-                    pNewWindow->pWindow = new foeQtVulkanWindow(
-                        pQtGuiApplication, pNewWindow->renderSurfaceData.pActive.get(),
-                        pNewWindow->pNeedSwapchainRebuild.get());
+                    pNewWindow->pWindow =
+                        new foeQtVulkanWindow(pNewWindow->renderSurfaceData.pActive.get(),
+                                              pNewWindow->pNeedSwapchainRebuild.get());
 
                     pNewWindow->pWindow->setTitle(it.title.c_str());
 

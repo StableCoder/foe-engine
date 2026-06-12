@@ -11,12 +11,10 @@
 #include "../hid/mouse.hpp"
 #include "../window_surface.hpp"
 
-foeQtVulkanWindow::foeQtVulkanWindow(QGuiApplication *pGuiApp,
-                                     std::atomic_bool *pRenderWindowFlag,
+foeQtVulkanWindow::foeQtVulkanWindow(std::atomic_bool *pRenderWindowFlag,
                                      std::atomic_bool *pNeedSwapchainRebuild,
                                      QWindow *parent) :
     QWindow(parent),
-    pGuiApplication{pGuiApp},
     pRenderWindowFlag{pRenderWindowFlag},
     pNeedSwapchainRebuild{pNeedSwapchainRebuild} {
     setSurfaceType(QSurface::VulkanSurface);

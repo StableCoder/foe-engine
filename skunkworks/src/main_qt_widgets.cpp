@@ -49,8 +49,7 @@ int main(int argc, char **argv) {
             std::atomic_bool *pNeedRebuildSwapchain = new std::atomic_bool{true};
             std::atomic_bool *pActive = new std::atomic_bool{false};
 
-            foeQtVulkanWindow *pWindow =
-                new foeQtVulkanWindow{&qtApplication, pActive, pNeedRebuildSwapchain};
+            foeQtVulkanWindow *pWindow = new foeQtVulkanWindow{pActive, pNeedRebuildSwapchain};
 
             windowData.emplace_back(Application::ImportedQtWindowData{
                 .pQtWindow = pWindow,

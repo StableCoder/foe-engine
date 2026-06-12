@@ -35,8 +35,7 @@ struct MouseEvent {
 
 class foeQtVulkanWindow : public QWindow {
   public:
-    foeQtVulkanWindow(QGuiApplication *pGuiApp,
-                      std::atomic_bool *pRenderWindowFlag,
+    foeQtVulkanWindow(std::atomic_bool *pRenderWindowFlag,
                       std::atomic_bool *pNeedSwapchainRebuild,
                       QWindow *parent = nullptr);
     ~foeQtVulkanWindow();
@@ -50,8 +49,6 @@ class foeQtVulkanWindow : public QWindow {
 
   private:
     Q_DISABLE_COPY(foeQtVulkanWindow)
-
-    QGuiApplication *const pGuiApplication;
 
     std::atomic_bool *pRenderWindowFlag;
     std::atomic_bool *pNeedSwapchainRebuild;
