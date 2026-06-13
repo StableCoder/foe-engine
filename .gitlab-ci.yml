@@ -671,22 +671,6 @@ macOS Vulkan HW Testing:
 
 # Analysis
 
-Static Analysis:
-  stage: Analysis
-  image: docker.io/stabletec/build-foe:fedora
-  tags:
-    - container
-    - linux
-    - amd64
-  needs: []
-  dependencies: []
-  variables:
-    CC: clang
-    CXX: clang++
-  script:
-    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D CLANG_TIDY=ON -D CPPCHECK=ON
-    - cmake --build build
-
 Code Coverage:
   stage: Analysis
   image: docker.io/stabletec/build-foe:fedora
