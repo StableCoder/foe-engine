@@ -198,13 +198,48 @@ int Application::initialize(int argc, char **argv) {
         // window creation
         std::atomic_int windowSetups = 0;
 
-        for (auto const &it : settings.windows) {
+        bool windowCreated = false;
+        bool windowAttempted = false;
+        for (auto it = settings.windows.begin(); it != settings.windows.end();) {
 #ifdef FOE_SKUNKWORKS_QT
-            if (pQtGuiApplication && it.implementation == Settings::Window::Implementation::Qt) {
+            if (pQtGuiApplication &&
+                (it->implementation == Settings::Window::Implementation::Qt || windowAttempted)) {
                 windowSetups++;
 
+                struct QtWindowSetupData {
+                    std::string title;
+                    uint32_t width, height;
+                    uint32_t msaa;
+                    bool vsync;
+
+#ifdef EDITOR_MODE
+                    std::mutex *pImGuiWindowSync;
+                    foeImGuiWindow *pImGuiWindowInfo;
+#endif
+
+                    std::mutex *pQtWindowDataSync;
+                    std::vector<Qt_WindowData *> *pQtWindowDataList;
+
+                    std::atomic_int *pActiveWindowSetups;
+                };
+
+                QtWindowSetupData *pQtWindowSetupData = new QtWindowSetupData{
+                    .title = it->title,
+                    .width = it->width,
+                    .height = it->height,
+                    .msaa = it->msaa,
+                    .vsync = it->vsync,
+#ifdef EDITOR_MODE
+                    .pImGuiWindowSync = &windowInfoSync,
+                    .pImGuiWindowInfo = &windowInfo,
+#endif
+                    .pQtWindowDataSync = &qt_windowDataSync,
+                    .pQtWindowDataList = &qt_windowData,
+                    .pActiveWindowSetups = &windowSetups,
+                };
+
                 // Qt need operations to run on the QGuiApplication thread
-                QTimer::singleShot(0, pQtGuiApplication, [&] {
+                QTimer::singleShot(0, pQtGuiApplication, [=] {
                     std::unique_ptr<Qt_WindowData> pNewWindow{new Qt_WindowData};
 
                     pNewWindow->pNeedSwapchainRebuild.reset(new std::atomic_bool{true});
@@ -214,13 +249,14 @@ int Application::initialize(int argc, char **argv) {
                         new foeQtVulkanWindow(pNewWindow->renderSurfaceData.pActive.get(),
                                               pNewWindow->pNeedSwapchainRebuild.get());
 
-                    pNewWindow->pWindow->setTitle(it.title.c_str());
+                    pNewWindow->pWindow->setTitle(pQtWindowSetupData->title.c_str());
 
-                    pNewWindow->pWindow->resize(800, 600);
+                    pNewWindow->pWindow->resize(pQtWindowSetupData->width,
+                                                pQtWindowSetupData->height);
                     pNewWindow->pWindow->show();
 
-                    pNewWindow->desiredSampleCount = it.msaa;
-                    pNewWindow->vsync = it.vsync;
+                    pNewWindow->desiredSampleCount = pQtWindowSetupData->msaa;
+                    pNewWindow->vsync = pQtWindowSetupData->vsync;
 
                     pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
                     pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
@@ -229,30 +265,38 @@ int Application::initialize(int argc, char **argv) {
                     pNewWindow->farZ = 50;
 
 #ifdef EDITOR_MODE
-                    imguiAddQtWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
-                                     &pNewWindow->mouse);
+                    pQtWindowSetupData->pImGuiWindowSync->lock();
+                    imguiAddQtWindow(pQtWindowSetupData->pImGuiWindowInfo, pNewWindow.get(),
+                                     &pNewWindow->keyboard, &pNewWindow->mouse);
+                    pQtWindowSetupData->pImGuiWindowSync->unlock();
 #endif
 
-                    std::unique_lock lock{qt_windowDataSync};
-                    qt_windowData.emplace_back(pNewWindow.release());
+                    std::unique_lock lock{*pQtWindowSetupData->pQtWindowDataSync};
+                    pQtWindowSetupData->pQtWindowDataList->emplace_back(pNewWindow.release());
+                    lock.unlock();
 
-                    windowSetups--;
+                    (*pQtWindowSetupData->pActiveWindowSetups)--;
+
+                    delete pQtWindowSetupData;
                 });
+
+                windowCreated = true;
             } else
 #endif // FOE_SKUNKWORKS_QT
 #ifdef FOE_SKUNKWORKS_SDL3
-                if (it.implementation == Settings::Window::Implementation::SDL3) {
+                if (it->implementation == Settings::Window::Implementation::SDL3 ||
+                    windowAttempted) {
                 std::unique_ptr<SDL3_WindowData> pNewWindow{new SDL3_WindowData};
                 pNewWindow->renderSurfaceData.pActive.reset(new std::atomic_bool{true});
 
                 bool result =
-                    createSDL3Window(it.width, it.height, it.title.c_str(), pNewWindow.get());
+                    createSDL3Window(it->width, it->height, it->title.c_str(), pNewWindow.get());
 
                 if (!result)
                     std::abort();
 
-                pNewWindow->desiredSampleCount = it.msaa;
-                pNewWindow->vsync = it.vsync;
+                pNewWindow->desiredSampleCount = it->msaa;
+                pNewWindow->vsync = it->vsync;
 
                 pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
                 pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
@@ -261,25 +305,30 @@ int Application::initialize(int argc, char **argv) {
                 pNewWindow->farZ = 50;
 
 #ifdef EDITOR_MODE
+                windowInfoSync.lock();
                 imguiAddSDL3Window(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
                                    &pNewWindow->mouse);
+                windowInfoSync.unlock();
 #endif
 
                 sdl3_windowData.emplace_back(pNewWindow.release());
+
+                windowCreated = true;
             } else
 #endif // FOE_SKUNKWORKS_SDL3
-            {
 #ifdef FOE_SKUNKWORKS_GLFW
+                if (it->implementation == Settings::Window::Implementation::GLFW ||
+                    windowAttempted) {
                 std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
                 pNewWindow->renderSurfaceData.pActive.reset(new std::atomic_bool{true});
 
                 bool result =
-                    createGlfwWindow(it.width, it.height, it.title.c_str(), pNewWindow.get());
+                    createGlfwWindow(it->width, it->height, it->title.c_str(), pNewWindow.get());
                 if (!result)
                     std::abort();
 
-                pNewWindow->desiredSampleCount = it.msaa;
-                pNewWindow->vsync = it.vsync;
+                pNewWindow->desiredSampleCount = it->msaa;
+                pNewWindow->vsync = it->vsync;
 
                 pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
                 pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
@@ -288,12 +337,29 @@ int Application::initialize(int argc, char **argv) {
                 pNewWindow->farZ = 50;
 
 #ifdef EDITOR_MODE
+                windowInfoSync.lock();
                 imguiAddGlfwWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
                                    &pNewWindow->mouse);
+                windowInfoSync.unlock();
 #endif
 
                 glfw_windowData.emplace_back(pNewWindow.release());
+
+                windowCreated = true;
+            }
 #endif // FOE_SKUNKWORKS_GLFW
+            {
+            }
+
+            if (windowCreated) {
+                windowCreated = false;
+                windowAttempted = false;
+                ++it;
+            } else if (!windowAttempted) {
+                windowAttempted = true;
+            } else {
+                // could not create window
+                std::abort();
             }
         }
 

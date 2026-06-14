@@ -125,6 +125,7 @@ struct Application {
     foeImGuiDeveloperConsole devConsole;
     foeImGuiTermination fileTermination;
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
+    std::mutex windowInfoSync;
     foeImGuiWindow windowInfo;
     foeImGuiSave uiSave;
 
