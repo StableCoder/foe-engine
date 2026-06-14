@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
     Application skunkworksApplication;
     int skunkworksRetVal;
 
+    qtApplication.setQuitOnLastWindowClosed(false);
     skunkworksApplication.setQtGuiApplication(&qtApplication);
 
     { // Qt Widget Test Window
@@ -70,6 +71,7 @@ int main(int argc, char **argv) {
         skunkworksRetVal = skunkworksApplication.initialize(argc, argv);
         if (skunkworksRetVal == 0)
             skunkworksRetVal = skunkworksApplication.mainloop();
+        qtApplication.quit();
         skunkworksApplication.deinitialize();
     });
 
