@@ -1,0 +1,3 @@
+leak:libdecor-gtk.so
+leak:libfontconfig.so.1
+leak:libwayland-client.so.0
