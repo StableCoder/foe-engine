@@ -659,8 +659,7 @@ void Application::deinitialize() {
         foeGfxDestroySession(gfxSession);
     gfxSession = FOE_NULL_HANDLE;
 
-    if (gfxRuntime != FOE_NULL_HANDLE)
-        foeGfxDestroyRuntime(gfxRuntime);
+    destroyGfxRuntime(gfxRuntime);
     gfxRuntime = FOE_NULL_HANDLE;
 
     // Cleanup threadpool

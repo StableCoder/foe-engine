@@ -126,6 +126,15 @@ foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
     return result;
 }
 
+void destroyGfxRuntime(foeGfxRuntime gfxRuntime) {
+    if (registeredCallback)
+        foeGfxVkDeregisterDebugCallback(gfxRuntime, registeredCallback);
+    registeredCallback = FOE_NULL_HANDLE;
+
+    if (gfxRuntime != FOE_NULL_HANDLE)
+        foeGfxDestroyRuntime(gfxRuntime);
+}
+
 namespace {
 
 auto determineVkPhysicalDevice(VkInstance vkInstance,
