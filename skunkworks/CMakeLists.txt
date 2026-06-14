@@ -78,7 +78,7 @@ endif()
 # Engine Entrypoint
 add_executable(foe_skunkworks)
 
-if(Qt6_FOUND)
+if(FOE_SUPPORT_QT6)
   add_compile_definitions(FOE_SKUNKWORKS_QT)
 
   add_executable(foe_skunkworks_qt src/main_qt.cpp)
