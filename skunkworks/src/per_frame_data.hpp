@@ -50,7 +50,6 @@ struct PerFrameData {
         // Fences
         VkFenceCreateInfo fenceCI{
             .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-            .flags = VK_FENCE_CREATE_SIGNALED_BIT,
         };
 
         vkResult = vkCreateFence(device, &fenceCI, nullptr, &frameComplete);
