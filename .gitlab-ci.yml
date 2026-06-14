@@ -223,7 +223,7 @@ Debian/GCC Static:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D FOE_SUPPORT_XR=OFF
   <<: *linux_template
 
 Debian/GCC Shared:
@@ -239,7 +239,7 @@ Debian/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D FOE_SUPPORT_XR=OFF
   <<: *linux_template
 
 Debian/Clang Static:
@@ -255,7 +255,7 @@ Debian/Clang Static:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D FOE_SUPPORT_XR=OFF
   <<: *linux_template
 
 Debian/Clang Shared:
@@ -271,7 +271,7 @@ Debian/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D FOE_SUPPORT_XR=OFF
   <<: *linux_template
 
 # Fedora

@@ -16,9 +16,9 @@ cmake_dependent_option(
   IMGUI_DEMO "Build with the ImGui demo in the bringup app" OFF EDITOR_MODE OFF)
 
 if(APPLE)
-  option(XR_SUPPORT "Compile/link XR device support" OFF)
+  option(FOE_SUPPORT_XR "Compile/link XR device support" OFF)
 else()
-  option(XR_SUPPORT "Compile/link XR device support" ON)
+  option(FOE_SUPPORT_XR "Compile/link XR device support" ON)
 endif()
 
 # C11 standard, no extensions
@@ -64,7 +64,7 @@ if(NOT TARGET foe_core)
                imgui::vk
                physics::imgui
                position::imgui)
-  if(XR_SUPPORT)
+  if(FOE_SUPPORT_XR)
     find_package(foe REQUIRED COMPONENTS xr::openxr xr::openxr::vk)
   endif()
 endif()
@@ -177,7 +177,7 @@ target_code_coverage(
   foe::position
   foe::simulation)
 
-if(XR_SUPPORT)
+if(FOE_SUPPORT_XR)
   target_link_libraries(
     foe_skunkworks_lib PUBLIC foe::xr::openxr foe::xr::openxr::vk
                               foe::external::xr_result_serialization)

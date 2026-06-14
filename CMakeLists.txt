@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -32,9 +32,9 @@ set(SANITIZER
     CACHE STRING "Sanitizer to compile FoE projects with")
 
 if(APPLE)
-  option(XR_SUPPORT "Compile/link XR device support" OFF)
+  option(FOE_SUPPORT_XR "Compile/link XR device support" OFF)
 else()
-  option(XR_SUPPORT "Compile/link XR device support" ON)
+  option(FOE_SUPPORT_XR "Compile/link XR device support" ON)
 endif()
 
 # C11 standard, no extensions

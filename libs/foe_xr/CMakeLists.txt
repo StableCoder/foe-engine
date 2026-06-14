@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -12,8 +12,8 @@ add_library(foe::xr ALIAS foe_xr)
 # Definition
 set_target_properties(foe_xr PROPERTIES DEBUG_POSTFIX "_d")
 
-if(XR_SUPPORT)
-  target_compile_definitions(foe_xr INTERFACE FOE_XR_SUPPORT)
+if(FOE_SUPPORT_XR)
+  target_compile_definitions(foe_xr INTERFACE FOE_SUPPORT_XR)
 endif()
 
 target_link_libraries(foe_xr INTERFACE foe_core)

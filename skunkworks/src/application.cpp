@@ -39,7 +39,7 @@
 #include "vk_result.h"
 #include "wsi_glfw/window.hpp"
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
 #include <foe/xr/openxr/runtime.h>
 #include <foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp>
 
@@ -301,7 +301,7 @@ int Application::initialize(int argc, char **argv) {
         while (windowSetups != 0)
             ;
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
         if (settings.xr.enableXr || settings.xr.forceXr) {
             result = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
             if (result.value != FOE_SUCCESS && settings.xr.forceXr) {
@@ -423,7 +423,7 @@ int Application::initialize(int argc, char **argv) {
                 foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
 #endif
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
         xrData.sampleCount = foeGfxVkGetBestSupportedMSAA(gfxSession, xrData.desiredSampleCount);
 #endif
     }
@@ -499,7 +499,7 @@ int Application::initialize(int argc, char **argv) {
                                             (void *)threadPool, asyncTaskFunc);
     }
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
     if (settings.xr.enableXr || settings.xr.forceXr) {
         result = ::startXR(xrRuntime, gfxSession, gfxDelayedDestructor, depthFormat, true, &xrData);
 
@@ -528,7 +528,7 @@ void Application::deinitialize() {
         foeDeinitializeSimulation(simulation);
     }
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
     stopXR(xrRuntime, gfxSession, true, &xrData);
 
     if (xrRuntime != FOE_NULL_HANDLE)
@@ -695,7 +695,7 @@ int Application::mainloop() {
             //     foeDestroySimulation(tempSimulation);
             // }
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
             if constexpr (false) {
                 if (xrData.session == FOE_NULL_HANDLE) {
                     foeScheduleAsyncTask(
@@ -718,7 +718,7 @@ int Application::mainloop() {
                         this);
                 }
             }
-#endif // FOE_XR_SUPPORT
+#endif // FOE_SUPPORT_XR
         }
 
         // Component Pool Maintenance
@@ -767,7 +767,7 @@ int Application::mainloop() {
         processQtEvents(qt_windowData.size(), qt_windowData.data());
 #endif
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
         // Process XR Events
         if (xrRuntime != FOE_NULL_HANDLE)
             foeXrProcessEvents(xrRuntime);
@@ -1136,7 +1136,7 @@ int Application::mainloop() {
         // If we have a frame we can render to, proceed to check for ready-to-render
         // data
         if (frameIndex != UINT32_MAX) {
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
             // Lock rendering to OpenXR framerate, which overrides regular rendering
             bool xrAcquiredFrame = false;
             if (xrData.session != FOE_NULL_HANDLE && foeOpenXrGetSessionActive(xrData.session)) {
@@ -1415,7 +1415,7 @@ int Application::mainloop() {
                     simulation, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM),
                 frameIndex);
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
             // OpenXR Render Section
             std::vector<XrCompositionLayerProjectionView> projectionViews{
                 xrData.views.size(), XrCompositionLayerProjectionView{
@@ -1877,7 +1877,7 @@ int Application::mainloop() {
                 ERRC_END_PROGRAM
             }
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
             if (xrAcquiredFrame) {
                 XrCompositionLayerProjection layerProj;
                 XrCompositionLayerBaseHeader *pLayers = NULL;

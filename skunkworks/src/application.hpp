@@ -35,7 +35,7 @@
 #include <array>
 #include <vector>
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
 #include "xr.hpp"
 #endif
 
@@ -102,7 +102,7 @@ struct Application {
 
     // XR
     foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
     BringupAppXrData xrData;
 #endif
 

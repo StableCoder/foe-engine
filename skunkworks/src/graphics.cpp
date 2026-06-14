@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,7 +15,7 @@
 #include <memory>
 #include <vector>
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
 #include <foe/xr/openxr/runtime.h>
 #include <foe/xr/openxr/vk/vulkan.h>
 #endif
@@ -65,7 +65,7 @@ foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
                               std::vector<std::string> layers,
                               std::vector<std::string> extensions,
                               foeGfxRuntime *pGfxRuntime) {
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
     // OpenXR
     if (xrRuntime != FOE_NULL_HANDLE) {
         uint32_t extensionsLength;
@@ -149,7 +149,7 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
 
     // OpenXR requirements
     VkPhysicalDevice xrPhysicalDevice{VK_NULL_HANDLE};
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
     if (xrRuntime != FOE_NULL_HANDLE) {
         foeXrGetVulkanGraphicsDevice(foeOpenXrGetInstance(xrRuntime), 0, vkInstance,
                                      &xrPhysicalDevice);
@@ -273,7 +273,7 @@ foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
         extensions.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
     // OpenXR
     if (xrRuntime != FOE_NULL_HANDLE) {
         uint32_t extensionsLength;

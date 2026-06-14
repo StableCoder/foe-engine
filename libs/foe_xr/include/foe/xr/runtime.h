@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,10 +7,10 @@
 
 #include <foe/handle.h>
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
 #include <foe/result.h>
 #include <foe/xr/export.h>
-#endif // FOE_XR_SUPPORT
+#endif // FOE_SUPPORT_XR
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,10 +27,10 @@ extern "C" {
  */
 FOE_DEFINE_HANDLE(foeXrRuntime)
 
-#ifdef FOE_XR_SUPPORT
+#ifdef FOE_SUPPORT_XR
 FOE_XR_EXPORT
 foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime);
-#endif // FOE_XR_SUPPORT
+#endif // FOE_SUPPORT_XR
 
 #ifdef __cplusplus
 }

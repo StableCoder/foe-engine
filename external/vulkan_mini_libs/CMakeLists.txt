@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.13)
 
 # Dependencies
 find_package(Vulkan REQUIRED)
-if(XR_SUPPORT)
+if(FOE_SUPPORT_XR)
   find_package(OpenXR REQUIRED)
 endif()
 
@@ -129,7 +129,7 @@ target_sources(
     ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_result_to_string.h)
 
 # OpenXR Result Serialization
-if(XR_SUPPORT)
+if(FOE_SUPPORT_XR)
   add_library(xr_result_serialization INTERFACE)
   add_library(foe::external::xr_result_serialization ALIAS
               xr_result_serialization)

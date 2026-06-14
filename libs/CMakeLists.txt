@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -20,6 +20,6 @@ add_subdirectory(foe_simulation)
 add_subdirectory(foe_xr)
 add_subdirectory(foe_yaml)
 
-if(XR_SUPPORT)
+if(FOE_SUPPORT_XR)
   add_subdirectory(foe_xr_openxr)
 endif()

@@ -19,7 +19,7 @@ target_sources(
           #
           render_graph/render_scene.cpp)
 
-if(XR_SUPPORT)
+if(FOE_SUPPORT_XR)
   target_sources(foe_skunkworks_lib PRIVATE xr.cpp xr_result.c)
 endif()
 
@@ -34,9 +34,9 @@ add_subdirectory(state_import)
 find_package(glfw3)
 find_package(SDL3 COMPONENTS SDL3)
 
-option(FOE_SUPPORT_GLFW3 "Support GLFW3 windows" glfw3_FOUND)
-option(FOE_SUPPORT_SDL3 "Support SDL3 windows" SDL3_FOUND)
-option(FOE_SUPPORT_QT6 "Support Qt6 windows" Qt6_FOUND)
+option(FOE_SUPPORT_GLFW3 "Support GLFW3 windows" ${glfw3_FOUND})
+option(FOE_SUPPORT_SDL3 "Support SDL3 windows" ${SDL3_FOUND})
+option(FOE_SUPPORT_QT6 "Support Qt6 windows" ${Qt6_FOUND})
 
 if(FOE_SUPPORT_GLFW3)
   message(STATUS "Compiling foe_skunkworks with GLFW windowing support")
