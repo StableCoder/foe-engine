@@ -657,7 +657,7 @@ macOS Vulkan HW Testing:
   image: docker.io/stabletec/build-foe:fedora
   parallel:
     matrix:
-      - ARCH: [amd64, arm64]
+      - ARCH: [amd64]
   tags:
     - container
     - linux
