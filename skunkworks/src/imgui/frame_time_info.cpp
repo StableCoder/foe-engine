@@ -20,7 +20,8 @@ std::array<char const *, 1> renderMenus{
 
 }
 
-foeImGuiFrameTimeInfo::foeImGuiFrameTimeInfo(FrameTimer *pFrameTimer) : mFrameTimer{pFrameTimer} {}
+foeImGuiFrameTimeInfo::foeImGuiFrameTimeInfo(FrameTimer *pFrameTimer) :
+    mFrameTimer{pFrameTimer} {}
 
 bool foeImGuiFrameTimeInfo::registerUI(foeImGuiState *pState) {
     return pState->addUI(this, foeImGuiFrameTimeInfo::renderMenuElements,

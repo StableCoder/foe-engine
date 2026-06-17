@@ -20,7 +20,8 @@ void yaml_read_indexes(std::string const &nodeName, YAML::Node const &node, foeE
     try {
         if (!yaml_read_uint32_t("next_free_index", readNode, nextNewIndex)) {
             throw foeYamlException{
-                "next_free_index - Required node not found to parse as 'uint32_t'"};
+                "next_free_index - Required node not found to parse as 'uint32_t'"
+            };
         }
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {

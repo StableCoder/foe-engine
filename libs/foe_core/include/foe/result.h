@@ -13,9 +13,9 @@ extern "C" {
 
 /// The minimum possible result code (not quite the full rangle to allow conversion to the absolute
 /// value)
-#define FOE_RESULT_MIN_ENUM -0x7FFFFFFF
+#define FOE_RESULT_MIN_ENUM        -0x7FFFFFFF
 /// The maximum possible result code
-#define FOE_RESULT_MAX_ENUM 0x7FFFFFFF
+#define FOE_RESULT_MAX_ENUM        0x7FFFFFFF
 /// The maximum length that a result code name that can be returned from a
 /// <result>ToString(<result>) function
 #define FOE_MAX_RESULT_STRING_SIZE 128

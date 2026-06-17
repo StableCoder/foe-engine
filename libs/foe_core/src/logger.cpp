@@ -43,7 +43,8 @@ void foeLogger::log(char const *pCategoryName, foeLogLevel level, char const *pM
             it.logMessage(it.pContext, pCategoryName, level, pMessage);
     }
 
-    [[unlikely]] if (level == FOE_LOG_LEVEL_FATAL) {
+    [[unlikely]]
+    if (level == FOE_LOG_LEVEL_FATAL) {
         for (auto const &it : mSinks) {
             if (it.logException)
                 it.logException(it.pContext);

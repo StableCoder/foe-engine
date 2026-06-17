@@ -75,8 +75,7 @@ foeResult createQtWindowVkSurface(foeGfxRuntime gfxRuntime,
     QString const platformName = QGuiApplication::platformName();
 
 #if __APPLE__
-    if (platformName == "cocoa") {
-    }
+    if (platformName == "cocoa") {}
 #elif _WIN32
     if (platformName == "windows") {
         newSurface = createSurfaceWin32(gfxRuntime, pWindowData->pWindow);

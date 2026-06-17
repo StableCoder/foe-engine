@@ -959,7 +959,8 @@ bool yaml_read_VkPipelineVertexInputStateCreateInfo(std::string const &nodeName,
                             (VkVertexInputBindingDescription &)
                                 newData.pVertexBindingDescriptions[i])) {
                         throw foeYamlException{
-                            "vertex_binding_descriptions - Failed to read list-node"};
+                            "vertex_binding_descriptions - Failed to read list-node"
+                        };
                     }
                 }
             }
@@ -981,7 +982,8 @@ bool yaml_read_VkPipelineVertexInputStateCreateInfo(std::string const &nodeName,
                             (VkVertexInputAttributeDescription &)
                                 newData.pVertexAttributeDescriptions[i])) {
                         throw foeYamlException{
-                            "vertex_attribute_descriptions - Failed to read list-node"};
+                            "vertex_attribute_descriptions - Failed to read list-node"
+                        };
                     }
                 }
             }

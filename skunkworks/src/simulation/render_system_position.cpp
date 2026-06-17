@@ -29,12 +29,13 @@ void destroyPositionGpuData(foeGfxSession gfxSession, RenderSystemPositionGpuDat
         vmaDestroyBuffer(foeGfxVkGetAllocator(gfxSession), pData->buffer, pData->alloc);
 }
 
-[[nodiscard]] foeResultSet createPositionGpuData(foeGfxSession gfxSession,
-                                                 uint32_t alignment,
-                                                 uint32_t capacity,
-                                                 VkDescriptorSetLayout layout,
-                                                 uint32_t binding,
-                                                 RenderSystemPositionGpuData *pData) {
+[[nodiscard]]
+foeResultSet createPositionGpuData(foeGfxSession gfxSession,
+                                   uint32_t alignment,
+                                   uint32_t capacity,
+                                   VkDescriptorSetLayout layout,
+                                   uint32_t binding,
+                                   RenderSystemPositionGpuData *pData) {
     RenderSystemPositionGpuData newData = {
         .itemCapacity = capacity,
     };
@@ -213,9 +214,10 @@ void removePositionData(RenderSystemPositionData &positionData, size_t index) {
     --positionData.itemCount;
 }
 
-[[nodiscard]] foeResultSet preparePositionGpuData(RenderSystemPositionData &positionData,
-                                                  foeGfxSession gfxSession,
-                                                  uint32_t frameIndex) {
+[[nodiscard]]
+foeResultSet preparePositionGpuData(RenderSystemPositionData &positionData,
+                                    foeGfxSession gfxSession,
+                                    uint32_t frameIndex) {
     foeResultSet result = to_foeResult(FOE_SKUNKWORKS_SUCCESS);
 
     if (positionData.itemCount > 0) {

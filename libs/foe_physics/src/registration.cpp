@@ -141,10 +141,9 @@ foeResultSet create(foeSimulation simulation) {
             .pLoader = new (std::nothrow) foeCollisionShapeLoader,
             .pCanProcessCreateInfoFn = foeCollisionShapeLoader::canProcessCreateInfo,
             .pLoadFn = foeCollisionShapeLoader::load,
-            .pMaintenanceFn =
-                [](void *pLoader) {
-                    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->maintenance();
-                },
+            .pMaintenanceFn = [](void *pLoader) {
+                reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->maintenance();
+            },
         };
         if (loaderCI.pLoader == nullptr)
             return to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
@@ -172,8 +171,9 @@ foeResultSet create(foeSimulation simulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
-            .pMaintenanceFn =
-                [](void *pData) { foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData); },
+            .pMaintenanceFn = [](void *pData) {
+                foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData);
+            },
         };
 
         result = foeEcsCreateComponentPool(0, 16, sizeof(foeRigidBody), NULL,

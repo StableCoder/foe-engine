@@ -4,11 +4,13 @@
 
 #include <foe/search_paths.hpp>
 
-foeSearchPaths::Reader::Reader() noexcept : mPaths{nullptr} {}
+foeSearchPaths::Reader::Reader() noexcept :
+    mPaths{nullptr} {}
 
 foeSearchPaths::Reader::~Reader() { release(); }
 
-foeSearchPaths::Reader::Reader(Reader &&other) noexcept : mPaths{other.mPaths} {
+foeSearchPaths::Reader::Reader(Reader &&other) noexcept :
+    mPaths{other.mPaths} {
     other.mPaths = nullptr;
 }
 
@@ -41,4 +43,5 @@ auto foeSearchPaths::Reader::searchPaths() const noexcept
     return nullptr;
 }
 
-foeSearchPaths::Reader::Reader(foeSearchPaths *pPaths) noexcept : mPaths{pPaths} {}
+foeSearchPaths::Reader::Reader(foeSearchPaths *pPaths) noexcept :
+    mPaths{pPaths} {}

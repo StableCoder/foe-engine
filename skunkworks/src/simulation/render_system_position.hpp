@@ -37,19 +37,22 @@ struct RenderSystemPositionData {
     size_t alignment;
 };
 
-[[nodiscard]] foeResultSet initializePositionData(foeGfxSession gfxSession,
-                                                  RenderSystemPositionData &positionData);
+[[nodiscard]]
+foeResultSet initializePositionData(foeGfxSession gfxSession,
+                                    RenderSystemPositionData &positionData);
 
 void deinitializePositionData(foeGfxSession gfxSession, RenderSystemPositionData &positionData);
 
-[[nodiscard]] foeResultSet insertPositionData(RenderSystemPositionData &positionData,
-                                              size_t index,
-                                              foePosition3d const *pPositionData);
+[[nodiscard]]
+foeResultSet insertPositionData(RenderSystemPositionData &positionData,
+                                size_t index,
+                                foePosition3d const *pPositionData);
 
 void removePositionData(RenderSystemPositionData &positionData, size_t index);
 
-[[nodiscard]] foeResultSet preparePositionGpuData(RenderSystemPositionData &positionData,
-                                                  foeGfxSession gfxSession,
-                                                  uint32_t frameIndex);
+[[nodiscard]]
+foeResultSet preparePositionGpuData(RenderSystemPositionData &positionData,
+                                    foeGfxSession gfxSession,
+                                    uint32_t frameIndex);
 
 #endif // RENDER_POSITION_SUBSYSTEM_HPP

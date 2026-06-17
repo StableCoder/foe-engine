@@ -36,7 +36,8 @@ void yaml_read_armature(YAML::Node const &node,
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         throw foeYamlException{
-            std::string{"Failed to create foeArmatureCreateInfo due to error: "} + buffer};
+            std::string{"Failed to create foeArmatureCreateInfo due to error: "} + buffer
+        };
     }
 
     *pCreateInfo = createInfo;

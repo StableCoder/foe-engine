@@ -162,11 +162,10 @@ bool foeQtVulkanWindow::event(QEvent *e) {
         inputSync.lock();
         mouseEvents.emplace(MouseEvent{
             .type = QEvent::MouseMove,
-            .position =
-                {
-                    .x = event->position().x(),
-                    .y = event->position().y(),
-                },
+            .position = {
+                .x = event->position().x(),
+                .y = event->position().y(),
+            },
         });
         inputSync.unlock();
     } break;

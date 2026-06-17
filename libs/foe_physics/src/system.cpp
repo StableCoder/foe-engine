@@ -59,15 +59,17 @@ struct PhysicsSystem {
 
 FOE_DEFINE_HANDLE_CASTS(physics_system, PhysicsSystem, foePhysicsSystem)
 
-[[nodiscard]] foeResultSet addWorldObject(PhysicsSystem *pPhysicsSystem,
-                                          foeEntityID entity,
-                                          foeRigidBody *pRigidBody,
-                                          foePosition3d *pPosition,
-                                          foeResource collisionShape) {
-    auto searchIt = std::lower_bound(
-        pPhysicsSystem->activeWorldObjects.begin(), pPhysicsSystem->activeWorldObjects.end(),
-        entity,
-        [](ActiveWorldObject const &obj, foeEntityID const entity) { return obj.entity < entity; });
+[[nodiscard]]
+foeResultSet addWorldObject(PhysicsSystem *pPhysicsSystem,
+                            foeEntityID entity,
+                            foeRigidBody *pRigidBody,
+                            foePosition3d *pPosition,
+                            foeResource collisionShape) {
+    auto searchIt = std::lower_bound(pPhysicsSystem->activeWorldObjects.begin(),
+                                     pPhysicsSystem->activeWorldObjects.end(), entity,
+                                     [](ActiveWorldObject const &obj, foeEntityID const entity) {
+                                         return obj.entity < entity;
+                                     });
 
     // If already added, don't re-add it
     if (searchIt != pPhysicsSystem->activeWorldObjects.end() && searchIt->entity == entity)
@@ -184,10 +186,11 @@ CHECK_COLLISION_SHAPE_LOADED:
 }
 
 void removeWorldObject(PhysicsSystem *pPhysicsSystem, foeEntityID entity) {
-    auto searchIt = std::lower_bound(
-        pPhysicsSystem->activeWorldObjects.begin(), pPhysicsSystem->activeWorldObjects.end(),
-        entity,
-        [](ActiveWorldObject const &obj, foeEntityID const entity) { return obj.entity < entity; });
+    auto searchIt = std::lower_bound(pPhysicsSystem->activeWorldObjects.begin(),
+                                     pPhysicsSystem->activeWorldObjects.end(), entity,
+                                     [](ActiveWorldObject const &obj, foeEntityID const entity) {
+                                         return obj.entity < entity;
+                                     });
 
     if (searchIt == pPhysicsSystem->activeWorldObjects.end() || searchIt->entity != entity)
         return;

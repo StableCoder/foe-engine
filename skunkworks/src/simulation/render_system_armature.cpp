@@ -116,10 +116,11 @@ ARMATURE_GPU_CREATE_FAILED:
 void freeAllocation(std::vector<RenderSystemArmatureData::ArmatureBoneAlloc> &freeAllocs,
                     RenderSystemArmatureData::ArmatureBoneAlloc alloc) {
     // Find where to insert the newly freed memory in the array
-    auto insertIt =
-        std::lower_bound(freeAllocs.begin(), freeAllocs.end(), alloc.offset,
-                         [](RenderSystemArmatureData::ArmatureBoneAlloc const &armatureData,
-                            size_t const offset) { return armatureData.offset < offset; });
+    auto insertIt = std::lower_bound(
+        freeAllocs.begin(), freeAllocs.end(), alloc.offset,
+        [](RenderSystemArmatureData::ArmatureBoneAlloc const &armatureData, size_t const offset) {
+            return armatureData.offset < offset;
+        });
 
     // See if we can merge into the previous entry
     bool mergeBefore = false;

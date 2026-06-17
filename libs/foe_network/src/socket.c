@@ -13,7 +13,7 @@
 #ifdef _WIN32
 typedef SOCKET foePlatformSocket;
 #else
-#include <sys/ioctl.h>
+    #include <sys/ioctl.h>
 
 typedef int foePlatformSocket;
 #endif

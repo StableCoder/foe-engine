@@ -7,11 +7,11 @@
 #include "log.hpp"
 
 #if defined(__linux__) || defined(__APPLE__)
-#include <dlfcn.h>
+    #include <dlfcn.h>
 
-#include <mutex>
+    #include <mutex>
 #elif defined(_WIN32) || defined(WIN32)
-#include <Windows.h>
+    #include <Windows.h>
 #endif
 
 namespace {
@@ -52,9 +52,9 @@ void unloadUnixPlugin(void *pModule) {
     // Through the definition of `DISABLE_PLUGIN_UNLOAD`, can stop plugins from being unloaded which
     // can make debugging issues easier, especially in cases such as sanitizers which analyze data
     // after the program terminates.
-#ifndef DISABLE_PLUGIN_UNLOAD
+    #ifndef DISABLE_PLUGIN_UNLOAD
     dlclose(pModule);
-#endif
+    #endif
 }
 #endif
 
@@ -89,9 +89,9 @@ void unloadWindowsPlugin(HMODULE module) {
     // Through the definition of `DISABLE_PLUGIN_UNLOAD`, can stop plugins from being unloaded which
     // can make debugging issues easier, especially in cases such as sanitizers which analyze data
     // after the program terminates.
-#ifndef DISABLE_PLUGIN_UNLOAD
+    #ifndef DISABLE_PLUGIN_UNLOAD
     FreeLibrary(module);
-#endif
+    #endif
 }
 #endif
 

@@ -46,7 +46,8 @@ struct Resource {
     void (*unloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool){nullptr};
 
     Resource(foeResourceID id, foeResourceFns const *pResourceFns) :
-        id{id}, pResourceFns{pResourceFns} {}
+        id{id},
+        pResourceFns{pResourceFns} {}
 };
 
 FOE_DEFINE_HANDLE_CASTS(resource, Resource, foeResource)

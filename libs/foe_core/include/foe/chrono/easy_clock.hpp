@@ -22,7 +22,9 @@ class foeEasyClock {
     /// Default constructor
     /** Sets both clock times to the current time for the templated ClockType (same as reset).
      */
-    foeEasyClock() : mLastClockTime{ClockType::now()}, mCurrentClockTime{mLastClockTime} {}
+    foeEasyClock() :
+        mLastClockTime{ClockType::now()},
+        mCurrentClockTime{mLastClockTime} {}
 
     /// Updates the current time.
     /** Updates the current time, and sends the old 'current' time to be the last time.

@@ -4,11 +4,13 @@
 
 #include <foe/search_paths.hpp>
 
-foeSearchPaths::Writer::Writer() noexcept : mPaths{nullptr} {}
+foeSearchPaths::Writer::Writer() noexcept :
+    mPaths{nullptr} {}
 
 foeSearchPaths::Writer::~Writer() { release(); }
 
-foeSearchPaths::Writer::Writer(Writer &&other) noexcept : mPaths{other.mPaths} {
+foeSearchPaths::Writer::Writer(Writer &&other) noexcept :
+    mPaths{other.mPaths} {
     other.mPaths = nullptr;
 }
 
@@ -40,4 +42,5 @@ auto foeSearchPaths::Writer::searchPaths() const noexcept -> std::vector<std::fi
     return nullptr;
 }
 
-foeSearchPaths::Writer::Writer(foeSearchPaths *pPaths) noexcept : mPaths{pPaths} {}
+foeSearchPaths::Writer::Writer(foeSearchPaths *pPaths) noexcept :
+    mPaths{pPaths} {}

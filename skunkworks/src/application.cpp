@@ -40,31 +40,31 @@
 #include "wsi_glfw/window.hpp"
 
 #ifdef FOE_SUPPORT_XR
-#include <foe/xr/openxr/runtime.h>
-#include <foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp>
+    #include <foe/xr/openxr/runtime.h>
+    #include <foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp>
 
-#include "xr.hpp"
-#include "xr_result.h"
+    #include "xr.hpp"
+    #include "xr_result.h"
 #endif
 
 #ifdef EDITOR_MODE
-#include <foe/imgui/vk/render_graph_job_imgui.hpp>
+    #include <foe/imgui/vk/render_graph_job_imgui.hpp>
 
-#include "imgui/register.hpp"
-#ifdef FOE_SKUNKWORKS_GLFW
-#include "wsi_glfw/imgui.hpp"
-#endif
-#ifdef FOE_SKUNKWORKS_SDL3
-#include "wsi_sdl3/imgui.hpp"
-#endif
-#ifdef FOE_SKUNKWORKS_QT
-#include "wsi_qt/imgui.hpp"
-#endif
+    #include "imgui/register.hpp"
+    #ifdef FOE_SKUNKWORKS_GLFW
+        #include "wsi_glfw/imgui.hpp"
+    #endif
+    #ifdef FOE_SKUNKWORKS_SDL3
+        #include "wsi_sdl3/imgui.hpp"
+    #endif
+    #ifdef FOE_SKUNKWORKS_QT
+        #include "wsi_qt/imgui.hpp"
+    #endif
 #endif
 
 #ifdef FOE_SKUNKWORKS_QT
-#include <QGuiApplication>
-#include <QTimer>
+    #include <QGuiApplication>
+    #include <QTimer>
 #endif
 
 #include <thread>
@@ -116,9 +116,9 @@ void Application::setQtWindows(
         pNewWindow->nearZ = 2;
         pNewWindow->farZ = 50;
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
         imguiAddQtWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard, &pNewWindow->mouse);
-#endif
+    #endif
 
         std::unique_lock lock{qt_windowDataSync};
         qt_windowData.emplace_back(pNewWindow.release());
@@ -177,9 +177,9 @@ int Application::initialize(int argc, char **argv) {
     viewFrameTimeInfo.registerUI(&imguiState);
     windowInfo.registerUI(&imguiState);
 
-#ifdef IMGUI_SHOW_DEMO
+    #ifdef IMGUI_SHOW_DEMO
     demo.registerUI(&imguiState);
-#endif
+    #endif
 
     uiSave.setSimulationState(simulation);
 
@@ -212,10 +212,10 @@ int Application::initialize(int argc, char **argv) {
                     uint32_t msaa;
                     bool vsync;
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                     std::mutex *pImGuiWindowSync;
                     foeImGuiWindow *pImGuiWindowInfo;
-#endif
+    #endif
 
                     std::mutex *pQtWindowDataSync;
                     std::vector<Qt_WindowData *> *pQtWindowDataList;
@@ -229,10 +229,10 @@ int Application::initialize(int argc, char **argv) {
                     .height = it->height,
                     .msaa = it->msaa,
                     .vsync = it->vsync,
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                     .pImGuiWindowSync = &windowInfoSync,
                     .pImGuiWindowInfo = &windowInfo,
-#endif
+    #endif
                     .pQtWindowDataSync = &qt_windowDataSync,
                     .pQtWindowDataList = &qt_windowData,
                     .pActiveWindowSetups = &windowSetups,
@@ -264,12 +264,12 @@ int Application::initialize(int argc, char **argv) {
                     pNewWindow->nearZ = 2;
                     pNewWindow->farZ = 50;
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                     pQtWindowSetupData->pImGuiWindowSync->lock();
                     imguiAddQtWindow(pQtWindowSetupData->pImGuiWindowInfo, pNewWindow.get(),
                                      &pNewWindow->keyboard, &pNewWindow->mouse);
                     pQtWindowSetupData->pImGuiWindowSync->unlock();
-#endif
+    #endif
 
                     std::unique_lock lock{*pQtWindowSetupData->pQtWindowDataSync};
                     pQtWindowSetupData->pQtWindowDataList->emplace_back(pNewWindow.release());
@@ -304,12 +304,12 @@ int Application::initialize(int argc, char **argv) {
                 pNewWindow->nearZ = 2;
                 pNewWindow->farZ = 50;
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                 windowInfoSync.lock();
                 imguiAddSDL3Window(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
                                    &pNewWindow->mouse);
                 windowInfoSync.unlock();
-#endif
+    #endif
 
                 sdl3_windowData.emplace_back(pNewWindow.release());
 
@@ -336,20 +336,19 @@ int Application::initialize(int argc, char **argv) {
                 pNewWindow->nearZ = 2;
                 pNewWindow->farZ = 50;
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                 windowInfoSync.lock();
                 imguiAddGlfwWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
                                    &pNewWindow->mouse);
                 windowInfoSync.unlock();
-#endif
+    #endif
 
                 glfw_windowData.emplace_back(pNewWindow.release());
 
                 windowCreated = true;
             }
 #endif // FOE_SKUNKWORKS_GLFW
-            {
-            }
+            {}
 
             if (windowCreated) {
                 windowCreated = false;
@@ -614,18 +613,20 @@ void Application::deinitialize() {
     // Destroy window data
 #ifdef FOE_SKUNKWORKS_QT
     for (auto it : qt_windowData) {
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
         windowInfo.removeWindow(it);
-#endif
-        QTimer::singleShot(0, pQtGuiApplication, [&] { it->pWindow->close(); });
+    #endif
+        QTimer::singleShot(0, pQtGuiApplication, [&] {
+            it->pWindow->close();
+        });
     }
     qt_windowData.clear();
 #endif
 #ifdef FOE_SKUNKWORKS_SDL3
     for (auto it : sdl3_windowData) {
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
         windowInfo.removeWindow(it);
-#endif
+    #endif
         destroySDL3Window(gfxRuntime, gfxSession, it);
         delete it;
     }
@@ -633,9 +634,9 @@ void Application::deinitialize() {
 #endif
 #ifdef FOE_SKUNKWORKS_GLFW
     for (auto it : glfw_windowData) {
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
         windowInfo.removeWindow(it->pWindow);
-#endif
+    #endif
         destroyGlfwWindow(gfxRuntime, gfxSession, it);
         delete it;
     }
@@ -843,18 +844,18 @@ int Application::mainloop() {
         for (auto it = glfw_windowData.begin(); it != glfw_windowData.end();) {
             GLFW_WindowData *window = *it;
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             if (pImGuiRenderWindow == nullptr)
                 pImGuiRenderWindow = window;
-#endif
+    #endif
 
             // if window is set to close, check if to be destroyed now
             if (window->requestClose) {
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                 // if this was the imgui window, change it
                 if (pImGuiRenderWindow == window)
                     pImGuiRenderWindow = nullptr;
-#endif
+    #endif
                 std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
                 *window->renderSurfaceData.pActive = false;
                 if (window->renderSurfaceData.inFlight != 0) {
@@ -862,9 +863,9 @@ int Application::mainloop() {
                     ++it;
                     continue;
                 }
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                 windowInfo.removeWindow(window->pWindow);
-#endif
+    #endif
                 destroyGlfwWindow(gfxRuntime, gfxSession, window);
                 delete window;
 
@@ -872,7 +873,7 @@ int Application::mainloop() {
                 continue;
             }
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
             if (window == pImGuiRenderWindow) {
                 std::vector<uint32_t> pressedKeycodes;
@@ -917,7 +918,7 @@ int Application::mainloop() {
             // If ImGui is capturing, don't pass inputs through from the first window
             if (window != pImGuiRenderWindow ||
                 (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()))
-#endif
+    #endif
             {
                 processUserInput(window, timeElapsedInSec);
             }
@@ -928,7 +929,7 @@ int Application::mainloop() {
                 window->needSwapchainRebuild = true;
             }
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             // ImGui only follows primary/first window size
             if (window == pImGuiRenderWindow) {
                 int width, height;
@@ -938,7 +939,7 @@ int Application::mainloop() {
                 getGlfwWindowScale(window, &xScale, &yScale);
                 imguiRenderer.rescale(xScale, yScale);
             }
-#endif
+    #endif
 
             ++it;
         }
@@ -948,18 +949,18 @@ int Application::mainloop() {
         for (auto it = sdl3_windowData.begin(); it < sdl3_windowData.end();) {
             SDL3_WindowData *window = *it;
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             if (pImGuiRenderWindow == nullptr)
                 pImGuiRenderWindow = window;
-#endif
+    #endif
 
             // if window is set to close, check if to be destroyed now
             if (window->close) {
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                 // if this was the imgui window, change it
                 if (pImGuiRenderWindow == window)
                     pImGuiRenderWindow = nullptr;
-#endif
+    #endif
                 std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
                 *window->renderSurfaceData.pActive = false;
                 if (window->renderSurfaceData.inFlight != 0) {
@@ -967,9 +968,9 @@ int Application::mainloop() {
                     ++it;
                     continue;
                 }
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                 windowInfo.removeWindow(window);
-#endif
+    #endif
                 destroySDL3Window(gfxRuntime, gfxSession, window);
                 delete window;
 
@@ -977,7 +978,7 @@ int Application::mainloop() {
                 continue;
             }
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
             if (window == pImGuiRenderWindow) {
                 std::vector<uint32_t> pressedKeycodes;
@@ -1022,7 +1023,7 @@ int Application::mainloop() {
             // If ImGui is capturing, don't pass inputs through from the first window
             if (window != pImGuiRenderWindow ||
                 (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()))
-#endif
+    #endif
             {
                 processSDL3UserInput(window, timeElapsedInSec);
             }
@@ -1033,7 +1034,7 @@ int Application::mainloop() {
                 window->needSwapchainRebuild = true;
             }
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             if (window == pImGuiRenderWindow) {
                 int width, height;
                 getSDL3WindowLogicalSize(window, &width, &height);
@@ -1042,7 +1043,7 @@ int Application::mainloop() {
                 getSDL3WindowScale(window, &xScale, &yScale);
                 imguiRenderer.rescale(xScale, yScale);
             }
-#endif
+    #endif
 
             ++it;
         }
@@ -1053,18 +1054,18 @@ int Application::mainloop() {
         for (auto it = qt_windowData.begin(); it < qt_windowData.end();) {
             Qt_WindowData *window = *it;
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             if (pImGuiRenderWindow == nullptr)
                 pImGuiRenderWindow = window;
-#endif
+    #endif
 
             // if window is set to close, check if to be destroyed now
             if (window->close) {
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                 // if this was the imgui window, change it
                 if (pImGuiRenderWindow == window)
                     pImGuiRenderWindow = nullptr;
-#endif
+    #endif
                 std::scoped_lock<std::mutex> lock{window->renderSurfaceData.sync};
                 *window->renderSurfaceData.pActive = false;
                 if (window->renderSurfaceData.inFlight != 0) {
@@ -1072,17 +1073,19 @@ int Application::mainloop() {
                     ++it;
                     continue;
                 }
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                 windowInfo.removeWindow(window);
-#endif
-                QTimer::singleShot(0, pQtGuiApplication, [&] { window->pWindow->close(); });
+    #endif
+                QTimer::singleShot(0, pQtGuiApplication, [&] {
+                    window->pWindow->close();
+                });
                 delete window;
 
                 it = qt_windowData.erase(it);
                 continue;
             }
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
             if (window == pImGuiRenderWindow) {
                 std::vector<uint32_t> pressedKeycodes;
@@ -1127,7 +1130,7 @@ int Application::mainloop() {
             // If ImGui is capturing, don't pass inputs through from the first window
             if (window != pImGuiRenderWindow ||
                 (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()))
-#endif
+    #endif
             {
                 processQtUserInput(window, timeElapsedInSec);
             }
@@ -1138,7 +1141,7 @@ int Application::mainloop() {
                 *window->pNeedSwapchainRebuild = true;
             }
 
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
             if (window == pImGuiRenderWindow) {
                 QSize windowSize = window->pWindow->size();
                 imguiRenderer.resize(windowSize.width(), windowSize.height());
@@ -1146,7 +1149,7 @@ int Application::mainloop() {
                 auto windowScale = window->pWindow->devicePixelRatio();
                 imguiRenderer.rescale(windowScale, windowScale);
             }
-#endif
+    #endif
 
             ++it;
         }
@@ -1347,11 +1350,11 @@ int Application::mainloop() {
 
                     ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                         .imguiWindow = (it == pImGuiRenderWindow),
-#else
+    #else
                         .imguiWindow = false,
-#endif
+    #endif
                         .pSurfaceData = &it->renderSurfaceData,
                         .renderView = it->renderView,
                         .sampleCount = it->sampleCount,
@@ -1399,11 +1402,11 @@ int Application::mainloop() {
 
                     ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                         .imguiWindow = (it == pImGuiRenderWindow),
-#else
+    #else
                         .imguiWindow = false,
-#endif
+    #endif
                         .pSurfaceData = &it->renderSurfaceData,
                         .renderView = it->renderView,
                         .sampleCount = it->sampleCount,
@@ -1451,11 +1454,11 @@ int Application::mainloop() {
 
                     ++it->renderSurfaceData.inFlight;
                     windowRenderList.emplace_back(WindowRenderData{
-#ifdef EDITOR_MODE
+    #ifdef EDITOR_MODE
                         .imguiWindow = (it == pImGuiRenderWindow),
-#else
+    #else
                         .imguiWindow = false,
-#endif
+    #endif
                         .pSurfaceData = &it->renderSurfaceData,
                         .renderView = it->renderView,
                         .sampleCount = it->sampleCount,
@@ -1483,8 +1486,9 @@ int Application::mainloop() {
 #ifdef FOE_SUPPORT_XR
             // OpenXR Render Section
             std::vector<XrCompositionLayerProjectionView> projectionViews{
-                xrData.views.size(), XrCompositionLayerProjectionView{
-                                         .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW}};
+                xrData.views.size(),
+                XrCompositionLayerProjectionView{.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW}
+            };
 
             if (xrAcquiredFrame) {
                 XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};
@@ -1540,7 +1544,8 @@ int Application::mainloop() {
                             ERRC_END_PROGRAM
 
                         XrSwapchainImageAcquireInfo acquireInfo{
-                            .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
+                            .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO
+                        };
 
                         uint32_t newIndex;
                         result = xr_to_foeResult(
@@ -1551,16 +1556,14 @@ int Application::mainloop() {
 
                         projectionViews[i].subImage = XrSwapchainSubImage{
                             .swapchain = it.swapchain,
-                            .imageRect =
-                                XrRect2Di{
-                                    .extent =
-                                        {
-                                            .width = static_cast<int32_t>(
-                                                it.viewConfig.recommendedImageRectWidth),
-                                            .height = static_cast<int32_t>(
-                                                it.viewConfig.recommendedImageRectHeight),
-                                        },
+                            .imageRect = XrRect2Di{
+                                .extent = {
+                                    .width = static_cast<int32_t>(
+                                        it.viewConfig.recommendedImageRectWidth),
+                                    .height = static_cast<int32_t>(
+                                        it.viewConfig.recommendedImageRectHeight),
                                 },
+                            },
                         };
 
                         foeGfxVkRenderGraph renderGraph;

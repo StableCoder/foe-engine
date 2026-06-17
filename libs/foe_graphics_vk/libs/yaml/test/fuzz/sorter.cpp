@@ -24,15 +24,13 @@ void sortType(YAML::Node const &yamlData, std::string &testSet, PFN_yamlRead rea
             testSet += '0';
         else
             testSet += '1';
-    } catch (...) {
-    }
+    } catch (...) {}
     try {
         if (readFn("subNode", yamlData, &data))
             testSet += '2';
         else
             testSet += '3';
-    } catch (...) {
-    }
+    } catch (...) {}
 }
 
 int main(int argc, char **argv) {

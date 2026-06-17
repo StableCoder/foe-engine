@@ -63,14 +63,13 @@ foeResultSet createTargetImage(foeGfxVkSession const *pGfxVkSession,
             .format = specification.format,
             .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B,
                            VK_COMPONENT_SWIZZLE_A},
-            .subresourceRange =
-                VkImageSubresourceRange{
-                    .aspectMask = foeGfxVkFormatAspects(specification.format),
-                    .baseMipLevel = 0,
-                    .levelCount = 1,
-                    .baseArrayLayer = 0,
-                    .layerCount = 1,
-                },
+            .subresourceRange = VkImageSubresourceRange{
+                .aspectMask = foeGfxVkFormatAspects(specification.format),
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
         };
 
         vkRes = vkCreateImageView(pGfxVkSession->device, &viewCI, nullptr, &data.view);

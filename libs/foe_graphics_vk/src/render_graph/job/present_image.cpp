@@ -65,16 +65,17 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
     pJobResources->swapchainImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = initialLayout,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pJobResources;
+    };
 
     foeGfxVkRenderGraphResourceCreateInfo resourceCI{
         .sType = FOE_NULL_HANDLE,

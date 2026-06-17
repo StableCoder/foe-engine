@@ -4,7 +4,7 @@
 
 #include <foe/graphics/backend.h>
 
-#define VULKAN_BACKEND_NAME "Vulkan"
+#define VULKAN_BACKEND_NAME  "Vulkan"
 
 #define VULKAN_BACKEND_MAJOR 0
 #define VULKAN_BACKEND_MINOR 0

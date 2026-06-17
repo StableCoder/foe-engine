@@ -371,14 +371,13 @@ void foeImageLoader::load(foeResource resource,
                 .format = format,
                 .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
                                VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A},
-                .subresourceRange =
-                    VkImageSubresourceRange{
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                        .baseMipLevel = 0,
-                        .levelCount = mipLevels,
-                        .baseArrayLayer = 0,
-                        .layerCount = 1,
-                    },
+                .subresourceRange = VkImageSubresourceRange{
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = mipLevels,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
             };
 
             vkRes =

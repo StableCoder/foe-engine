@@ -18,7 +18,9 @@ struct foeResourceCreateInfoImpl {
 
     foeResourceCreateInfoImpl(foeResourceCreateInfoType type,
                               PFN_foeResourceCreateInfoCleanup cleanupFn) :
-        type{type}, refCount{1}, cleanupFn{cleanupFn} {}
+        type{type},
+        refCount{1},
+        cleanupFn{cleanupFn} {}
 };
 
 FOE_DEFINE_HANDLE_CASTS(resource_create_info, foeResourceCreateInfoImpl, foeResourceCreateInfo)

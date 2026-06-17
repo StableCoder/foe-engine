@@ -22,7 +22,10 @@ struct ManagedMemory {
     PFN_foeManagedMemoryCleanup cleanupFn;
 
     ManagedMemory(void *pData, size_t dataSize, PFN_foeManagedMemoryCleanup cleanupFn) :
-        pData{pData}, dataSize{dataSize}, useCount{1}, cleanupFn{cleanupFn} {}
+        pData{pData},
+        dataSize{dataSize},
+        useCount{1},
+        cleanupFn{cleanupFn} {}
 };
 
 FOE_DEFINE_HANDLE_CASTS(managed_memory, ManagedMemory, foeManagedMemory)

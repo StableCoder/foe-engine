@@ -285,7 +285,8 @@ TEST_CASE("AES 256 GCM") {
             SECTION("any byte in encrypted buffer is modified") {
                 for (size_t i = 0; i < encryptedDataSize; ++i) {
                     std::unique_ptr<unsigned char[]> encryptedBufferCopy{
-                        new unsigned char[encryptedDataSize]};
+                        new unsigned char[encryptedDataSize]
+                    };
                     memcpy(encryptedBufferCopy.get(), encryptedBuffer.get(), encryptedDataSize);
 
                     ++encryptedBufferCopy[i];

@@ -63,9 +63,11 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool, foeResou
 
     std::unique_lock lock{pResourcePool->sync};
 
-    auto searchIt = std::lower_bound(
-        pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
-        [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
+    auto searchIt =
+        std::lower_bound(pResourcePool->resources.begin(), pResourcePool->resources.end(),
+                         resourceID, [](foeResource resource, foeResourceID id) {
+                             return foeResourceGetID(resource) < id;
+                         });
 
     if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID)
         // Didn't find the resource we're supposed to be replacing
@@ -105,9 +107,11 @@ extern "C" foeResource foeResourcePoolLoadedReplace(
 
     std::unique_lock lock{pResourcePool->sync};
 
-    auto searchIt = std::lower_bound(
-        pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
-        [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
+    auto searchIt =
+        std::lower_bound(pResourcePool->resources.begin(), pResourcePool->resources.end(),
+                         resourceID, [](foeResource resource, foeResourceID id) {
+                             return foeResourceGetID(resource) < id;
+                         });
 
     if (searchIt == pResourcePool->resources.end() || foeResourceGetID(*searchIt) != resourceID)
         // Didn't find the resource we're supposed to be replacing
@@ -163,9 +167,11 @@ extern "C" foeResource foeResourcePoolFind(foeResourcePool resourcePool, foeReso
 
     std::shared_lock lock{pResourcePool->sync};
 
-    auto searchIt = std::lower_bound(
-        pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
-        [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
+    auto searchIt =
+        std::lower_bound(pResourcePool->resources.begin(), pResourcePool->resources.end(),
+                         resourceID, [](foeResource resource, foeResourceID id) {
+                             return foeResourceGetID(resource) < id;
+                         });
 
     if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID) {
         foeResourceIncrementRefCount(*searchIt);
@@ -182,9 +188,11 @@ extern "C" foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
 
     std::unique_lock lock{pResourcePool->sync};
 
-    auto searchIt = std::lower_bound(
-        pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
-        [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
+    auto searchIt =
+        std::lower_bound(pResourcePool->resources.begin(), pResourcePool->resources.end(),
+                         resourceID, [](foeResource resource, foeResourceID id) {
+                             return foeResourceGetID(resource) < id;
+                         });
 
     if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID) {
         resource = *searchIt;

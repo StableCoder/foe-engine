@@ -519,9 +519,9 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
 #ifdef VK_KHR_get_physical_device_properties2
         VkPhysicalDeviceFeatures2 features_1_0{
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-#ifdef VK_VERSION_1_1
+    #ifdef VK_VERSION_1_1
             .pNext = &pNewSession->features_1_1,
-#endif
+    #endif
             .features = pNewSession->features_1_0,
         };
 #endif

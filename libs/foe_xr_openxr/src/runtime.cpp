@@ -167,8 +167,8 @@ foeResultSet foeXrProcessEvents(foeXrRuntime runtime) {
                 if (it->session == stateChanged->session) {
                     if (stateChanged->state == XR_SESSION_STATE_STOPPING ||
                         stateChanged->state == XR_SESSION_STATE_LOSS_PENDING) {
-                        // If the state has been lost or stopping, the session is no longer 'active'
-                        // and should not call the wait/begin/end frame functions
+                        // If the state has been lost or stopping, the session is no longer
+                        // 'active' and should not call the wait/begin/end frame functions
                         it->active = false;
                     }
 

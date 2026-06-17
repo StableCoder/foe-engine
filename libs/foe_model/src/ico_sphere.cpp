@@ -161,8 +161,8 @@ auto sphereVertexData(int recursion,
                 break;
 
             case foeVertexComponent::UV:
-                // Need to calculate the UV coordinates, where X/Z determine the U, and Y determines
-                // the V
+                // Need to calculate the UV coordinates, where X/Z determine the U, and Y
+                // determines the V
                 {
                     constexpr float cOverPi = 1.0 / glm::pi<float>();
                     float u = 0.5 - 0.5 * glm::atan(vertex.x, -vertex.z) * cOverPi;

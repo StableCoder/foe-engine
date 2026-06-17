@@ -174,7 +174,8 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
                 .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 .finalLayout = finalDepthLayout,
-            }};
+            }
+        };
 
         VkRenderPass renderPass = foeGfxVkGetRenderPass(
             renderPassPool, attachmentDescriptions.size(), attachmentDescriptions.data());
@@ -224,11 +225,10 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
         { // Begin RenderPass
             std::array<VkClearValue, 2> clearValues{
                 VkClearValue{.color = {1.f, 0.5f, 1.f, 0.f}},
-                VkClearValue{.depthStencil =
-                                 {
-                                     .depth = 1.f,
-                                     .stencil = 0,
-                                 }},
+                VkClearValue{.depthStencil = {
+                                 .depth = 1.f,
+                                 .stencil = 0,
+                             }},
             };
 
             VkRenderPassBeginInfo renderPassBI{
@@ -293,50 +293,48 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
     pJobResources->initialColourImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
     pJobResources->initialDepthStencilImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
 
     pJobResources->colourImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = finalColourLayout,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
     pJobResources->depthStencilImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = finalDepthLayout,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pJobResources;
+    };
 
     // Add job to graph
     std::array<foeGfxVkRenderGraphResourceState, 2> resourceStates{

@@ -16,9 +16,9 @@ extern "C" {
 #endif
 
 #ifdef _WIN32
-#define FOE_NETWORK_ADDRESS_STRLEN 65U
+    #define FOE_NETWORK_ADDRESS_STRLEN 65U
 #else
-#define FOE_NETWORK_ADDRESS_STRLEN 46U
+    #define FOE_NETWORK_ADDRESS_STRLEN 46U
 #endif
 
 typedef struct foeNetworkAddress {

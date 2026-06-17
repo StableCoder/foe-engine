@@ -6,7 +6,7 @@
 #include <foe/plugin.h>
 
 #ifndef FOE_CORE_PLUGIN_TEST_DIR
-#define FOE_CORE_PLUGIN_TEST_DIR nullptr
+    #define FOE_CORE_PLUGIN_TEST_DIR nullptr
 #endif
 
 static_assert(

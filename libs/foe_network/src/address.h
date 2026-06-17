@@ -2,19 +2,22 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef ADDRESS_H
+#define ADDRESS_H
+
 #include <foe/network/address.h>
 
 #ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
 #else
-#define __USE_XOPEN2K // Enable `struct addrinfo` and associated
-#include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <netdb.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
+    #define __USE_XOPEN2K // Enable `struct addrinfo` and associated
+    #include <arpa/inet.h>
+    #include <ifaddrs.h>
+    #include <netdb.h>
+    #include <sys/socket.h>
+    #include <sys/types.h>
+    #include <unistd.h>
 #endif
 
 #include <string.h>
@@ -50,3 +53,5 @@ static inline foeNetworkAddress setAddressIPv6(struct sockaddr_in6 const *pInAdd
 
     return outAddr;
 }
+
+#endif // ADDRESS_H

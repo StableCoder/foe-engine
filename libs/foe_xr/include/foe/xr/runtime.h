@@ -8,8 +8,8 @@
 #include <foe/handle.h>
 
 #ifdef FOE_SUPPORT_XR
-#include <foe/result.h>
-#include <foe/xr/export.h>
+    #include <foe/result.h>
+    #include <foe/xr/export.h>
 #endif // FOE_SUPPORT_XR
 
 #ifdef __cplusplus

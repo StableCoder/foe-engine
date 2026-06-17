@@ -205,7 +205,9 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
 
     // Sort data to insert
     std::sort(toInsertOffsets.begin(), toInsertOffsets.end(),
-              [](InsertOffsets const &a, InsertOffsets const &b) { return a.entity < b.entity; });
+              [](InsertOffsets const &a, InsertOffsets const &b) {
+                  return a.entity < b.entity;
+              });
 
     // Insertion offset pointers
     InsertOffsets *pInsert = toInsertOffsets.data();

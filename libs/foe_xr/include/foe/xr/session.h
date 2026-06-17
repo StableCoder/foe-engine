@@ -8,7 +8,7 @@
 #include <foe/handle.h>
 
 #ifdef FOE_SUPPORT_XR
-#include <foe/xr/export.h>
+    #include <foe/xr/export.h>
 #endif // FOE_SUPPORT_XR
 
 #ifdef __cplusplus

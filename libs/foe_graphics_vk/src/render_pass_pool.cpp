@@ -222,13 +222,12 @@ auto foeGfxVkRenderPassPoolImpl::generateRenderPass(
 
     RenderPassSet newEntry = {
         .key = compatibleKey,
-        .variants =
-            {
-                RenderPassVariant{
-                    .key = variantKey,
-                    .renderPass = renderPass,
-                },
+        .variants = {
+            RenderPassVariant{
+                .key = variantKey,
+                .renderPass = renderPass,
             },
+        },
     };
 
     mRenderPasses.emplace_back(newEntry);

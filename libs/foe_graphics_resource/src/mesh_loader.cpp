@@ -266,8 +266,9 @@ void foeMeshLoader::load(foeResource resource,
             goto LOAD_FAILED;
         }
 
-        std::vector<foeVertexComponent> components{
-            foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
+        std::vector<foeVertexComponent> components{foeVertexComponent::Position,
+                                                   foeVertexComponent::Normal,
+                                                   foeVertexComponent::UV};
 
         std::vector<float> vertexData;
         uint32_t vertexDataSize = 0;
@@ -369,8 +370,9 @@ void foeMeshLoader::load(foeResource resource,
     } else if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
         foeMeshCubeCreateInfo const *pCI =
             (foeMeshCubeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-        std::vector<foeVertexComponent> components{
-            foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
+        std::vector<foeVertexComponent> components{foeVertexComponent::Position,
+                                                   foeVertexComponent::Normal,
+                                                   foeVertexComponent::UV};
 
         uint32_t vertexDataSize = foeModelCubeNumVertices() *
                                   foeGetVertexComponentStride(
@@ -442,8 +444,9 @@ void foeMeshLoader::load(foeResource resource,
     } else if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {
         foeMeshIcosphereCreateInfo const *pCI =
             (foeMeshIcosphereCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-        std::vector<foeVertexComponent> components{
-            foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
+        std::vector<foeVertexComponent> components{foeVertexComponent::Position,
+                                                   foeVertexComponent::Normal,
+                                                   foeVertexComponent::UV};
 
         int numVertices;
         int numIndices;

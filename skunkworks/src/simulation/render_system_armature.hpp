@@ -49,20 +49,23 @@ struct RenderSystemArmatureData {
     RenderSystemArmatureGpuData armatureGpuData[FOE_GRAPHICS_MAX_BUFFERED_FRAMES];
 };
 
-[[nodiscard]] foeResultSet initializeArmatureData(foeGfxSession gfxSession,
-                                                  RenderSystemArmatureData &armatureData);
+[[nodiscard]]
+foeResultSet initializeArmatureData(foeGfxSession gfxSession,
+                                    RenderSystemArmatureData &armatureData);
 
 void deinitializeArmatureData(foeGfxSession gfxSession, RenderSystemArmatureData &armatureData);
 
-[[nodiscard]] foeResultSet getArmatureData(RenderSystemArmatureData &armatureData,
-                                           foeAnimatedBoneState const *pAnimatedBoneState,
-                                           foeResource mesh,
-                                           uint32_t &armatureIndex);
+[[nodiscard]]
+foeResultSet getArmatureData(RenderSystemArmatureData &armatureData,
+                             foeAnimatedBoneState const *pAnimatedBoneState,
+                             foeResource mesh,
+                             uint32_t &armatureIndex);
 
 void clearArmatureData(RenderSystemArmatureData &armatureData, uint32_t &armatureIndex);
 
-[[nodiscard]] foeResultSet prepareArmatureGpuData(RenderSystemArmatureData &armatureData,
-                                                  foeGfxSession gfxSession,
-                                                  uint32_t frameIndex);
+[[nodiscard]]
+foeResultSet prepareArmatureGpuData(RenderSystemArmatureData &armatureData,
+                                    foeGfxSession gfxSession,
+                                    uint32_t frameIndex);
 
 #endif // RENDER_SYSTEM_ARMATURE_HPP

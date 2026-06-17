@@ -5,11 +5,11 @@
 #include <foe/filesystem.hpp>
 
 #ifdef _WIN32
-#include <Shlobj.h>
+    #include <Shlobj.h>
 #else
-#include <pwd.h>
-#include <sys/types.h>
-#include <unistd.h>
+    #include <pwd.h>
+    #include <sys/types.h>
+    #include <unistd.h>
 #endif
 
 auto foeGetUserHomeDirectory() -> std::filesystem::path {

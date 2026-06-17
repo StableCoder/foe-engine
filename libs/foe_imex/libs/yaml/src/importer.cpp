@@ -320,8 +320,9 @@ foeResultSet getResourceEditorName(foeImexImporter importer,
 
     YAML::Node rootNode;
 
-    for (auto const &dirEntry : std::filesystem::recursive_directory_iterator{
-             pImporter->mRootDir / resourceDirectoryPath}) {
+    for (auto const &dirEntry :
+         std::filesystem::recursive_directory_iterator{pImporter->mRootDir /
+                                                       resourceDirectoryPath}) {
         if (!dirEntry.is_regular_file())
             continue;
 

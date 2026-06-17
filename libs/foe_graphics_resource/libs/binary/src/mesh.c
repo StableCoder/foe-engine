@@ -78,8 +78,7 @@ foeResultSet export_foeMeshCubeCreateInfo(foeResourceCreateInfo createInfo,
     foeImexBinaryFiles files;
     memset(&files, 0, sizeof(foeImexBinaryFiles));
 
-    if (ciType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
-    }
+    if (ciType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {}
 
     if (result.value != FOE_SUCCESS) {
         if (set.pData)
@@ -109,8 +108,7 @@ foeResultSet export_foeMeshIcosphereCreateInfo(foeResourceCreateInfo createInfo,
     foeImexBinaryFiles files;
     memset(&files, 0, sizeof(foeImexBinaryFiles));
 
-    if (ciType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {
-    }
+    if (ciType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {}
 
     if (result.value != FOE_SUCCESS) {
         if (set.pData)

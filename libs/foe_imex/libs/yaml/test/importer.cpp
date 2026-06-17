@@ -17,7 +17,7 @@
 #include <filesystem>
 
 #ifndef TEST_DATA_DIR
-#define TEST_DATA_DIR nullptr
+    #define TEST_DATA_DIR nullptr
 #endif
 
 static_assert(TEST_DATA_DIR != nullptr, "TEST_DATA_DIR must be added as a compilation definition.");

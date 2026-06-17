@@ -7,7 +7,8 @@
 foeDilatedLongClock::foeDilatedLongClock(std::chrono::nanoseconds externalTime,
                                          std::chrono::nanoseconds startTime,
                                          float dilation) :
-    foeDilatedClock{startTime, dilation}, mLastExternalTime{externalTime} {}
+    foeDilatedClock{startTime, dilation},
+    mLastExternalTime{externalTime} {}
 
 void foeDilatedLongClock::update(std::chrono::nanoseconds externalTime) noexcept {
     // Calculated the elapsed time, send to the base class function

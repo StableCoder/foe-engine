@@ -17,20 +17,16 @@
     }                                                                                              \
     try {                                                                                          \
         yaml_read_##X("", yamlData, data);                                                         \
-    } catch (...) {                                                                                \
-    }                                                                                              \
+    } catch (...) {}                                                                               \
     try {                                                                                          \
         yaml_read_##X("subNode", yamlData, data);                                                  \
-    } catch (...) {                                                                                \
-    }                                                                                              \
+    } catch (...) {}                                                                               \
     try {                                                                                          \
         yaml_read_##X("", yamlData, data);                                                         \
-    } catch (...) {                                                                                \
-    }                                                                                              \
+    } catch (...) {}                                                                               \
     try {                                                                                          \
         yaml_read_##X("subNode", yamlData, data);                                                  \
-    } catch (...) {                                                                                \
-    }
+    } catch (...) {}
 
 int main(int argc, char **argv) {
     if (argc < 3)

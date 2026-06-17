@@ -5,9 +5,9 @@
 #include <foe/split_thread_pool.h>
 
 #ifdef _WIN32
-#include <windows.h>
+    #include <windows.h>
 
-#include <timeapi.h>
+    #include <timeapi.h>
 #endif
 
 #include "result.h"
@@ -200,10 +200,9 @@ extern "C" foeResultSet foeCreateThreadPool(uint32_t syncThreads,
             {
                 .threadCount = syncThreads,
             },
-        .asyncTasks =
-            {
-                .threadCount = asyncThreads,
-            },
+        .asyncTasks = {
+            .threadCount = asyncThreads,
+        },
     };
 
     std::thread *pThreads = getThreadArray(pNewPool);

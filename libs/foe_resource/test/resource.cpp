@@ -85,7 +85,9 @@ TEST_CASE("foeResource - Creating a preloaded resource") {
         .pStr = "Hello World!",
     };
 
-    auto moveFn = [](void *pSrc, void *pDst) { memcpy(pDst, pSrc, sizeof(TestResource)); };
+    auto moveFn = [](void *pSrc, void *pDst) {
+        memcpy(pDst, pSrc, sizeof(TestResource));
+    };
 
     result = foeCreateLoadedResource(0, cTestResourceType, &fns, sizeof(TestResource), &testData,
                                      moveFn, nullptr, nullptr, &resource);

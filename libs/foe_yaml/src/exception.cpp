@@ -4,7 +4,8 @@
 
 #include <foe/yaml/exception.hpp>
 
-foeYamlException::foeYamlException(std::string what) : mWhat{what} {}
+foeYamlException::foeYamlException(std::string what) :
+    mWhat{what} {}
 
 foeYamlException::operator std::string() const noexcept { return mWhat; }
 

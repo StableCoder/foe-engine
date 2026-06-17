@@ -23,40 +23,40 @@
 
 // WSI
 #ifdef FOE_SKUNKWORKS_GLFW
-#include "wsi_glfw/window.hpp"
+    #include "wsi_glfw/window.hpp"
 #endif
 #ifdef FOE_SKUNKWORKS_SDL3
-#include "wsi_sdl3/window.hpp"
+    #include "wsi_sdl3/window.hpp"
 #endif
 #ifdef FOE_SKUNKWORKS_QT
-#include "wsi_qt/window.hpp"
+    #include "wsi_qt/window.hpp"
 #endif
 
 #include <array>
 #include <vector>
 
 #ifdef FOE_SUPPORT_XR
-#include "xr.hpp"
+    #include "xr.hpp"
 #endif
 
 #ifdef EDITOR_MODE
-#include <foe/external/imgui.h>
-#include <foe/imgui/state.hpp>
-#include <foe/imgui/vk/renderer.hpp>
-#include <foe/simulation/imgui/group_data.hpp>
-#include <foe/simulation/imgui/registrar.hpp>
+    #include <foe/external/imgui.h>
+    #include <foe/imgui/state.hpp>
+    #include <foe/imgui/vk/renderer.hpp>
+    #include <foe/simulation/imgui/group_data.hpp>
+    #include <foe/simulation/imgui/registrar.hpp>
 
-#include "imgui/developer_console.hpp"
-#include "imgui/entity_list.hpp"
-#include "imgui/frame_time_info.hpp"
-#include "imgui/resource_list.hpp"
-#include "imgui/save.hpp"
-#include "imgui/termination.hpp"
-#include "imgui/window.hpp"
+    #include "imgui/developer_console.hpp"
+    #include "imgui/entity_list.hpp"
+    #include "imgui/frame_time_info.hpp"
+    #include "imgui/resource_list.hpp"
+    #include "imgui/save.hpp"
+    #include "imgui/termination.hpp"
+    #include "imgui/window.hpp"
 
-#ifdef IMGUI_SHOW_DEMO
-#include "imgui/demo.hpp"
-#endif
+    #ifdef IMGUI_SHOW_DEMO
+        #include "imgui/demo.hpp"
+    #endif
 #endif
 
 struct Application {
@@ -129,9 +129,9 @@ struct Application {
     foeImGuiWindow windowInfo;
     foeImGuiSave uiSave;
 
-#ifdef IMGUI_SHOW_DEMO
+    #ifdef IMGUI_SHOW_DEMO
     foeImGuiDemo demo;
-#endif
+    #endif
 
     // Per SimState UI
     std::unique_ptr<foeSimulationImGuiGroupData> pSimGroupDataUI;

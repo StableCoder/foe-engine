@@ -202,9 +202,10 @@ void getResourceCleanup(foeResource oldResource, foeResource newResource) {
     foeResourceDecrementRefCount(newResource);
 }
 
-[[nodiscard]] foeResourceStateFlags getRenderData(foeResourcePool resourcePool,
-                                                  foeRenderState const *pRenderState,
-                                                  RenderResources *pRenderData) {
+[[nodiscard]]
+foeResourceStateFlags getRenderData(foeResourcePool resourcePool,
+                                    foeRenderState const *pRenderState,
+                                    RenderResources *pRenderData) {
     RenderResources newResourceData = {};
     bool good = true;
     foeResourceStateFlags overallResourceState = FOE_RESOURCE_STATE_FAILED_BIT;
@@ -428,9 +429,10 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
 
     { // Check items waiting on loading resources
         std::vector<RenderDataSet> dataSets = std::move(pRenderSystem->awaitingLoading);
-        std::sort(
-            dataSets.begin(), dataSets.end(),
-            [](RenderDataSet const &a, RenderDataSet const &b) { return a.entity < b.entity; });
+        std::sort(dataSets.begin(), dataSets.end(),
+                  [](RenderDataSet const &a, RenderDataSet const &b) {
+                      return a.entity < b.entity;
+                  });
 
         foeEntityID const *pRenderStateID =
             foeEcsComponentPoolIdPtr(pRenderSystem->renderStatePool);

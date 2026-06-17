@@ -199,8 +199,9 @@ namespace {
 using VertexBoneWeights = std::vector<std::tuple<float, uint32_t>>;
 
 auto collapseWeights(VertexBoneWeights weights, unsigned int maxWeights) -> VertexBoneWeights {
-    std::sort(weights.begin(), weights.end(),
-              [](auto a, auto b) { return std::get<0>(a) > std::get<0>(b); });
+    std::sort(weights.begin(), weights.end(), [](auto a, auto b) {
+        return std::get<0>(a) > std::get<0>(b);
+    });
 
     if (weights.size() <= maxWeights) {
         return weights;

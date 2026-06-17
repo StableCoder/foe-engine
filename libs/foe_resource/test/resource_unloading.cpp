@@ -41,7 +41,9 @@ TestResource testData = {
     .pStr = "Hello World!",
 };
 
-auto loadDataFn = [](void *pSrc, void *pDst) { memcpy(pDst, pSrc, sizeof(TestResource)); };
+auto loadDataFn = [](void *pSrc, void *pDst) {
+    memcpy(pDst, pSrc, sizeof(TestResource));
+};
 
 // Unloading
 
@@ -51,7 +53,9 @@ struct DelayedUnloadingData {
     PFN_foeResourceUnloadCall unloadCall;
 };
 
-auto unloadDataFn = [](void *pUnloadContext, void *pRaw) { memset(pRaw, 0, sizeof(TestResource)); };
+auto unloadDataFn = [](void *pUnloadContext, void *pRaw) {
+    memset(pRaw, 0, sizeof(TestResource));
+};
 
 bool processDelayedUnloading(DelayedUnloadingData *pDelayedUnloadingData) {
     return pDelayedUnloadingData->unloadCall(pDelayedUnloadingData->resource,

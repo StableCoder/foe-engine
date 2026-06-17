@@ -4,10 +4,13 @@
 
 #include "queue_family.hpp"
 
-SecuredQueue::SecuredQueue() : lock(), queue(VK_NULL_HANDLE) {}
+SecuredQueue::SecuredQueue() :
+    lock(),
+    queue(VK_NULL_HANDLE) {}
 
 SecuredQueue::SecuredQueue(VkQueue queue, std::unique_lock<std::mutex> &&lock) :
-    lock(std::move(lock)), queue(queue) {}
+    lock(std::move(lock)),
+    queue(queue) {}
 
 void SecuredQueue::release() {
     queue = VK_NULL_HANDLE;

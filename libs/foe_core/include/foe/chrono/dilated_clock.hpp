@@ -86,7 +86,8 @@ class foeDilatedClock {
      */
     static constexpr std::array<std::chrono::nanoseconds, 4> cCheckTimes{
         std::chrono::milliseconds(1000), std::chrono::milliseconds(500),
-        std::chrono::milliseconds(100), std::chrono::milliseconds(50)};
+        std::chrono::milliseconds(100), std::chrono::milliseconds(50)
+    };
 
     /// Current time on the internal clock.
     std::chrono::nanoseconds mInternalClock;

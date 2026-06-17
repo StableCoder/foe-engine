@@ -171,7 +171,8 @@ foeResultSet startXR(foeXrRuntime runtime,
             std::vector<XrViewConfigurationView> viewConfigs{
                 viewConfigViewCount, XrViewConfigurationView{
                                          .type = XR_TYPE_VIEW_CONFIGURATION_VIEW,
-                                     }};
+                                     }
+            };
 
             result = xr_to_foeResult(xrEnumerateViewConfigurationViews(
                 foeOpenXrGetInstance(runtime), foeOpenXrGetSystemId(pXrData->session),
@@ -223,7 +224,8 @@ foeResultSet startXR(foeXrRuntime runtime,
                     .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
                     .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                     .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                }};
+                }
+            };
 
             pXrData->offscreenRenderPass =
                 foeGfxVkGetRenderPass(renderPassPool, xrOffscreenAttachmentDescription.size(),
@@ -300,14 +302,13 @@ foeResultSet startXR(foeXrRuntime runtime,
                 .format = pXrData->colourFormat,
                 .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
                                VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A},
-                .subresourceRange =
-                    VkImageSubresourceRange{
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                        .baseMipLevel = 0,
-                        .levelCount = 1,
-                        .baseArrayLayer = 0,
-                        .layerCount = 1,
-                    },
+                .subresourceRange = VkImageSubresourceRange{
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
             };
 
             // VkImageView

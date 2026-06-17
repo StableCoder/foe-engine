@@ -240,14 +240,13 @@ extern "C" foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uplo
             .format = format,
             .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B,
                            VK_COMPONENT_SWIZZLE_A},
-            .subresourceRange =
-                VkImageSubresourceRange{
-                    .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = numMipLevels,
-                    .baseArrayLayer = 0,
-                    .layerCount = 1,
-                },
+            .subresourceRange = VkImageSubresourceRange{
+                .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+                .baseMipLevel = 0,
+                .levelCount = numMipLevels,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
         };
 
         // Depth

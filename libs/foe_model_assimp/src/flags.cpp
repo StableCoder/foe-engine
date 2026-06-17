@@ -76,7 +76,9 @@ std::string formatString(std::string str) {
     }
     str = str.substr(0, cutOffset);
 
-    std::for_each(str.begin(), str.end(), [](char &c) { c = ::toupper(c); });
+    std::for_each(str.begin(), str.end(), [](char &c) {
+        c = ::toupper(c);
+    });
 
     return str;
 }

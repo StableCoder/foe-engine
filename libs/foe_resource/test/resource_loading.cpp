@@ -46,7 +46,9 @@ TestResource testData2 = {
     .pStr = "Hello World!2",
 };
 
-auto loadDataFn = [](void *pSrc, void *pDst) { memcpy(pDst, pSrc, sizeof(TestResource)); };
+auto loadDataFn = [](void *pSrc, void *pDst) {
+    memcpy(pDst, pSrc, sizeof(TestResource));
+};
 
 } // namespace
 

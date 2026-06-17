@@ -44,10 +44,12 @@ bool yaml_read_id(std::string const &nodeName,
         if (!yaml_read_uint32_t("index_id", subNode, index)) {
             if (nodeName.empty()) {
                 throw foeYamlException{
-                    "index_id - Could not find required node to parse foe Index ID"};
+                    "index_id - Could not find required node to parse foe Index ID"
+                };
             } else {
                 throw foeYamlException{
-                    nodeName + "::index_id - Could not find required node to parse foe Index ID"};
+                    nodeName + "::index_id - Could not find required node to parse foe Index ID"
+                };
             }
         }
 

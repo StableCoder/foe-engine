@@ -4,12 +4,32 @@ Standard: Latest
 IndentWidth: 4
 ColumnLimit: 100
 
+# alignment
+AlignConsecutiveBitFields:
+    Enabled: true
+    AcrossEmptyLines: true
+    AcrossComments: true
+AlignConsecutiveMacros:
+    Enabled: true
+    AcrossEmptyLines: true
+    AcrossComments: true
+QualifierAlignment: Right
+
+# single-line items
+AllowShortBlocksOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: Empty
+
+# line breaks
 AlwaysBreakTemplateDeclarations: true
-BinPackParameters: false
+BreakAfterAttributes: Always
+BreakBeforeCloseBracketBracedList: true
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
-PackConstructorInitializers: NextLine
+
+# indentation
+IndentPPDirectives: BeforeHash
+
+# other
+BinPackParameters: false
+PackConstructorInitializers: Never
 PenaltyReturnTypeOnItsOwnLine: 10000
-QualifierAlignment: Right
-AlignConsecutiveMacros: Consecutive
-AlignConsecutiveBitFields: AcrossComments

@@ -33,7 +33,8 @@ void yaml_read_material(YAML::Node const &node,
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         throw foeYamlException{
-            std::string{"Failed to create foeMaterialCreateInfo due to error: "} + buffer};
+            std::string{"Failed to create foeMaterialCreateInfo due to error: "} + buffer
+        };
     }
 
     materialCI = {};

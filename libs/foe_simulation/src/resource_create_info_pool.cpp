@@ -57,9 +57,11 @@ extern "C" foeResultSet foeResourceCreateInfoPoolAdd(
 
     std::unique_lock lock{pCreateInfoPool->sync};
 
-    auto searchIt = std::lower_bound(
-        pCreateInfoPool->entries.begin(), pCreateInfoPool->entries.end(), resourceID,
-        [](Entry const &entry, foeResourceID resourceID) { return entry.id < resourceID; });
+    auto searchIt =
+        std::lower_bound(pCreateInfoPool->entries.begin(), pCreateInfoPool->entries.end(),
+                         resourceID, [](Entry const &entry, foeResourceID resourceID) {
+                             return entry.id < resourceID;
+                         });
 
     if (searchIt != pCreateInfoPool->entries.end() && searchIt->id == resourceID)
         return to_foeResult(FOE_SIMULATION_ERROR_RESOURCE_CREATE_INFO_ALREADY_ADDED);
@@ -82,9 +84,11 @@ extern "C" foeResultSet foeResourceCreateInfoPoolRemove(
 
     std::unique_lock lock{pCreateInfoPool->sync};
 
-    auto searchIt = std::lower_bound(
-        pCreateInfoPool->entries.begin(), pCreateInfoPool->entries.end(), resourceID,
-        [](Entry const &entry, foeResourceID resourceID) { return entry.id < resourceID; });
+    auto searchIt =
+        std::lower_bound(pCreateInfoPool->entries.begin(), pCreateInfoPool->entries.end(),
+                         resourceID, [](Entry const &entry, foeResourceID resourceID) {
+                             return entry.id < resourceID;
+                         });
 
     if (searchIt == pCreateInfoPool->entries.end() || searchIt->id != resourceID)
         return to_foeResult(FOE_SIMULATION_ERROR_RESOURCE_CREATE_INFO_NOT_FOUND);
@@ -106,9 +110,11 @@ extern "C" foeResourceCreateInfo foeResourceCreateInfoPoolGet(
 
     std::shared_lock lock{pCreateInfoPool->sync};
 
-    auto searchIt = std::lower_bound(
-        pCreateInfoPool->entries.begin(), pCreateInfoPool->entries.end(), resourceID,
-        [](Entry const &entry, foeResourceID resourceID) { return entry.id < resourceID; });
+    auto searchIt =
+        std::lower_bound(pCreateInfoPool->entries.begin(), pCreateInfoPool->entries.end(),
+                         resourceID, [](Entry const &entry, foeResourceID resourceID) {
+                             return entry.id < resourceID;
+                         });
 
     if (searchIt == pCreateInfoPool->entries.end() || searchIt->id != resourceID)
         return FOE_NULL_HANDLE;

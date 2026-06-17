@@ -170,12 +170,11 @@ foeResultSet foeImGuiRenderer::initialize(foeGfxSession session,
             .format = VK_FORMAT_R8G8B8A8_UNORM,
             .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B,
                            VK_COMPONENT_SWIZZLE_A},
-            .subresourceRange =
-                VkImageSubresourceRange{
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .levelCount = 1,
-                    .layerCount = 1,
-                },
+            .subresourceRange = VkImageSubresourceRange{
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
         };
 
         vkResult = vkCreateImageView(foeGfxVkGetDevice(session), &viewCI, nullptr, &mFontView);
@@ -466,15 +465,12 @@ void foeImGuiRenderer::draw(VkCommandBuffer commandBuffer, uint32_t frameIndex) 
                         .x = std::max((int32_t)(pDrawCmd->ClipRect.x), 0),
                         .y = std::max((int32_t)(pDrawCmd->ClipRect.y), 0),
                     },
-                .extent =
-                    {
-                        .width =
-                            static_cast<uint32_t>((pDrawCmd->ClipRect.z - pDrawCmd->ClipRect.x) *
-                                                  io.DisplayFramebufferScale.x),
-                        .height =
-                            static_cast<uint32_t>((pDrawCmd->ClipRect.w - pDrawCmd->ClipRect.y) *
-                                                  io.DisplayFramebufferScale.y),
-                    },
+                .extent = {
+                    .width = static_cast<uint32_t>((pDrawCmd->ClipRect.z - pDrawCmd->ClipRect.x) *
+                                                   io.DisplayFramebufferScale.x),
+                    .height = static_cast<uint32_t>((pDrawCmd->ClipRect.w - pDrawCmd->ClipRect.y) *
+                                                    io.DisplayFramebufferScale.y),
+                },
             };
 
             vkCmdSetScissor(commandBuffer, 0, 1, &scissorRect);
@@ -677,10 +673,9 @@ VkResult foeImGuiRenderer::initializePipeline(VkDevice device,
             {
                 .compareOp = VK_COMPARE_OP_ALWAYS,
             },
-        .back =
-            {
-                .compareOp = VK_COMPARE_OP_ALWAYS,
-            },
+        .back = {
+            .compareOp = VK_COMPARE_OP_ALWAYS,
+        },
     };
 
     VkPipelineViewportStateCreateInfo viewportStateCI{

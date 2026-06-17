@@ -16,8 +16,8 @@
 #include <vector>
 
 #ifdef FOE_SUPPORT_XR
-#include <foe/xr/openxr/runtime.h>
-#include <foe/xr/openxr/vk/vulkan.h>
+    #include <foe/xr/openxr/runtime.h>
+    #include <foe/xr/openxr/vk/vulkan.h>
 #endif
 
 #ifndef VK_VERSION_1_2

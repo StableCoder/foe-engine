@@ -65,9 +65,11 @@ extern "C" foeResultSet foeResourceCreateInfoHistoryAdd(
 
     std::unique_lock lock{pCreateInfoHistory->sync};
 
-    auto searchIt = std::lower_bound(
-        pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(), resourceID,
-        [](Entry const &entry, foeResourceID resourceID) { return entry.id < resourceID; });
+    auto searchIt =
+        std::lower_bound(pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(),
+                         resourceID, [](Entry const &entry, foeResourceID resourceID) {
+                             return entry.id < resourceID;
+                         });
 
     if (searchIt != pCreateInfoHistory->entries.end() && searchIt->id == resourceID)
         return to_foeResult(FOE_SIMULATION_ERROR_RESOURCE_CREATE_INFO_ALREADY_ADDED);
@@ -92,9 +94,11 @@ extern "C" foeResultSet foeResourceCreateInfoHistoryRemove(
 
     std::unique_lock lock{pCreateInfoHistory->sync};
 
-    auto searchIt = std::lower_bound(
-        pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(), resourceID,
-        [](Entry const &entry, foeResourceID resourceID) { return entry.id < resourceID; });
+    auto searchIt =
+        std::lower_bound(pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(),
+                         resourceID, [](Entry const &entry, foeResourceID resourceID) {
+                             return entry.id < resourceID;
+                         });
 
     if (searchIt == pCreateInfoHistory->entries.end() || searchIt->id != resourceID)
         return to_foeResult(FOE_SIMULATION_ERROR_RESOURCE_CREATE_INFO_NOT_FOUND);
@@ -119,9 +123,11 @@ extern "C" foeResourceCreateInfo foeResourceCreateInfoHistoryCurrent(
 
     std::shared_lock lock{pCreateInfoHistory->sync};
 
-    auto searchIt = std::lower_bound(
-        pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(), resourceID,
-        [](Entry const &entry, foeResourceID resourceID) { return entry.id < resourceID; });
+    auto searchIt =
+        std::lower_bound(pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(),
+                         resourceID, [](Entry const &entry, foeResourceID resourceID) {
+                             return entry.id < resourceID;
+                         });
 
     if (searchIt == pCreateInfoHistory->entries.end() || searchIt->id != resourceID)
         return FOE_NULL_HANDLE;
@@ -142,9 +148,11 @@ foeResultSet foeResourceCreateInfoHistoryUndo(
 
     std::unique_lock lock{pCreateInfoHistory->sync};
 
-    auto searchIt = std::lower_bound(
-        pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(), resourceID,
-        [](Entry const &entry, foeResourceID resourceID) { return entry.id < resourceID; });
+    auto searchIt =
+        std::lower_bound(pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(),
+                         resourceID, [](Entry const &entry, foeResourceID resourceID) {
+                             return entry.id < resourceID;
+                         });
 
     if (searchIt == pCreateInfoHistory->entries.end() || searchIt->id != resourceID)
         return to_foeResult(FOE_SIMULATION_ERROR_RESOURCE_CREATE_INFO_NOT_FOUND);
@@ -165,9 +173,11 @@ foeResultSet foeResourceCreateInfoHistoryRedo(
 
     std::unique_lock lock{pCreateInfoHistory->sync};
 
-    auto searchIt = std::lower_bound(
-        pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(), resourceID,
-        [](Entry const &entry, foeResourceID resourceID) { return entry.id < resourceID; });
+    auto searchIt =
+        std::lower_bound(pCreateInfoHistory->entries.begin(), pCreateInfoHistory->entries.end(),
+                         resourceID, [](Entry const &entry, foeResourceID resourceID) {
+                             return entry.id < resourceID;
+                         });
 
     if (searchIt == pCreateInfoHistory->entries.end() || searchIt->id != resourceID)
         return to_foeResult(FOE_SIMULATION_ERROR_RESOURCE_CREATE_INFO_NOT_FOUND);

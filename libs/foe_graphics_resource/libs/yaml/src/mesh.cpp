@@ -118,7 +118,8 @@ void yaml_read_mesh_cube(YAML::Node const &node,
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         throw foeYamlException{
-            std::string{"Failed to create foeMeshCubeCreateInfo due to error: "} + buffer};
+            std::string{"Failed to create foeMeshCubeCreateInfo due to error: "} + buffer
+        };
     }
 
     *pCreateInfo = createInfo;
@@ -154,7 +155,8 @@ void yaml_read_mesh_icosphere(YAML::Node const &node,
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         throw foeYamlException{
-            std::string{"Failed to create foeMeshIcosphereCreateInfo due to error: "} + buffer};
+            std::string{"Failed to create foeMeshIcosphereCreateInfo due to error: "} + buffer
+        };
     }
 
     *pCreateInfo = createInfo;

@@ -8,7 +8,7 @@
 #include <foe/export.h>
 
 #ifdef __cplusplus
-#include <fmt/core.h>
+    #include <fmt/core.h>
 #endif
 
 /// Logs a compile-time message to the global logger with the given parameters

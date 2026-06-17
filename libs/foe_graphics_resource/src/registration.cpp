@@ -121,10 +121,9 @@ foeResultSet create(foeSimulation simulation) {
             .pLoader = new (std::nothrow) foeImageLoader,
             .pCanProcessCreateInfoFn = foeImageLoader::canProcessCreateInfo,
             .pLoadFn = foeImageLoader::load,
-            .pGfxMaintenanceFn =
-                [](void *pLoader) {
-                    reinterpret_cast<foeImageLoader *>(pLoader)->gfxMaintenance();
-                },
+            .pGfxMaintenanceFn = [](void *pLoader) {
+                reinterpret_cast<foeImageLoader *>(pLoader)->gfxMaintenance();
+            },
         };
 
         if (loaderCI.pLoader != nullptr)
@@ -157,10 +156,9 @@ foeResultSet create(foeSimulation simulation) {
             .pLoader = new (std::nothrow) foeMaterialLoader,
             .pCanProcessCreateInfoFn = foeMaterialLoader::canProcessCreateInfo,
             .pLoadFn = foeMaterialLoader::load,
-            .pGfxMaintenanceFn =
-                [](void *pLoader) {
-                    reinterpret_cast<foeMaterialLoader *>(pLoader)->gfxMaintenance();
-                },
+            .pGfxMaintenanceFn = [](void *pLoader) {
+                reinterpret_cast<foeMaterialLoader *>(pLoader)->gfxMaintenance();
+            },
         };
 
         if (loaderCI.pLoader != nullptr)
@@ -193,10 +191,9 @@ foeResultSet create(foeSimulation simulation) {
             .pLoader = new (std::nothrow) foeShaderLoader,
             .pCanProcessCreateInfoFn = foeShaderLoader::canProcessCreateInfo,
             .pLoadFn = foeShaderLoader::load,
-            .pGfxMaintenanceFn =
-                [](void *pLoader) {
-                    reinterpret_cast<foeShaderLoader *>(pLoader)->gfxMaintenance();
-                },
+            .pGfxMaintenanceFn = [](void *pLoader) {
+                reinterpret_cast<foeShaderLoader *>(pLoader)->gfxMaintenance();
+            },
         };
 
         if (loaderCI.pLoader != nullptr)
@@ -229,10 +226,9 @@ foeResultSet create(foeSimulation simulation) {
             .pLoader = new (std::nothrow) foeVertexDescriptorLoader,
             .pCanProcessCreateInfoFn = foeVertexDescriptorLoader::canProcessCreateInfo,
             .pLoadFn = foeVertexDescriptorLoader::load,
-            .pGfxMaintenanceFn =
-                [](void *pLoader) {
-                    reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->gfxMaintenance();
-                },
+            .pGfxMaintenanceFn = [](void *pLoader) {
+                reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->gfxMaintenance();
+            },
         };
 
         if (loaderCI.pLoader != nullptr)
@@ -266,8 +262,9 @@ foeResultSet create(foeSimulation simulation) {
             .pLoader = new (std::nothrow) foeMeshLoader,
             .pCanProcessCreateInfoFn = foeMeshLoader::canProcessCreateInfo,
             .pLoadFn = foeMeshLoader::load,
-            .pGfxMaintenanceFn =
-                [](void *pLoader) { reinterpret_cast<foeMeshLoader *>(pLoader)->gfxMaintenance(); },
+            .pGfxMaintenanceFn = [](void *pLoader) {
+                reinterpret_cast<foeMeshLoader *>(pLoader)->gfxMaintenance();
+            },
         };
 
         if (loaderCI.pLoader != nullptr)

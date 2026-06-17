@@ -48,7 +48,9 @@ TestResource testData2 = {
     .pStr = "Hello World!",
 };
 
-auto loadDataFn = [](void *pSrc, void *pDst) { memcpy(pDst, pSrc, sizeof(TestResource)); };
+auto loadDataFn = [](void *pSrc, void *pDst) {
+    memcpy(pDst, pSrc, sizeof(TestResource));
+};
 
 // Unloading
 
@@ -58,7 +60,9 @@ struct UnloadedData {
     bool immediate;
 };
 
-auto unloadDataFn = [](void *pUnloadContext, void *pRaw) { memset(pRaw, 0, sizeof(TestResource)); };
+auto unloadDataFn = [](void *pUnloadContext, void *pRaw) {
+    memset(pRaw, 0, sizeof(TestResource));
+};
 
 auto unloadFn = [](void *pUnloadContext,
                    foeResource resource,

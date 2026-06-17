@@ -235,10 +235,9 @@ foeResultSet create(foeSimulation simulation) {
             .pLoader = new (std::nothrow) foeArmatureLoader,
             .pCanProcessCreateInfoFn = foeArmatureLoader::canProcessCreateInfo,
             .pLoadFn = foeArmatureLoader::load,
-            .pMaintenanceFn =
-                [](void *pLoader) {
-                    reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();
-                },
+            .pMaintenanceFn = [](void *pLoader) {
+                reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();
+            },
         };
         if (loaderCI.pLoader == nullptr) {
             result = to_foeResult(FOE_SKUNKWORKS_ERROR_OUT_OF_MEMORY);
@@ -268,8 +267,9 @@ foeResultSet create(foeSimulation simulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
-            .pMaintenanceFn =
-                [](void *pData) { foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData); },
+            .pMaintenanceFn = [](void *pData) {
+                foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData);
+            },
         };
 
         result = foeEcsCreateComponentPool(0, 16, sizeof(foeArmatureState), nullptr,
@@ -300,10 +300,9 @@ foeResultSet create(foeSimulation simulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_SKUNKWORKS_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL,
-            .pMaintenanceFn =
-                [](void *componentPool) {
-                    foeEcsComponentPoolMaintenance((foeAnimatedBoneStatePool)componentPool);
-                },
+            .pMaintenanceFn = [](void *componentPool) {
+                foeEcsComponentPoolMaintenance((foeAnimatedBoneStatePool)componentPool);
+            },
         };
 
         result =
@@ -336,10 +335,9 @@ foeResultSet create(foeSimulation simulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_STATE_POOL,
-            .pMaintenanceFn =
-                [](void *componentPool) {
-                    foeEcsComponentPoolMaintenance((foeRenderStatePool)componentPool);
-                },
+            .pMaintenanceFn = [](void *componentPool) {
+                foeEcsComponentPoolMaintenance((foeRenderStatePool)componentPool);
+            },
         };
 
         result = foeEcsCreateComponentPool(0, 16, sizeof(foeRenderState), nullptr,

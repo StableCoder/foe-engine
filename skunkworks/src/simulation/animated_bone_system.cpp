@@ -329,8 +329,9 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
 
     { // Process 'awaiting' items
         auto dataSets = std::move(pAnimatedBoneSystem->mAwaitingLoading);
-        std::sort(dataSets.begin(), dataSets.end(),
-                  [](auto const &a, auto const &b) { return a.entity < b.entity; });
+        std::sort(dataSets.begin(), dataSets.end(), [](auto const &a, auto const &b) {
+            return a.entity < b.entity;
+        });
 
         foeEntityID const *pArmatureStateID =
             foeEcsComponentPoolIdPtr(pAnimatedBoneSystem->mArmatureStatePool);

@@ -18,7 +18,7 @@ typedef uint32_t foeId;
 #define FOE_INVALID_ID 0
 
 /// An Invalid ID value is the maximum possible total value that the type can hold
-#define FOE_MAX_ID UINT32_MAX
+#define FOE_MAX_ID     UINT32_MAX
 
 /// Represents an Id's 'Group' portion of an ID
 typedef foeId foeIdGroup;
@@ -35,13 +35,13 @@ typedef foeId foeResourceID;
 typedef foeId foeEntityID;
 
 /// Number of total bits in the foeId type
-#define foeIdNumBits 32u
+#define foeIdNumBits       32u
 /// Number of bytes in the foeId type
-#define foeIdNumBytes (foeIdNumBits / 8u)
+#define foeIdNumBytes      (foeIdNumBits / 8u)
 /// Number of bits used for the ID's group
-#define foeIdNumGroupBits 4u
+#define foeIdNumGroupBits  4u
 /// Number of bits used for the ID's index
-#define foeIdNumIndexBits (foeIdNumBits - (foeIdNumGroupBits))
+#define foeIdNumIndexBits  (foeIdNumBits - (foeIdNumGroupBits))
 
 // ID Group
 
@@ -51,24 +51,24 @@ typedef foeId foeEntityID;
 /// Valid GroupID bits
 #define foeIdGroupBits ((FOE_MAX_ID >> (foeIdNumBits - foeIdNumGroupBits)) << foeIdGroupBitShift)
 /// Maximum zero-based value of a GroupID
-#define foeIdGroupMaxValue (foeIdGroupBits >> foeIdGroupBitShift)
+#define foeIdGroupMaxValue        (foeIdGroupBits >> foeIdGroupBitShift)
 
 /// Number of reserved ID groups
-#define foeIdReservedGroups 2u
+#define foeIdReservedGroups       2u
 /// Number of non-reserved ID groups
-#define foeIdNumDynamicGroups (foeIdGroupMaxValue - foeIdReservedGroups + 1u)
+#define foeIdNumDynamicGroups     (foeIdGroupMaxValue - foeIdReservedGroups + 1u)
 
 /// Zero-based value representing the 'Temporary' ID group
-#define foeIdTemporaryGroupValue foeIdGroupMaxValue
+#define foeIdTemporaryGroupValue  foeIdGroupMaxValue
 /// Zero-based value representing the 'Persistent' ID group
 #define foeIdPersistentGroupValue (foeIdGroupMaxValue - 1)
 /// Zero-based value representing the maximum number of dynamic ID groups
 #define foeIdMaxDynamicGroupValue (foeIdGroupMaxValue - foeIdReservedGroups)
 
 /// Shifted enum representing the 'Persistent' ID group
-#define foeIdPersistentGroup (foeIdPersistentGroupValue << foeIdGroupBitShift)
+#define foeIdPersistentGroup      (foeIdPersistentGroupValue << foeIdGroupBitShift)
 /// Shifted enum representing the 'Temporary' ID group
-#define foeIdTemporaryGroup (foeIdTemporaryGroupValue << foeIdGroupBitShift)
+#define foeIdTemporaryGroup       (foeIdTemporaryGroupValue << foeIdGroupBitShift)
 
 static inline foeIdGroup foeIdGetGroup(foeId id) { return (id & foeIdGroupBits); }
 
@@ -86,14 +86,14 @@ static inline foeIdGroupValue foeIdGroupToValue(foeId id) {
 #define foeIdIndexBitShift 0
 
 /// Bitflag of the valid IndexID bits
-#define foeIdIndexBits (FOE_MAX_ID >> (foeIdNumGroupBits))
+#define foeIdIndexBits     (FOE_MAX_ID >> (foeIdNumGroupBits))
 /// Minimum value of an IndexID (to avoid overlapping with FOE_INVALID_ID)
 #define foeIdIndexMinValue 0x1u
 /// Maximum value of an IndexID
 #define foeIdIndexMaxValue (foeIdIndexBits >> foeIdIndexBitShift)
 
 /// Maximum IdIndex
-#define foeIdIndexMax (foeIdIndexMaxValue << foeIdIndexBitShift)
+#define foeIdIndexMax      (foeIdIndexMaxValue << foeIdIndexBitShift)
 
 static inline foeIdIndex foeIdGetIndex(foeId id) { return (id & foeIdIndexBits); }
 

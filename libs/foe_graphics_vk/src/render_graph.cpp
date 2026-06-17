@@ -394,12 +394,14 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
                 break;
 
             // Sort and remove duplicates
-            std::sort(nextJobWave.begin(), nextJobWave.end(),
-                      [](auto const &a, auto const &b) { return a.pJob < b.pJob; });
-            nextJobWave.erase(
-                std::unique(nextJobWave.begin(), nextJobWave.end(),
-                            [](auto const &a, auto const &b) { return a.pJob == b.pJob; }),
-                nextJobWave.end());
+            std::sort(nextJobWave.begin(), nextJobWave.end(), [](auto const &a, auto const &b) {
+                return a.pJob < b.pJob;
+            });
+            nextJobWave.erase(std::unique(nextJobWave.begin(), nextJobWave.end(),
+                                          [](auto const &a, auto const &b) {
+                                              return a.pJob == b.pJob;
+                                          }),
+                              nextJobWave.end());
 
             foeGfxVkRenderGraphStructure const *pUpstreamReference =
                 currentJobWave[0].pState->pOutgoingState;

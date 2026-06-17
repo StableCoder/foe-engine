@@ -29,16 +29,17 @@ foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     auto *pIncomingImageState = new (std::nothrow) foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = requiredLayout,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pIncomingImageState; };
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pIncomingImageState;
+    };
 
     // Add job to graph
     foeGfxVkRenderGraphResourceState resourceState{

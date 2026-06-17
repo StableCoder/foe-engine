@@ -19,7 +19,8 @@
 class WidgetWindowTest : public QWidget {
   public:
     WidgetWindowTest(foeQtVulkanWindow *topWindow, foeQtVulkanWindow *bottomWindow) :
-        pTopWindow{topWindow}, pBottomWindow{bottomWindow} {
+        pTopWindow{topWindow},
+        pBottomWindow{bottomWindow} {
         QWidget *wrapper = QWidget::createWindowContainer(topWindow);
         QWidget *wrapper2 = QWidget::createWindowContainer(bottomWindow);
 

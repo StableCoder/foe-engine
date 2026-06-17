@@ -24,8 +24,9 @@ foeResultSet create(foeSimulation simulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL,
-            .pMaintenanceFn =
-                [](void *pData) { foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData); },
+            .pMaintenanceFn = [](void *pData) {
+                foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData);
+            },
         };
 
         result = foeEcsCreateComponentPool(

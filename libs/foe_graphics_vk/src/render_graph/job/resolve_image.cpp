@@ -59,12 +59,11 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                     .layerCount = 1,
                 },
             .dstOffset = {},
-            .extent =
-                {
-                    .width = pSrcImageData->extent.width,
-                    .height = pSrcImageData->extent.height,
-                    .depth = 1,
-                },
+            .extent = {
+                .width = pSrcImageData->extent.width,
+                .height = pSrcImageData->extent.height,
+                .depth = 1,
+            },
         };
 
         vkCmdResolveImage(commandBuffer, pSrcImageData->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -96,50 +95,46 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
     pImageStates[0] = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
     // Source outgoing
     pImageStates[1] = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
 
     // Destination incoming
     pImageStates[2] = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
     // Destination outgoing
     pImageStates[3] = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1,
-            },
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .layerCount = 1,
+        },
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
