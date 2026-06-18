@@ -21,8 +21,12 @@ Source Files:
     - linux
     - amd64
   script:
-    - cmake . -B build -G Ninja
-    - cmake --build build --target format
+    - |
+      find . -type f \
+        \( -name '*.c' -or -name '*.h' -or -name '*.cpp' -or -name '*.hpp' \) \
+        -and -not -path './external/*' \
+        -and -not -path './cmake/*' \
+        | parallel 'clang-format -i'
     - git diff --exit-code
 
 CMake Files:
@@ -34,8 +38,12 @@ CMake Files:
     - linux
     - amd64
   script:
-    - cmake . -B build -G Ninja
-    - cmake --build build --target cmake-format
+    - |
+      find . -type f \
+        \( -name 'CMakeLists.txt' -or -name '*.cmake' \) \
+        -and -not -path './external/*' \
+        -and -not -path './cmake/*' \
+        | parallel 'cmake-format -i'
     - git diff --exit-code
 
 Shell Files:
@@ -47,8 +55,12 @@ Shell Files:
     - linux
     - amd64
   script:
-    - for FILE in $(find . | grep -e "\.sh$"); do echo ">> For File - $FILE"; shfmt -i 4 $FILE > $FILE.tmp; mv $FILE.tmp $FILE; chmod +x $FILE; done
-    - git submodule foreach --recursive git reset --hard
+    - |
+      find . -type f \
+        -name '*.sh' \
+        -and -not -path './external/*' \
+        -and -not -path './cmake/*' \
+        | parallel 'shfmt --indent 4 --write'
     - git diff --exit-code
 
 Python Files:
@@ -60,8 +72,12 @@ Python Files:
     - linux
     - amd64
   script:
-    - for FILE in $(find . | grep -e "\.py$"); do echo ">> For File - $FILE"; autopep8 -i $FILE; done
-    - git submodule foreach --recursive git reset --hard
+    - |
+      find . -type f \
+        -name '*.py' \
+        -and -not -path './external/*' \
+        -and -not -path './cmake/*' \
+        | parallel 'autopep8 -i'
     - git diff --exit-code
 
 # Platform Stage Templates
