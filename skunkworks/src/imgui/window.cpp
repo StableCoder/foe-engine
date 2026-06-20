@@ -4,7 +4,7 @@
 
 #include "window.hpp"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <foe/external/imgui.h>
 #include <foe/imgui/state.hpp>
 

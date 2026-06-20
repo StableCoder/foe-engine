@@ -1,10 +1,10 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/graphics/vk/imgui/vk_type.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <foe/external/imgui.h>
 #include <foe/external/vk_value_serialization.hpp>
 

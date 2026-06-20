@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,9 @@
 #include <foe/export.h>
 
 #ifdef __cplusplus
-    #include <fmt/core.h>
+    #include <fmt/format.h>
+
+    #include <utility>
 #endif
 
 /// Logs a compile-time message to the global logger with the given parameters
