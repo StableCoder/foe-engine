@@ -289,31 +289,27 @@ int Application::initialize(int argc, char **argv) {
                 std::unique_ptr<SDL3_WindowData> pNewWindow{new SDL3_WindowData};
                 pNewWindow->renderSurfaceData.pActive.reset(new std::atomic_bool{true});
 
-                bool result =
-                    createSDL3Window(it->width, it->height, it->title.c_str(), pNewWindow.get());
+                if (createSDL3Window(it->width, it->height, it->title.c_str(), pNewWindow.get())) {
+                    pNewWindow->desiredSampleCount = it->msaa;
+                    pNewWindow->vsync = it->vsync;
 
-                if (!result)
-                    std::abort();
-
-                pNewWindow->desiredSampleCount = it->msaa;
-                pNewWindow->vsync = it->vsync;
-
-                pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
-                pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
-                pNewWindow->fovY = 60;
-                pNewWindow->nearZ = 2;
-                pNewWindow->farZ = 50;
+                    pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
+                    pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+                    pNewWindow->fovY = 60;
+                    pNewWindow->nearZ = 2;
+                    pNewWindow->farZ = 50;
 
     #ifdef EDITOR_MODE
-                windowInfoSync.lock();
-                imguiAddSDL3Window(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
-                                   &pNewWindow->mouse);
-                windowInfoSync.unlock();
+                    windowInfoSync.lock();
+                    imguiAddSDL3Window(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
+                                       &pNewWindow->mouse);
+                    windowInfoSync.unlock();
     #endif
 
-                sdl3_windowData.emplace_back(pNewWindow.release());
+                    sdl3_windowData.emplace_back(pNewWindow.release());
 
-                windowCreated = true;
+                    windowCreated = true;
+                }
             } else
 #endif // FOE_SKUNKWORKS_SDL3
 #ifdef FOE_SKUNKWORKS_GLFW
@@ -322,33 +318,34 @@ int Application::initialize(int argc, char **argv) {
                 std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
                 pNewWindow->renderSurfaceData.pActive.reset(new std::atomic_bool{true});
 
-                bool result =
-                    createGlfwWindow(it->width, it->height, it->title.c_str(), pNewWindow.get());
-                if (!result)
-                    std::abort();
+                if (createGlfwWindow(it->width, it->height, it->title.c_str(), pNewWindow.get())) {
+                    pNewWindow->desiredSampleCount = it->msaa;
+                    pNewWindow->vsync = it->vsync;
 
-                pNewWindow->desiredSampleCount = it->msaa;
-                pNewWindow->vsync = it->vsync;
-
-                pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
-                pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
-                pNewWindow->fovY = 60;
-                pNewWindow->nearZ = 2;
-                pNewWindow->farZ = 50;
+                    pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
+                    pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+                    pNewWindow->fovY = 60;
+                    pNewWindow->nearZ = 2;
+                    pNewWindow->farZ = 50;
 
     #ifdef EDITOR_MODE
-                windowInfoSync.lock();
-                imguiAddGlfwWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
-                                   &pNewWindow->mouse);
-                windowInfoSync.unlock();
+                    windowInfoSync.lock();
+                    imguiAddGlfwWindow(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
+                                       &pNewWindow->mouse);
+                    windowInfoSync.unlock();
     #endif
 
-                glfw_windowData.emplace_back(pNewWindow.release());
+                    glfw_windowData.emplace_back(pNewWindow.release());
 
-                windowCreated = true;
-            }
+                    windowCreated = true;
+                }
+            } else
 #endif // FOE_SKUNKWORKS_GLFW
-            {}
+                if (windowAttempted) {
+                    FOE_LOG(foeSkunkworks, FOE_LOG_LEVEL_FATAL,
+                            "No windows could be successfully created\n");
+                    std::abort();
+                }
 
             if (windowCreated) {
                 windowCreated = false;
@@ -383,25 +380,22 @@ int Application::initialize(int argc, char **argv) {
             uint32_t extensionCount;
             char const *const *ppExtensionNames;
 #ifdef FOE_SKUNKWORKS_GLFW
-            if (!getGlfwVkInstanceExtensions(&extensionCount, &ppExtensionNames))
-                std::abort();
-            for (uint32_t i = 0; i < extensionCount; ++i) {
-                vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
-            }
+            if (getGlfwVkInstanceExtensions(&extensionCount, &ppExtensionNames))
+                for (uint32_t i = 0; i < extensionCount; ++i) {
+                    vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
+                }
 #endif
 #ifdef FOE_SKUNKWORKS_SDL3
-            if (!getSDL3VkExtensions(&extensionCount, &ppExtensionNames))
-                std::abort();
-            for (uint32_t i = 0; i < extensionCount; ++i) {
-                vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
-            }
+            if (getSDL3VkExtensions(&extensionCount, &ppExtensionNames))
+                for (uint32_t i = 0; i < extensionCount; ++i) {
+                    vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
+                }
 #endif
 #ifdef FOE_SKUNKWORKS_QT
-            if (!getQtVkExtensions(&extensionCount, &ppExtensionNames))
-                std::abort();
-            for (uint32_t i = 0; i < extensionCount; ++i) {
-                vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
-            }
+            if (getQtVkExtensions(&extensionCount, &ppExtensionNames))
+                for (uint32_t i = 0; i < extensionCount; ++i) {
+                    vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
+                }
 #endif
         }
 
