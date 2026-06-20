@@ -4,13 +4,14 @@
 
 #include <QGuiApplication>
 #include <QWindow>
-#include <QtGui/qpa/qplatformnativeinterface.h>
 #include <foe/graphics/vk/runtime.h>
 #include <vulkan/vulkan.h>
 
 #include <vulkan/vulkan_wayland.h>
 
-VkSurfaceKHR createSurfaceWayland(foeGfxRuntime gfxRuntime, QWindow *pWindow) {
+VkSurfaceKHR createSurfaceWayland(foeGfxRuntime gfxRuntime,
+                                  QGuiApplication const *pGuiApplication,
+                                  QWindow *pWindow) {
     VkInstance vkInstance = foeGfxVkGetRuntimeInstance(gfxRuntime);
 
     PFN_vkCreateWaylandSurfaceKHR pfnCreateSurface =
@@ -19,16 +20,13 @@ VkSurfaceKHR createSurfaceWayland(foeGfxRuntime gfxRuntime, QWindow *pWindow) {
     if (!pfnCreateSurface)
         std::abort();
 
-    QPlatformNativeInterface *pNativeInterface = QGuiApplication::platformNativeInterface();
-    wl_display *wlDisplay =
-        (wl_display *)pNativeInterface->nativeResourceForWindow("display", pWindow);
-    struct wl_surface *wlSurface =
-        (struct wl_surface *)pNativeInterface->nativeResourceForWindow("surface", pWindow);
+    QNativeInterface::QWaylandApplication *pNativeApplication =
+        pGuiApplication->nativeInterface<QNativeInterface::QWaylandApplication>();
 
     VkWaylandSurfaceCreateInfoKHR surfaceCI{
         .sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
-        .display = wlDisplay,
-        .surface = wlSurface,
+        .display = (wl_display *)pNativeApplication->display(),
+        .surface = (struct wl_surface *)pWindow->winId(),
     };
 
     VkSurfaceKHR surface = VK_NULL_HANDLE;

@@ -12,17 +12,21 @@
 #include "../result.h"
 
 #if __APPLE__
-// char const *cCocoaExtensions[] = {"VK_KHR_surface", "VK_EXT_metal_surface"};
+char const *cCocoaExtensions[] = {"VK_KHR_surface", "VK_EXT_metal_surface"};
 #elif _WIN32
 VkSurfaceKHR createSurfaceWin32(foeGfxRuntime gfxRuntime, QWindow *pWindow);
 
 char const *cWin32Extensions[] = {"VK_KHR_surface", "VK_KHR_win32_surface"};
 #elif __linux__
-VkSurfaceKHR createSurfaceWayland(foeGfxRuntime gfxRuntime, QWindow *pWindow);
+VkSurfaceKHR createSurfaceWayland(foeGfxRuntime gfxRuntime,
+                                  QGuiApplication const *pGuiApplication,
+                                  QWindow *pWindow);
 
 char const *cWaylandExtensions[] = {"VK_KHR_surface", "VK_KHR_wayland_surface"};
 
-VkSurfaceKHR createSurfaceXcb(foeGfxRuntime gfxRuntime, QWindow *pWindow);
+VkSurfaceKHR createSurfaceXcb(foeGfxRuntime gfxRuntime,
+                              QGuiApplication const *pGuiApplication,
+                              QWindow *pWindow);
 
 char const *cXcbExtensions[] = {"VK_KHR_surface", "VK_KHR_xcb_surface"};
 #endif
@@ -32,11 +36,11 @@ bool getQtVkExtensions(uint32_t *pCount, char const *const **ppExtensionNames) {
 
 #if __APPLE__
     if (platformName == "cocoa") {
-        // *pCount = 2;
-        // if (ppExtensionNames)
-        //     *ppExtensionNames = cCocoaExtensions;
+        *pCount = 2;
+        if (ppExtensionNames)
+            *ppExtensionNames = cCocoaExtensions;
 
-        // return true;
+        return true;
     }
 #elif _WIN32
     if (platformName == "windows") {
@@ -68,6 +72,7 @@ bool getQtVkExtensions(uint32_t *pCount, char const *const **ppExtensionNames) {
 
 foeResult createQtWindowVkSurface(foeGfxRuntime gfxRuntime,
                                   foeGfxSession gfxSession,
+                                  QGuiApplication const *pGuiApplication,
                                   Qt_WindowData *pWindowData,
                                   VkAllocationCallbacks *pAllocator,
                                   VkSurfaceKHR *pSurface) {
@@ -75,16 +80,18 @@ foeResult createQtWindowVkSurface(foeGfxRuntime gfxRuntime,
     QString const platformName = QGuiApplication::platformName();
 
 #if __APPLE__
-    if (platformName == "cocoa") {}
+    if (platformName == "cocoa") {
+        newSurface = createSurfaceCocoa(gfxRuntime, pWindowData->pWindow);
+    }
 #elif _WIN32
     if (platformName == "windows") {
         newSurface = createSurfaceWin32(gfxRuntime, pWindowData->pWindow);
     }
 #elif __linux__
     if (platformName == "wayland") {
-        newSurface = createSurfaceWayland(gfxRuntime, pWindowData->pWindow);
+        newSurface = createSurfaceWayland(gfxRuntime, pGuiApplication, pWindowData->pWindow);
     } else if (platformName == "xcb") {
-        newSurface = createSurfaceXcb(gfxRuntime, pWindowData->pWindow);
+        newSurface = createSurfaceXcb(gfxRuntime, pGuiApplication, pWindowData->pWindow);
     }
 #endif
 

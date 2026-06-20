@@ -428,7 +428,7 @@ int Application::initialize(int argc, char **argv) {
 #endif
 #ifdef FOE_SKUNKWORKS_QT
         for (auto &it : qt_windowData) {
-            if (createQtWindowVkSurface(gfxRuntime, FOE_NULL_HANDLE, it, nullptr,
+            if (createQtWindowVkSurface(gfxRuntime, FOE_NULL_HANDLE, pQtGuiApplication, it, nullptr,
                                         &it->renderSurfaceData.surface) != FOE_SUCCESS)
                 std::abort();
         }

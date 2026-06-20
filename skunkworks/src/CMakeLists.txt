@@ -64,7 +64,7 @@ if(FOE_SUPPORT_QT6)
   message(STATUS "Compiling foe_skunkworks with Qt6 windowing support")
 
   target_compile_definitions(foe_skunkworks_lib PUBLIC FOE_SKUNKWORKS_QT)
-  target_link_libraries(foe_skunkworks_lib PUBLIC Qt6::Gui Qt6::GuiPrivate)
+  target_link_libraries(foe_skunkworks_lib PUBLIC Qt6::Gui)
   target_sources(foe_skunkworks_lib PRIVATE wsi_qt/qt_vulkan_window.cpp
                                             wsi_qt/window.cpp)
 

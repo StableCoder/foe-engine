@@ -72,7 +72,7 @@ endif()
 find_package(ImageMagick REQUIRED MagickCore)
 
 if(NOT APPLE)
-  find_package(Qt6 COMPONENTS Gui GuiPrivate Widgets)
+  find_package(Qt6 COMPONENTS Gui Widgets)
 endif()
 
 # Engine Entrypoint

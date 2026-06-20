@@ -52,6 +52,7 @@ bool getQtVkExtensions(uint32_t *pCount, char const *const **ppExtensionNames);
 
 foeResult createQtWindowVkSurface(foeGfxRuntime gfxRuntime,
                                   foeGfxSession gfxSession,
+                                  QGuiApplication const *pGuiApplication,
                                   Qt_WindowData *pWindowData,
                                   VkAllocationCallbacks *pAllocator,
                                   VkSurfaceKHR *pSurface);

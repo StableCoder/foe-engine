@@ -4,7 +4,6 @@
 
 #include <QGuiApplication>
 #include <QWindow>
-#include <QtGui/qpa/qplatformnativeinterface.h>
 #include <foe/graphics/vk/runtime.h>
 #include <vulkan/vulkan.h>
 
@@ -13,7 +12,9 @@
 
 #include <vulkan/vulkan_xcb.h>
 
-VkSurfaceKHR createSurfaceXcb(foeGfxRuntime gfxRuntime, QWindow *pWindow) {
+VkSurfaceKHR createSurfaceXcb(foeGfxRuntime gfxRuntime,
+                              QGuiApplication const *pGuiApplication,
+                              QWindow *pWindow) {
     VkInstance vkInstance = foeGfxVkGetRuntimeInstance(gfxRuntime);
 
     PFN_vkCreateXcbSurfaceKHR pfnCreateSurface = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(
@@ -21,15 +22,13 @@ VkSurfaceKHR createSurfaceXcb(foeGfxRuntime gfxRuntime, QWindow *pWindow) {
     if (!pfnCreateSurface)
         std::abort();
 
-    QPlatformNativeInterface *pNativeInterface = QGuiApplication::platformNativeInterface();
-    xcb_connection_t *xcbConnection =
-        (xcb_connection_t *)pNativeInterface->nativeResourceForWindow("connection", pWindow);
-    xcb_window_t xcbWindow = pWindow->winId();
+    QNativeInterface::QX11Application *pNativeApplication =
+        pGuiApplication->nativeInterface<QNativeInterface::QX11Application>();
 
     VkXcbSurfaceCreateInfoKHR surfaceCI{
         .sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
-        .connection = xcbConnection,
-        .window = xcbWindow,
+        .connection = (xcb_connection_t *)pNativeApplication->connection(),
+        .window = (xcb_window_t)pWindow->winId(),
     };
 
     VkSurfaceKHR surface = VK_NULL_HANDLE;
