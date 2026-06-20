@@ -1193,12 +1193,17 @@ int Application::mainloop() {
             }
         }
 
-        // Determine if the next frame is available to start rendering to, if we
-        // don't have one
+        // determine if there if a frame available to render to
         if (frameIndex == UINT32_MAX) {
-            uint32_t nextFrameIndex = (lastFrameIndex + 1) % frameData.size();
-            if (!frameData[nextFrameIndex].active)
-                frameIndex = nextFrameIndex;
+            uint32_t nextFrameIndex;
+            do {
+                nextFrameIndex = (lastFrameIndex + 1) % frameData.size();
+                if (!frameData[nextFrameIndex].active) {
+                    // frame is not active, can be rendered to
+                    frameIndex = nextFrameIndex;
+                    break;
+                }
+            } while (nextFrameIndex != lastFrameIndex);
         }
 
         // If we have a frame we can render to, proceed to check for ready-to-render

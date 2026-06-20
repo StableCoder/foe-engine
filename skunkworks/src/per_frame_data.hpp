@@ -20,7 +20,7 @@ struct OnFrameCompleteTask {
 
 struct PerFrameData {
     // if frame is in-progress
-    bool active;
+    bool active = false;
 
     VkSemaphore preGraph;
     VkSemaphore postGraph;
