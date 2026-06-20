@@ -18,6 +18,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 
 foeResultSet foeImageLoader::initialize(foeResourcePool resourcePool,
@@ -437,8 +438,8 @@ void foeImageLoader::load(foeResource resource,
                         .imageExtent = mipExtent,
                     };
 
-                    std::memcpy(pData + offset, mipmapOffsetPtrs[i],
-                                bpp * mipExtent.width * mipExtent.height * mipExtent.depth);
+                    memcpy(pData + offset, mipmapOffsetPtrs[i],
+                           bpp * mipExtent.width * mipExtent.height * mipExtent.depth);
 
                     offset += mipExtent.width * mipExtent.height * mipExtent.depth *
                               foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
