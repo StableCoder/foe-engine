@@ -50,7 +50,6 @@ void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
 
     // State
     delete[] pSession->pExtensionNames;
-    delete[] pSession->pLayerNames;
 
     if (pSession->pQueueFamilies != nullptr)
         for (uint32_t i = 0; i < pSession->numQueueFamilies; ++i)
@@ -370,8 +369,6 @@ void mergeFeatureSet_VkPhysicalDeviceVulkan13Features(VkPhysicalDeviceVulkan13Fe
 
 extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
                                               VkPhysicalDevice vkPhysicalDevice,
-                                              uint32_t layerCount,
-                                              char const *const *ppLayerNames,
                                               uint32_t extensionCount,
                                               char const *const *ppExtensionNames,
                                               VkPhysicalDeviceFeatures const *pBasicFeatures,
@@ -416,11 +413,8 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     }
 
     // Layers / Extensions
-    std::vector<char const *> layers;
     std::vector<char const *> extensions;
 
-    for (uint32_t i = 0; i < layerCount; ++i)
-        layers.emplace_back(ppLayerNames[i]);
     for (uint32_t i = 0; i < extensionCount; ++i)
         extensions.emplace_back(ppExtensionNames[i]);
 
@@ -497,15 +491,7 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     if (result.value != FOE_SUCCESS)
         goto CREATE_FAILED;
 
-    // Remove duplicate layers/extensions
-    for (auto it = layers.begin(); it != layers.end(); ++it) {
-        for (auto cmpIt = it + 1; cmpIt != layers.end();) {
-            if (strcmp(*it, *cmpIt) == 0)
-                cmpIt = layers.erase(cmpIt);
-            else
-                ++cmpIt;
-        }
-    }
+    // Remove duplicate extensions
     for (auto it = extensions.begin(); it != extensions.end(); ++it) {
         for (auto cmpIt = it + 1; cmpIt != extensions.end();) {
             if (strcmp(*it, *cmpIt) == 0)
@@ -533,8 +519,6 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
 #endif
             .queueCreateInfoCount = pNewSession->numQueueFamilies,
             .pQueueCreateInfos = queueCI.get(),
-            .enabledLayerCount = static_cast<uint32_t>(layers.size()),
-            .ppEnabledLayerNames = layers.data(),
             .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
             .ppEnabledExtensionNames = extensions.data(),
 #ifndef VK_VERSION_1_1
@@ -548,15 +532,7 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
         }
     }
 
-    // Add layer/extension/feature state to session struct for future queries
-    foeCreateDelimitedString(layers.size(), layers.data(), '\0', &pNewSession->layerNamesLength,
-                             nullptr);
-    if (pNewSession->layerNamesLength != 0) {
-        pNewSession->pLayerNames = new char[pNewSession->layerNamesLength];
-        foeCreateDelimitedString(layers.size(), layers.data(), '\0', &pNewSession->layerNamesLength,
-                                 pNewSession->pLayerNames);
-    }
-
+    // Add extension/feature state to session struct for future queries
     foeCreateDelimitedString(extensions.size(), extensions.data(), '\0',
                              &pNewSession->extensionNamesLength, nullptr);
     if (pNewSession->extensionNamesLength != 0) {
@@ -627,17 +603,6 @@ CREATE_FAILED:
     }
 
     return result;
-}
-
-extern "C" foeResultSet foeGfxVkEnumerateSessionLayers(foeGfxSession session,
-                                                       uint32_t *pLayerNamesLength,
-                                                       char *pLayerNames) {
-    auto *pSession = session_from_handle(session);
-
-    return foeCopyDelimitedString(pSession->layerNamesLength, pSession->pLayerNames, '\0',
-                                  pLayerNamesLength, pLayerNames)
-               ? to_foeResult(FOE_GRAPHICS_VK_SUCCESS)
-               : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
 extern "C" foeResultSet foeGfxVkEnumerateSessionExtensions(foeGfxSession session,

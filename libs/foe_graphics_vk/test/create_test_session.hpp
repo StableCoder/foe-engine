@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2025 George Cave
+// Copyright (C) 2022-2026 George Cave
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -43,8 +43,8 @@ inline foeResultSet createTestSession(foeGfxRuntime *pRuntime, foeGfxSession *pS
         goto CREATE_TEST_SESSION_FAILED;
     }
 
-    result = foeGfxVkCreateSession(runtime, vkPhysicalDevices[getGpuSelection()], 0, nullptr, 0,
-                                   nullptr, nullptr, nullptr, &session);
+    result = foeGfxVkCreateSession(runtime, vkPhysicalDevices[getGpuSelection()], 0, nullptr,
+                                   nullptr, nullptr, &session);
     if (result.value != FOE_SUCCESS)
         goto CREATE_TEST_SESSION_FAILED;
 

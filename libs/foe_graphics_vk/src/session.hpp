@@ -30,10 +30,6 @@ struct foeGfxVkSession {
     uint32_t numQueueFamilies{0};
     QueueFamily *pQueueFamilies = nullptr;
 
-    /// Length in bytes of pLayerNames
-    uint32_t layerNamesLength{0};
-    /// Set of strings representing the instance's layers, delimited by NULL characters
-    char *pLayerNames{nullptr};
     /// Length in bytes of pExtensionNames
     uint32_t extensionNamesLength{0};
     /// Set of strings representing the instance's extensions, delimited by NULL characters

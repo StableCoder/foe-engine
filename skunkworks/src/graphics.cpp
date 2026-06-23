@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <vector>
+#include <vulkan/vulkan_core.h>
 
 #ifdef FOE_SUPPORT_XR
     #include <foe/xr/openxr/runtime.h>
@@ -308,11 +309,7 @@ foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
     }
 #endif
 
-    std::vector<char const *> layersList;
     std::vector<char const *> extensionsList;
-
-    for (auto &it : layers)
-        layersList.emplace_back(it.data());
     for (auto &it : extensions)
         extensionsList.emplace_back(it.data());
 
@@ -345,7 +342,6 @@ foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
         return to_foeResult(FOE_SKUNKWORKS_ERROR_NO_TIMELINE_SEMAPHORE_SUPPORT);
     }
 
-    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layersList.size(), layersList.data(),
-                                 extensionsList.size(), extensionsList.data(), nullptr, nullptr,
-                                 pGfxSession);
+    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, extensionsList.size(),
+                                 extensionsList.data(), nullptr, nullptr, pGfxSession);
 }

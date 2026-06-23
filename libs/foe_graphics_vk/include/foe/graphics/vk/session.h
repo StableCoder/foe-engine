@@ -22,9 +22,6 @@ extern "C" {
 /** @brief Creates a graphics session using the Vulkan API
  * @param runtime is a handle to the graphics runtime to be created on
  * @param vkPhysicalDevice must be a physical device handle retrieved using the given runtime
- * @param layerCount is the number of Vulkan layers to enable
- * @param ppLayerNames is a pointer to an array of layerCount null-terminated UTF-8 strings
- * containing the names of layers to enable in the created runtime.
  * @param extensionCount is the number of Vulkan extensions to enable
  * @param ppExtensionNames is a pointer to an array of layerCount null-terminated UTF-8 strings
  * containing the names of extesnions to enable in the created runtime.
@@ -43,31 +40,11 @@ extern "C" {
 FOE_GFX_EXPORT
 foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
                                    VkPhysicalDevice vkPhysicalDevice,
-                                   uint32_t layerCount,
-                                   char const *const *ppLayerNames,
                                    uint32_t extensionCount,
                                    char const *const *ppExtensionNames,
                                    VkPhysicalDeviceFeatures const *pBasicFeatures,
                                    void const *pFeatures,
                                    foeGfxSession *pSession);
-
-/** @brief Enumerate the enabled layers for the given session
- * @param session is the handle to the session whose layers will be queried.
- * @param pLayerNamesLength is a pointer to an integer related to the size of pLayerNames, as
- * described below.
- * @param pLayerNames is either NULL or a pointer to an character array.
- *
- * If pLayerNames is NULL, then the size required to return all layer names is returned int
- * pLayerNamesLength. Otherwise, pLayerNamesLength must point to a variable set by the user to the
- * size of the pLayerNames array, and on return the variable is overwritten with the characters
- * actually written to pLayerNames. If pLayerNamesLength is less than the total size required to
- * return all names, at most pLayerNamesLength is written, and FOE_GFX_VK_INCOMPLETE will be
- * returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all names were returned.
- */
-FOE_GFX_EXPORT
-foeResultSet foeGfxVkEnumerateSessionLayers(foeGfxSession session,
-                                            uint32_t *pLayerNamesLength,
-                                            char *pLayerNames);
 
 /** @brief Enumerate the enabled extensions for the given session
  * @param session is the handle to the session whose extensions will be queried.

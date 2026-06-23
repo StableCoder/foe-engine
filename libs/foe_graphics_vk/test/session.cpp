@@ -33,15 +33,10 @@ TEST_CASE("foeGfxSession(Vulkan)") {
     REQUIRE(vkPhysicalDevice != VK_NULL_HANDLE);
 
     SECTION("No layers or extensions") {
-        result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, 0, nullptr, nullptr,
-                                       nullptr, &session);
+        result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, nullptr, nullptr,
+                                       &session);
         REQUIRE(result.value == FOE_SUCCESS);
         REQUIRE(session != FOE_NULL_HANDLE);
-
-        strLen = UINT32_MAX;
-        result = foeGfxVkEnumerateSessionLayers(session, &strLen, nullptr);
-        CHECK(result.value == FOE_SUCCESS);
-        CHECK(strLen == 0);
 
         strLen = UINT32_MAX;
         result = foeGfxVkEnumerateSessionExtensions(session, &strLen, nullptr);
@@ -52,15 +47,10 @@ TEST_CASE("foeGfxSession(Vulkan)") {
         char extension[] = "VK_KHR_swapchain";
         char *ppExtensions = extension;
 
-        result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, 1, &ppExtensions,
-                                       nullptr, nullptr, &session);
+        result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 1, &ppExtensions, nullptr,
+                                       nullptr, &session);
         REQUIRE(result.value == FOE_SUCCESS);
         REQUIRE(session != FOE_NULL_HANDLE);
-
-        strLen = UINT32_MAX;
-        result = foeGfxVkEnumerateSessionLayers(session, &strLen, nullptr);
-        CHECK(result.value == FOE_SUCCESS);
-        CHECK(strLen == 0);
 
         strLen = UINT32_MAX;
         result = foeGfxVkEnumerateSessionExtensions(session, &strLen, nullptr);
@@ -211,7 +201,7 @@ TEST_CASE("foeGfxSession(Vulkan) - Passing in an unknown/garbage features struct
 
     VkBaseInStructure unknownFeatureStruct = {};
 
-    result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, 0, nullptr, nullptr,
+    result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, nullptr,
                                    &unknownFeatureStruct, &session);
     CHECK(result.value == FOE_GRAPHICS_VK_ERROR_SESSION_UNKNOWN_FEATURE_STRUCT);
     CHECK(session == FOE_NULL_HANDLE);
@@ -272,11 +262,10 @@ TEST_CASE("foeGfxSession(Vulkan) - Attempting to enable all physical device feat
 #endif
 
 #ifdef VK_KHR_get_physical_device_properties2
-    foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, 0, nullptr, &basicFeatures,
-                          &features_1_0, &session);
+    foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, &basicFeatures, &features_1_0,
+                          &session);
 #else
-    foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, 0, nullptr, &basicFeatures,
-                          nullptr, &session);
+    foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, &basicFeatures, nullptr, &session);
 #endif
 
     if (session != FOE_NULL_HANDLE)
@@ -303,8 +292,8 @@ TEST_CASE("foeGfxSession(Vulkan) - Checking session MSAA support") {
     REQUIRE((vkRes == VK_SUCCESS || vkRes == VK_INCOMPLETE));
     REQUIRE(vkPhysicalDevice != VK_NULL_HANDLE);
 
-    result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, 0, nullptr, nullptr,
-                                   nullptr, &session);
+    result =
+        foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, nullptr, nullptr, &session);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(session != FOE_NULL_HANDLE);
 
