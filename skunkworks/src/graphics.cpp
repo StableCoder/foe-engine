@@ -91,7 +91,7 @@ foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
         }
 
         // Add another that's missing??
-        extensions.emplace_back("VK_KHR_external_fence_capabilities");
+        extensions.emplace_back(VK_KHR_EXTERNAL_FENCE_CAPABILITIES_EXTENSION_NAME);
     }
 #endif
 

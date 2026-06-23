@@ -1,10 +1,11 @@
-// Copyright (C) 2022-2025 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/vk/result.h>
 #include <foe/graphics/vk/runtime.h>
+#include <vulkan/vulkan.h>
 
 TEST_CASE("foeGfxRuntime(Vulkan)") {
     foeResultSet result;
@@ -40,7 +41,7 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
     SECTION("Providing layers and extensions") {
         char layer[] = "VK_LAYER_KHRONOS_validation";
         char *ppLayers = layer;
-        char extension[] = "VK_EXT_debug_report";
+        char extension[] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
         char *ppExtensions = extension;
 
         result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 1, &ppLayers, 1, &ppExtensions,
@@ -97,7 +98,7 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
 #else
                 CHECK(strLen == 20);
 #endif
-                CHECK(std::string{strBuffer} == "VK_EXT_debug_report");
+                CHECK(std::string{strBuffer} == VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, strBuffer);
@@ -109,7 +110,7 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
 #else
                 CHECK(strLen == 20);
 #endif
-                CHECK(std::string{strBuffer} == "VK_EXT_debug_report");
+                CHECK(std::string{strBuffer} == VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
             }
             SECTION("Undersized buffer provided") {
                 strLen = 10;

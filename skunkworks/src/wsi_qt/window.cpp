@@ -12,23 +12,36 @@
 #include "../result.h"
 
 #if __APPLE__
-char const *cCocoaExtensions[] = {"VK_KHR_surface", "VK_EXT_metal_surface"};
+    #include <vulkan/vulkan_macos.h>
+
+static_assert(false, "Qt support on Apple systems is incomplete");
+
+char const *cCocoaExtensions[] = {VK_KHR_SURFACE_EXTENSION_NAME,
+                                  VK_MVK_MACOS_SURFACE_EXTENSION_NAME};
 #elif _WIN32
+    #include <vulkan/vulkan_win32.h>
+
 VkSurfaceKHR createSurfaceWin32(foeGfxRuntime gfxRuntime, QWindow *pWindow);
 
-char const *cWin32Extensions[] = {"VK_KHR_surface", "VK_KHR_win32_surface"};
+char const *cWin32Extensions[] = {VK_KHR_SURFACE_EXTENSION_NAME,
+                                  VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
 #elif __linux__
+    #include <vulkan/vulkan_wayland.h>
+
 VkSurfaceKHR createSurfaceWayland(foeGfxRuntime gfxRuntime,
                                   QGuiApplication const *pGuiApplication,
                                   QWindow *pWindow);
 
-char const *cWaylandExtensions[] = {"VK_KHR_surface", "VK_KHR_wayland_surface"};
+char const *cWaylandExtensions[] = {VK_KHR_SURFACE_EXTENSION_NAME,
+                                    VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME};
+
+    #include <vulkan/vulkan_xcb.h>
 
 VkSurfaceKHR createSurfaceXcb(foeGfxRuntime gfxRuntime,
                               QGuiApplication const *pGuiApplication,
                               QWindow *pWindow);
 
-char const *cXcbExtensions[] = {"VK_KHR_surface", "VK_KHR_xcb_surface"};
+char const *cXcbExtensions[] = {VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_EXTENSION_NAME};
 #endif
 
 bool getQtVkExtensions(uint32_t *pCount, char const *const **ppExtensionNames) {

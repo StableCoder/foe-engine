@@ -44,7 +44,7 @@ TEST_CASE("foeGfxSession(Vulkan)") {
         CHECK(strLen == 0);
     }
     SECTION("With an extension") {
-        char extension[] = "VK_KHR_swapchain";
+        char extension[] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
         char *ppExtensions = extension;
 
         result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 1, &ppExtensions, nullptr,
@@ -63,13 +63,13 @@ TEST_CASE("foeGfxSession(Vulkan)") {
                 result = foeGfxVkEnumerateSessionExtensions(session, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
                 CHECK(strLen == 17);
-                CHECK(std::string{strBuffer} == "VK_KHR_swapchain");
+                CHECK(std::string{strBuffer} == VK_KHR_SWAPCHAIN_EXTENSION_NAME);
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateSessionExtensions(session, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
                 CHECK(strLen == 17);
-                CHECK(std::string{strBuffer} == "VK_KHR_swapchain");
+                CHECK(std::string{strBuffer} == VK_KHR_SWAPCHAIN_EXTENSION_NAME);
             }
             SECTION("Undersized buffer provided") {
                 strLen = 10;
