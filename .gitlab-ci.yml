@@ -25,7 +25,6 @@ Source Files:
       find . -type f \
         \( -name '*.c' -or -name '*.h' -or -name '*.cpp' -or -name '*.hpp' \) \
         -and -not -path './external/*' \
-        -and -not -path './cmake/*' \
         | parallel 'clang-format -i'
     - git diff --exit-code
 
@@ -42,7 +41,6 @@ CMake Files:
       find . -type f \
         \( -name 'CMakeLists.txt' -or -name '*.cmake' \) \
         -and -not -path './external/*' \
-        -and -not -path './cmake/*' \
         | parallel 'cmake-format -i'
     - git diff --exit-code
 
@@ -59,7 +57,6 @@ Shell Files:
       find . -type f \
         -name '*.sh' \
         -and -not -path './external/*' \
-        -and -not -path './cmake/*' \
         | parallel 'shfmt --indent 4 --write'
     - git diff --exit-code
 
@@ -76,7 +73,6 @@ Python Files:
       find . -type f \
         -name '*.py' \
         -and -not -path './external/*' \
-        -and -not -path './cmake/*' \
         | parallel 'autopep8 -i'
     - git diff --exit-code
 

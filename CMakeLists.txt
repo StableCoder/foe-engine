@@ -44,16 +44,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Code Coverage
-include(cmake/code-coverage.cmake)
+include(external/cmake-scripts/code-coverage.cmake)
 add_code_coverage_all_targets(EXCLUDE /usr/.* .*/test/.*
                               ${CMAKE_CURRENT_SOURCE_DIR}/external/.*)
 
 # Dependency Graph
-include(cmake/dependency-graph.cmake)
+include(external/cmake-scripts/dependency-graph.cmake)
 gen_dep_graph(png ADD_TO_DEP_GRAPH)
 
 # clang-tidy
-include(cmake/tools.cmake)
+include(external/cmake-scripts/tools.cmake)
 
 if(CLANG_TIDY_FIX)
   clang_tidy(-header-filter='${CMAKE_CURRENT_SOURCE_DIR}/*' -fix)
@@ -68,7 +68,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 # sanitizers
-include(cmake/sanitizers.cmake)
+include(external/cmake-scripts/sanitizers.cmake)
 
 set_sanitizer_options(address DEFAULT -fsanitize-address-use-after-scope
                       -fsanitize-address-use-after-return=runtime)
@@ -84,7 +84,7 @@ if(SANITIZER)
 endif()
 
 # Misc CMake
-include(cmake/compiler-options.cmake)
+include(external/cmake-scripts/compiler-options.cmake)
 
 if(WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
