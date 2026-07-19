@@ -11,6 +11,8 @@
 #include <foe/xr/session.h>
 #include <openxr/openxr.h>
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

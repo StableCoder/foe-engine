@@ -10,6 +10,8 @@
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

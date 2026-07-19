@@ -27,7 +27,7 @@ struct foeVertexDescriptor {
 };
 
 FOE_GFX_RES_EXPORT
-void cleanup_foeVertexDescriptor(foeVertexDescriptor *pData);
+void cleanup_foeVertexDescriptor(struct foeVertexDescriptor *pData);
 
 #ifdef __cplusplus
 }

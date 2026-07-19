@@ -4,6 +4,6 @@
 
 #include <foe/graphics/resource/vertex_descriptor.h>
 
-extern "C" void cleanup_foeVertexDescriptor(foeVertexDescriptor *pData) {
+extern "C" void cleanup_foeVertexDescriptor(struct foeVertexDescriptor *pData) {
     cleanup_foeGfxVkVertexDescriptor(&pData->vertexDescriptor);
 }

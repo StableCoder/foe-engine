@@ -97,7 +97,7 @@ foeLogger logger;
 #if defined(__clang__) || defined(__GNUC__)
 extern "C" __attribute__((no_sanitize("enum"))) // passing in non-enum values
 #endif
-char const *foeLogLevel_to_string(foeLogLevel logLevel) {
+char const *foeLogLevel_to_string(enum foeLogLevel logLevel) {
     switch (logLevel) {
     case FOE_LOG_LEVEL_FATAL:
         return "Fatal";
@@ -115,7 +115,9 @@ char const *foeLogLevel_to_string(foeLogLevel logLevel) {
     }
 }
 
-extern "C" void foeLogMessage(char const *pCategoryName, foeLogLevel level, char const *pMessage) {
+extern "C" void foeLogMessage(char const *pCategoryName,
+                              enum foeLogLevel level,
+                              char const *pMessage) {
     logger.log(pCategoryName, level, pMessage);
 }
 

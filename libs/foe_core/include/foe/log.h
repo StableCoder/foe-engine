@@ -7,6 +7,8 @@
 
 #include <foe/export.h>
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
     #include <fmt/format.h>
 
@@ -77,15 +79,15 @@ enum foeLogLevel {
 
 typedef void (*PFN_foeLogMessage)(void *pContext,
                                   char const *pCategoryName,
-                                  foeLogLevel level,
+                                  enum foeLogLevel level,
                                   char const *pMessage);
 typedef void (*PFN_foeLogException)(void *pContext);
 
 FOE_EXPORT
-char const *foeLogLevel_to_string(foeLogLevel logLevel);
+char const *foeLogLevel_to_string(enum foeLogLevel logLevel);
 
 FOE_EXPORT
-void foeLogMessage(char const *pCategoryName, foeLogLevel level, char const *pMessage);
+void foeLogMessage(char const *pCategoryName, enum foeLogLevel level, char const *pMessage);
 
 FOE_EXPORT
 bool foeLogRegisterSink(void *pContext,
