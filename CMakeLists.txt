@@ -48,34 +48,6 @@ include(cmake/code-coverage.cmake)
 add_code_coverage_all_targets(EXCLUDE /usr/.* .*/test/.*
                               ${CMAKE_CURRENT_SOURCE_DIR}/external/.*)
 
-# Formatting
-include(cmake/formatting.cmake)
-file(
-  GLOB_RECURSE
-  CL_FILES
-  *.[hc]
-  *.[hc]pp
-  *.vert
-  *.tese
-  *.tesc
-  *.geom
-  *.frag
-  *.comp)
-list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/build)
-list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/external)
-list(FILTER CL_FILES EXCLUDE REGEX
-     ${CMAKE_CURRENT_SOURCE_DIR}/skunkworks/external)
-clang_format(format ${CL_FILES})
-
-file(GLOB_RECURSE CM_FILES CMakeLists.txt *.cmake)
-list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/build)
-list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/external)
-list(FILTER CM_FILES EXCLUDE REGEX
-     ${CMAKE_CURRENT_SOURCE_DIR}/skunkworks/external)
-cmake_format(cmake-format ${CM_FILES})
-
 # Dependency Graph
 include(cmake/dependency-graph.cmake)
 gen_dep_graph(png ADD_TO_DEP_GRAPH)
