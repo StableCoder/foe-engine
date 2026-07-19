@@ -1,12 +1,8 @@
 # Copyright (C) 2025-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
-
 cmake_minimum_required(VERSION 3.23)
 project(FoE-Skunkworks C CXX)
-
-# Modify CMake modules path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 
 # options
 include(CMakeDependentOption)
@@ -32,8 +28,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # miscellaneous
-include(code-coverage)
-include(formatting)
+include(../cmake/code-coverage.cmake)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

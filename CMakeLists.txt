@@ -1,10 +1,6 @@
 # Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
-
-# Modify CMake modules path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
 cmake_minimum_required(VERSION 3.23)
 project(FoE-Engine C CXX)
 
@@ -48,12 +44,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Code Coverage
-include(code-coverage)
+include(cmake/code-coverage.cmake)
 add_code_coverage_all_targets(EXCLUDE /usr/.* .*/test/.*
                               ${CMAKE_CURRENT_SOURCE_DIR}/external/.*)
 
 # Formatting
-include(formatting)
+include(cmake/formatting.cmake)
 file(
   GLOB_RECURSE
   CL_FILES
@@ -81,11 +77,11 @@ list(FILTER CM_FILES EXCLUDE REGEX
 cmake_format(cmake-format ${CM_FILES})
 
 # Dependency Graph
-include(dependency-graph)
+include(cmake/dependency-graph.cmake)
 gen_dep_graph(png ADD_TO_DEP_GRAPH)
 
 # clang-tidy
-include(tools)
+include(cmake/tools.cmake)
 
 if(CLANG_TIDY_FIX)
   clang_tidy(-header-filter='${CMAKE_CURRENT_SOURCE_DIR}/*' -fix)
@@ -100,7 +96,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 # sanitizers
-include(sanitizers)
+include(cmake/sanitizers.cmake)
 
 set_sanitizer_options(address DEFAULT -fsanitize-address-use-after-scope
                       -fsanitize-address-use-after-return=runtime)
@@ -116,7 +112,7 @@ if(SANITIZER)
 endif()
 
 # Misc CMake
-include(compiler-options)
+include(cmake/compiler-options.cmake)
 
 if(WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
