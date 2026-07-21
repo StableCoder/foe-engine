@@ -36,13 +36,13 @@ target_link_libraries(
 
 target_code_coverage(foe_xr_openxr)
 
-if(DEFINED GLM_INCLUDE_DIRS)
-  target_include_directories(foe_xr_openxr PUBLIC ${GLM_INCLUDE_DIRS}
-                                                  ${GLM_INCLUDE_DIRS}/include)
+if(TARGET glm::glm-header-only)
+  target_link_libraries(foe_model PUBLIC glm::glm-header-only)
 elseif(TARGET glm::glm)
-  target_link_libraries(foe_xr_openxr PUBLIC glm::glm)
-else()
-  target_link_libraries(foe_xr_openxr PUBLIC glm::glm-header-only)
+  target_link_libraries(foe_model PUBLIC glm::glm)
+elseif(DEFINED GLM_INCLUDE_DIRS)
+  target_include_directories(foe_model PUBLIC ${GLM_INCLUDE_DIRS}
+                                              ${GLM_INCLUDE_DIRS}/include)
 endif()
 
 if(MSVC)

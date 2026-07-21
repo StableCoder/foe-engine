@@ -19,13 +19,13 @@ set_target_properties(foe_yaml PROPERTIES DEBUG_POSTFIX "_d")
 generate_export_header(foe_yaml EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/yaml/export.h)
 
-if(DEFINED GLM_INCLUDE_DIRS)
-  target_include_directories(foe_yaml PUBLIC ${GLM_INCLUDE_DIRS}
-                                             ${GLM_INCLUDE_DIRS}/include)
+if(TARGET glm::glm-header-only)
+  target_link_libraries(foe_yaml PUBLIC glm::glm-header-only)
 elseif(TARGET glm::glm)
   target_link_libraries(foe_yaml PUBLIC glm::glm)
-else()
-  target_link_libraries(foe_yaml PUBLIC glm::glm-header-only)
+elseif(DEFINED GLM_INCLUDE_DIRS)
+  target_include_directories(foe_yaml PUBLIC ${GLM_INCLUDE_DIRS}
+                                             ${GLM_INCLUDE_DIRS}/include)
 endif()
 
 if(WIN32 OR APPLE)

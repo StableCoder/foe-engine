@@ -7,6 +7,7 @@ project(foe_core)
 
 # Dependencies
 find_package(fmt REQUIRED)
+find_package(glm REQUIRED)
 
 # Declaration
 add_library(foe_core SHARED)
@@ -24,6 +25,15 @@ target_code_coverage(foe_core)
 
 if(DISABLE_PLUGIN_UNLOAD)
   target_compile_definitions(foe_core PRIVATE DISABLE_PLUGIN_UNLOAD)
+endif()
+
+if(TARGET glm::glm-header-only)
+  target_link_libraries(foe_core PUBLIC glm::glm-header-only)
+elseif(TARGET glm::glm)
+  target_link_libraries(foe_core PUBLIC glm::glm)
+elseif(DEFINED GLM_INCLUDE_DIRS)
+  target_include_directories(foe_core PUBLIC ${GLM_INCLUDE_DIRS}
+                                             ${GLM_INCLUDE_DIRS}/include)
 endif()
 
 if(UNIX)
