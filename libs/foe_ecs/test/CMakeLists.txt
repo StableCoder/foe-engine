@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -12,8 +12,7 @@ add_executable(test_foe_ecs)
 # Definition
 target_sources(
   test_foe_ecs
-  PRIVATE c_header_compatibility.c
-          component_pool_entity_list.cpp
+  PRIVATE component_pool_entity_list.cpp
           component_pool.cpp
           editor_name_map.cpp
           entity_list.cpp

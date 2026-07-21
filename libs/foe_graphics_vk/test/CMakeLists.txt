@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -12,8 +12,7 @@ add_executable(test_foe_graphics_vk)
 # Definition
 target_sources(
   test_foe_graphics_vk
-  PRIVATE c_header_compatibility.c
-          custom_main.cpp
+  PRIVATE custom_main.cpp
           format.cpp
           render_graph_image_resource.cpp
           render_graph.cpp

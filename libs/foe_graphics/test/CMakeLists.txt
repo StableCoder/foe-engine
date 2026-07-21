@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -10,8 +10,7 @@ add_test(NAME FoE-Graphics-Test COMMAND test_foe_graphics)
 add_executable(test_foe_graphics)
 
 # Definition
-target_sources(test_foe_graphics PRIVATE c_header_compatibility.c result.cpp
-                                         stub.cpp)
+target_sources(test_foe_graphics PRIVATE result.cpp stub.cpp)
 
 target_link_libraries(test_foe_graphics PRIVATE Catch2::Catch2WithMain
                                                 foe_graphics)

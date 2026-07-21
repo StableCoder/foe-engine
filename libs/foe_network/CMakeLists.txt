@@ -1,4 +1,4 @@
-# Copyright (C) 2023-2025 George Cave.
+# Copyright (C) 2023-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -45,6 +45,8 @@ add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)
+  standalone_header_compile_test(foe_network "foe/network/")
+
   add_subdirectory(test)
 endif()
 

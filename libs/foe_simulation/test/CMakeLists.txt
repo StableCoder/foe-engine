@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -10,9 +10,8 @@ add_executable(test_foe_simulation)
 add_test(NAME FoE-Simulation-Test COMMAND test_foe_simulation)
 
 # Definition
-target_sources(
-  test_foe_simulation PRIVATE c_header_compatibility.c group_data.cpp
-                              result.cpp simulation.cpp)
+target_sources(test_foe_simulation PRIVATE group_data.cpp result.cpp
+                                           simulation.cpp)
 
 target_link_libraries(test_foe_simulation PRIVATE Catch2::Catch2WithMain
                                                   foe_simulation)

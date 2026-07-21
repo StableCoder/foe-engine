@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -11,9 +11,8 @@ add_test(NAME FoE-ImEx-Yaml-Test COMMAND test_foe_imex_yaml)
 
 # Definition
 target_sources(
-  test_foe_imex_yaml
-  PRIVATE c_header_compatibility.c create_importer.cpp imex_registration.cpp
-          importer.cpp result.cpp test_importer.cpp)
+  test_foe_imex_yaml PRIVATE create_importer.cpp imex_registration.cpp
+                             importer.cpp result.cpp test_importer.cpp)
 
 target_compile_definitions(
   test_foe_imex_yaml PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")

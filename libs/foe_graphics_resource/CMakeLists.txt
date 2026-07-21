@@ -73,6 +73,8 @@ add_subdirectory(libs/yaml)
 
 # test
 if(BUILD_TESTS)
+  standalone_header_compile_test(foe_graphics_resource "foe/graphics/resource/")
+
   add_subdirectory(test)
 endif()
 

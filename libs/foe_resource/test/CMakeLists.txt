@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -12,8 +12,7 @@ add_test(NAME FoE-Resource-Test COMMAND test_foe_resource)
 # Definition
 target_sources(
   test_foe_resource
-  PRIVATE c_header_compatibility.c
-          create_info.cpp
+  PRIVATE create_info.cpp
           pool.cpp
           resource.cpp
           resource_loading.cpp

@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -37,6 +37,8 @@ add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)
+  standalone_header_compile_test(foe_physics_binary "foe/physics/binary")
+
   add_subdirectory(test)
 endif()
 

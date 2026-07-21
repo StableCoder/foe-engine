@@ -50,6 +50,8 @@ add_subdirectory(libs/imgui)
 
 # test
 if(BUILD_TESTS)
+  standalone_header_compile_test(foe_simulation "foe/simulation")
+
   add_subdirectory(test)
 endif()
 

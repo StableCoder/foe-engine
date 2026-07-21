@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@ add_test(NAME FoE-ImGui-VK-Test COMMAND test_foe_imgui_vk)
 add_executable(test_foe_imgui_vk)
 
 # Definition
-target_sources(test_foe_imgui_vk PRIVATE c_header_compatibility.c result.cpp)
+target_sources(test_foe_imgui_vk PRIVATE result.cpp)
 
 target_link_libraries(test_foe_imgui_vk PRIVATE Catch2::Catch2WithMain
                                                 foe_imgui_vk)

@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -11,8 +11,7 @@ add_test(NAME FoE-Graphics-Resource-Binary-Test
          COMMAND test_foe_graphics_resource_binary)
 
 # Definition
-target_sources(test_foe_graphics_resource_binary
-               PRIVATE c_header_compatibility.c result.cpp)
+target_sources(test_foe_graphics_resource_binary PRIVATE result.cpp)
 
 target_link_libraries(
   test_foe_graphics_resource_binary PRIVATE Catch2::Catch2WithMain

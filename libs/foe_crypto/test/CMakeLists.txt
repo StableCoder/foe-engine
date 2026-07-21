@@ -1,4 +1,4 @@
-# Copyright (C) 2023 George Cave.
+# Copyright (C) 2023-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -13,7 +13,6 @@ add_test(NAME FoE-Crypto-Test COMMAND test_foe_crypto)
 target_sources(
   test_foe_crypto
   PRIVATE aes_256_gcm.cpp
-          c_header_compatibility.c
           ed25519.cpp
           key.cpp
           result.cpp

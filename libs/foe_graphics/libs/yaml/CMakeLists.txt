@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -32,6 +32,11 @@ target_sources(
          include/foe/graphics/yaml/enums.hpp)
 
 add_subdirectory(src)
+
+# test
+if(BUILD_TESTS)
+  standalone_header_compile_test(foe_graphics_yaml "foe/graphics/yaml")
+endif()
 
 # install
 set_property(TARGET foe_graphics_yaml PROPERTY EXPORT_NAME foe::graphics::yaml)

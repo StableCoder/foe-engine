@@ -85,6 +85,7 @@ endif()
 
 # Misc CMake
 include(external/cmake-scripts/compiler-options.cmake)
+include(cmake/standalone_header_compile.cmake)
 
 if(WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

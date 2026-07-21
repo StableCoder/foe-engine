@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -11,8 +11,7 @@ add_test(NAME FoE-Graphics-Resource-Yaml-Test
          COMMAND test_foe_graphics_resource_yaml)
 
 # Definition
-target_sources(test_foe_graphics_resource_yaml PRIVATE c_header_compatibility.c
-                                                       result.cpp)
+target_sources(test_foe_graphics_resource_yaml PRIVATE result.cpp)
 
 target_link_libraries(test_foe_graphics_resource_yaml
                       PRIVATE Catch2::Catch2WithMain foe_graphics_resource_yaml)

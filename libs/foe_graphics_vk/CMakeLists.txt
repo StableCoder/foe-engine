@@ -87,6 +87,8 @@ add_subdirectory(libs/yaml)
 
 # test
 if(BUILD_TESTS)
+  standalone_header_compile_test(foe_graphics_vk "foe/graphics/")
+
   add_subdirectory(test)
 endif()
 

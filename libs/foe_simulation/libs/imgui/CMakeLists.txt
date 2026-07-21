@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2025 George Cave.
+# Copyright (C) 2022-2026 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -40,6 +40,11 @@ target_sources(
          include/foe/simulation/imgui/result.h)
 
 add_subdirectory(src)
+
+# test
+if(BUILD_TESTS)
+  standalone_header_compile_test(foe_simulation_imgui "foe/simulation/imgui")
+endif()
 
 # install
 set_property(TARGET foe_simulation_imgui PROPERTY EXPORT_NAME

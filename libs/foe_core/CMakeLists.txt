@@ -77,6 +77,8 @@ add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)
+  standalone_header_compile_test(foe_core "foe/")
+
   add_subdirectory(test)
 endif()
 
