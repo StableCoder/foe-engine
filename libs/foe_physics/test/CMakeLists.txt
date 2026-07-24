@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_physics)
 add_test(NAME FoE-Physics-Test COMMAND test_foe_physics)
 
+set_target_properties(test_foe_physics PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_physics PRIVATE result.cpp)
 

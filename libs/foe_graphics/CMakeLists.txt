@@ -10,6 +10,7 @@ add_library(foe_graphics SHARED)
 add_library(foe::graphics ALIAS foe_graphics)
 
 # Definition
+set_target_properties(foe_graphics PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_graphics PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

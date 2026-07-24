@@ -10,6 +10,7 @@ add_library(foe_resource SHARED)
 add_library(foe::resource ALIAS foe_resource)
 
 # Definition
+set_target_properties(foe_resource PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_resource PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

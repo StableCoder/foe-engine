@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_imex_yaml)
 add_test(NAME FoE-ImEx-Yaml-Test COMMAND test_foe_imex_yaml)
 
+set_target_properties(test_foe_imex_yaml PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(
   test_foe_imex_yaml PRIVATE create_importer.cpp imex_registration.cpp

@@ -10,6 +10,7 @@ add_library(foe_physics_yaml SHARED)
 add_library(foe::physics::yaml ALIAS foe_physics_yaml)
 
 # Definition
+set_target_properties(foe_physics_yaml PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_physics_yaml PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

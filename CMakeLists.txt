@@ -96,6 +96,7 @@ if(BUILD_TESTS)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Libraries
 add_subdirectory(external)

@@ -10,6 +10,7 @@ add_library(foe_position_binary SHARED)
 add_library(foe::position::binary ALIAS foe_position_binary)
 
 # Definition
+set_target_properties(foe_position_binary PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_position_binary PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(foe_position_binary EXPORT_FILE_NAME

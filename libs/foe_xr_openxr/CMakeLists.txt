@@ -23,6 +23,7 @@ endif()
 add_library(foe::xr::openxr ALIAS foe_xr_openxr)
 
 # Definition
+set_target_properties(foe_xr_openxr PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_xr_openxr PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

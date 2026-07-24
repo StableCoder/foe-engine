@@ -19,6 +19,8 @@ endif()
 add_library(vk_struct_cleanup STATIC)
 add_library(foe::external::vk_struct_cleanup ALIAS vk_struct_cleanup)
 
+set_target_properties(vk_struct_cleanup PROPERTIES FOLDER
+                                                   "External/vk_mini_libs")
 set_property(TARGET vk_struct_cleanup PROPERTY EXPORT_NAME
                                                foe::external::vk_struct_cleanup)
 
@@ -42,6 +44,8 @@ target_sources(
 add_library(vk_struct_compare STATIC)
 add_library(foe::external::vk_struct_compare ALIAS vk_struct_compare)
 
+set_target_properties(vk_struct_compare PROPERTIES FOLDER
+                                                   "External/vk_mini_libs")
 set_property(TARGET vk_struct_compare PROPERTY EXPORT_NAME
                                                foe::external::vk_struct_compare)
 
@@ -65,6 +69,8 @@ target_sources(
 add_library(vk_value_serialization STATIC)
 add_library(foe::external::vk_value_serialization ALIAS vk_value_serialization)
 
+set_target_properties(vk_value_serialization PROPERTIES FOLDER
+                                                        "External/vk_mini_libs")
 set_property(TARGET vk_value_serialization
              PROPERTY EXPORT_NAME foe::external::vk_value_serialization)
 
@@ -104,6 +110,8 @@ add_library(vk_result_serialization INTERFACE)
 add_library(foe::external::vk_result_serialization ALIAS
             vk_result_serialization)
 
+set_target_properties(vk_result_serialization
+                      PROPERTIES FOLDER "External/vk_mini_libs")
 set_property(TARGET vk_result_serialization
              PROPERTY EXPORT_NAME foe::external::vk_result_serialization)
 
@@ -120,6 +128,8 @@ add_custom_target(
   vk_result_serialization_header_copy
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_result_to_string.h
 )
+set_target_properties(vk_result_serialization_header_copy
+                      PROPERTIES FOLDER "External/vk_mini_libs")
 add_dependencies(vk_result_serialization vk_result_serialization_header_copy)
 
 target_sources(
@@ -134,6 +144,8 @@ if(FOE_SUPPORT_XR)
   add_library(foe::external::xr_result_serialization ALIAS
               xr_result_serialization)
 
+  set_target_properties(xr_result_serialization
+                        PROPERTIES FOLDER "External/vk_mini_libs")
   set_property(TARGET xr_result_serialization
                PROPERTY EXPORT_NAME foe::external::xr_result_serialization)
 
@@ -151,6 +163,8 @@ if(FOE_SUPPORT_XR)
     xr_result_serialization_header_copy
     DEPENDS
       ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/xr_result_to_string.h)
+  set_target_properties(xr_result_serialization_header_copy
+                        PROPERTIES FOLDER "External/vk_mini_libs")
   add_dependencies(xr_result_serialization xr_result_serialization_header_copy)
 
   target_sources(

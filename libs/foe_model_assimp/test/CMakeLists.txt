@@ -10,6 +10,8 @@ find_package(Catch2 3 REQUIRED)
 add_test(NAME FoE-Model-Assimp-Tests COMMAND test_foe_model_assimp)
 add_executable(test_foe_model_assimp)
 
+set_target_properties(test_foe_model_assimp PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_model_assimp PRIVATE flags.cpp)
 

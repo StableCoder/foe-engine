@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_crypto)
 add_test(NAME FoE-Crypto-Test COMMAND test_foe_crypto)
 
+set_target_properties(test_foe_crypto PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(
   test_foe_crypto

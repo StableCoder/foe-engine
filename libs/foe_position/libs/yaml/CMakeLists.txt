@@ -10,6 +10,7 @@ add_library(foe_position_yaml SHARED)
 add_library(foe::position::yaml ALIAS foe_position_yaml)
 
 # Definition
+set_target_properties(foe_position_yaml PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_position_yaml PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(foe_position_yaml EXPORT_FILE_NAME

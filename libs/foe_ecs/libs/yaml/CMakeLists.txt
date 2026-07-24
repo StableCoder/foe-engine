@@ -10,6 +10,7 @@ add_library(foe_ecs_yaml SHARED)
 add_library(foe::ecs::yaml ALIAS foe_ecs_yaml)
 
 # Definition
+set_target_properties(foe_ecs_yaml PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_ecs_yaml PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(foe_ecs_yaml EXPORT_FILE_NAME

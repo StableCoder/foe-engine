@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_test(NAME FoE-Yaml-Test COMMAND test_foe_yaml)
 add_executable(test_foe_yaml)
 
+set_target_properties(test_foe_yaml PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_yaml PRIVATE exception.cpp pod_bool_parsing.cpp
                                      pod_int16_parsing.cpp string_parsing.cpp)

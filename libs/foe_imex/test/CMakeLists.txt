@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_imex)
 add_test(NAME FoE-ImEx-Test COMMAND test_foe_imex)
 
+set_target_properties(test_foe_imex PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_imex PRIVATE importer.cpp result.cpp)
 

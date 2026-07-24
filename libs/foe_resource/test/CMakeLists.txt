@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_resource)
 add_test(NAME FoE-Resource-Test COMMAND test_foe_resource)
 
+set_target_properties(test_foe_resource PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(
   test_foe_resource

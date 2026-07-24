@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_graphics_resource)
 add_test(NAME FoE-Graphics-Resource-Test COMMAND test_foe_physics)
 
+set_target_properties(test_foe_graphics_resource PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_graphics_resource PRIVATE binary_foeImageCreateInfo.cpp
                                                   result.cpp)

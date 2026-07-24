@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_test(NAME FoE-ImGui-VK-Test COMMAND test_foe_imgui_vk)
 add_executable(test_foe_imgui_vk)
 
+set_target_properties(test_foe_imgui_vk PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_imgui_vk PRIVATE result.cpp)
 

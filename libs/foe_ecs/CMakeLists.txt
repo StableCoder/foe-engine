@@ -9,6 +9,8 @@ project(foe_ecs)
 add_library(foe_ecs SHARED)
 add_library(foe::ecs ALIAS foe_ecs)
 
+set_target_properties(foe_ecs PROPERTIES FOLDER "Libraries")
+
 # Definition
 set_target_properties(foe_ecs PROPERTIES DEBUG_POSTFIX "_d")
 

@@ -13,7 +13,8 @@ add_library(foe_graphics_resource SHARED)
 add_library(foe::graphics::resource ALIAS foe_graphics_resource)
 
 # Definition
-set_target_properties(foe_core PROPERTIES DEBUG_POSTFIX "_d")
+set_target_properties(foe_graphics_resource PROPERTIES FOLDER "Libraries")
+set_target_properties(foe_graphics_resource PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(
   foe_graphics_resource EXPORT_MACRO_NAME FOE_GFX_RES_EXPORT EXPORT_FILE_NAME

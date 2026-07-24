@@ -10,9 +10,13 @@ add_test(NAME FoE-Core-Test COMMAND test_foe_core)
 add_executable(test_foe_core)
 add_dependencies(test_foe_core test_foe_core_plugin_so)
 
+set_target_properties(test_foe_core PROPERTIES FOLDER "Tests")
+
 add_test(NAME FoE-Test-Split-Thread-Pool
          COMMAND test_foe_core_split_thread_pool)
 add_executable(test_foe_core_split_thread_pool)
+
+set_target_properties(test_foe_core_split_thread_pool PROPERTIES FOLDER "Tests")
 
 # Main Definition
 target_include_directories(test_foe_core PRIVATE ../src/)

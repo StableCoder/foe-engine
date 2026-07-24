@@ -10,6 +10,7 @@ add_library(foe_simulation SHARED)
 add_library(foe::simulation ALIAS foe_simulation)
 
 # Definition
+set_target_properties(foe_simulation PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_simulation PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

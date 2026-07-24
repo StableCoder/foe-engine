@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_imex_binary)
 add_test(NAME FoE-ImEx-Binary-Test COMMAND test_foe_imex_binary)
 
+set_target_properties(test_foe_imex_binary PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_imex_binary PRIVATE result.cpp)
 

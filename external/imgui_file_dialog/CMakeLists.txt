@@ -16,6 +16,8 @@ else()
 endif()
 add_library(foe::external::imgui::file_dialog ALIAS imgui_file_dialog)
 
+set_target_properties(imgui_file_dialog PROPERTIES FOLDER "External")
+
 # Definition
 set_property(TARGET imgui_file_dialog
              PROPERTY EXPORT_NAME foe::external::imgui::file_dialog)

@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_test(NAME FoE-ECS-Test COMMAND test_foe_ecs)
 add_executable(test_foe_ecs)
 
+set_target_properties(test_foe_ecs PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(
   test_foe_ecs

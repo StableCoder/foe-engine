@@ -10,6 +10,7 @@ add_library(foe_resource_imgui)
 add_library(foe::resource::imgui ALIAS foe_resource_imgui)
 
 # Definition
+set_target_properties(foe_resource_imgui PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_resource_imgui PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

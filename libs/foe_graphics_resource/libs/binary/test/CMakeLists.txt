@@ -10,6 +10,9 @@ add_executable(test_foe_graphics_resource_binary)
 add_test(NAME FoE-Graphics-Resource-Binary-Test
          COMMAND test_foe_graphics_resource_binary)
 
+set_target_properties(test_foe_graphics_resource_binary PROPERTIES FOLDER
+                                                                   "Tests")
+
 # Definition
 target_sources(test_foe_graphics_resource_binary PRIVATE result.cpp)
 

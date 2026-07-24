@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_test(NAME FoE-Graphics-Test COMMAND test_foe_graphics)
 add_executable(test_foe_graphics)
 
+set_target_properties(test_foe_graphics PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_graphics PRIVATE result.cpp stub.cpp)
 

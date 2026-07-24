@@ -31,6 +31,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(../external/cmake-scripts/code-coverage.cmake)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Dependencies
 if(NOT TARGET foe_core)
@@ -73,13 +74,20 @@ endif()
 # Engine Entrypoint
 add_executable(foe_skunkworks)
 
+set_target_properties(foe_skunkworks PROPERTIES FOLDER "Skunkworks")
+
 if(FOE_SUPPORT_QT6)
   add_compile_definitions(FOE_SKUNKWORKS_QT)
 
   add_executable(foe_skunkworks_qt src/main_qt.cpp)
+  set_target_properties(foe_skunkworks_qt PROPERTIES FOLDER "Skunkworks")
+
   target_link_libraries(foe_skunkworks_qt PRIVATE foe_skunkworks_lib Qt6::Gui)
 
   add_executable(foe_skunkworks_qt_widgets src/main_qt_widgets.cpp)
+  set_target_properties(foe_skunkworks_qt_widgets PROPERTIES FOLDER
+                                                             "Skunkworks")
+
   target_link_libraries(foe_skunkworks_qt_widgets PRIVATE foe_skunkworks_lib
                                                           Qt6::Gui Qt6::Widgets)
 endif()
@@ -108,6 +116,13 @@ add_library(foe_skunkworks_lib_eh)
 add_library(foe_skunkworks_shared SHARED)
 add_library(foe_skunkworks_binary SHARED)
 add_library(foe_skunkworks_yaml SHARED)
+
+set_target_properties(foe_skunkworks_lib PROPERTIES FOLDER "Skunkworks")
+set_target_properties(foe_skunkworks_imgui PROPERTIES FOLDER "Skunkworks")
+set_target_properties(foe_skunkworks_lib_eh PROPERTIES FOLDER "Skunkworks")
+set_target_properties(foe_skunkworks_shared PROPERTIES FOLDER "Skunkworks")
+set_target_properties(foe_skunkworks_binary PROPERTIES FOLDER "Skunkworks")
+set_target_properties(foe_skunkworks_yaml PROPERTIES FOLDER "Skunkworks")
 
 # Sources
 add_subdirectory(src)

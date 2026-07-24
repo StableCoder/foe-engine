@@ -10,6 +10,7 @@ add_library(foe_simulation_imgui)
 add_library(foe::simulation::imgui ALIAS foe_simulation_imgui)
 
 # Definition
+set_target_properties(foe_simulation_imgui PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_simulation_imgui PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

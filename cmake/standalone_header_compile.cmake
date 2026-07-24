@@ -76,6 +76,9 @@ function(standalone_header_compile_test TARGET PATH_PREFIX)
   add_library(test_${TARGET}_standalone_header_compile
               ${STANDALONE_HEADER_TEST_SOURCES})
 
+  set_target_properties(test_${TARGET}_standalone_header_compile
+                        PROPERTIES FOLDER "StandaloneHeaderCompileTests")
+
   target_link_libraries(test_${TARGET}_standalone_header_compile
                         PRIVATE ${TARGET})
 endfunction()

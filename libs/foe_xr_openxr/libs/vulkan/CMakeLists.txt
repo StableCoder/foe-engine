@@ -10,6 +10,7 @@ add_library(foe_xr_openxr_vk)
 add_library(foe::xr::openxr::vk ALIAS foe_xr_openxr_vk)
 
 # Definition
+set_target_properties(foe_xr_openxr_vk PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_xr_openxr_vk PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

@@ -14,6 +14,7 @@ add_library(foe_yaml SHARED)
 add_library(foe::yaml ALIAS foe_yaml)
 
 # Definition
+set_target_properties(foe_yaml PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_yaml PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(foe_yaml EXPORT_FILE_NAME

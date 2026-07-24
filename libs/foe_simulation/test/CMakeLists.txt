@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_simulation)
 add_test(NAME FoE-Simulation-Test COMMAND test_foe_simulation)
 
+set_target_properties(test_foe_simulation PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_simulation PRIVATE group_data.cpp result.cpp
                                            simulation.cpp)

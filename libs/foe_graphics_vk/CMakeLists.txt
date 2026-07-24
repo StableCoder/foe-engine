@@ -13,6 +13,7 @@ add_library(foe_graphics_vk SHARED)
 add_library(foe::graphics::vk ALIAS foe_graphics_vk)
 
 # Definition
+set_target_properties(foe_graphics_vk PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_graphics_vk PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(

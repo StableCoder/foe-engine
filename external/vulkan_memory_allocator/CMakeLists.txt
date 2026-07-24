@@ -14,6 +14,7 @@ add_library(vulkan_memory_allocator)
 add_library(foe::external::vulkan_memory_allocator ALIAS
             vulkan_memory_allocator)
 
+set_target_properties(vulkan_memory_allocator PROPERTIES FOLDER "External")
 set_property(TARGET vulkan_memory_allocator
              PROPERTY EXPORT_NAME foe::external::vulkan_memory_allocator)
 

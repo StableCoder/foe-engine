@@ -20,6 +20,8 @@ endif()
 add_library(foe_crypto SHARED)
 add_library(foe::crypto ALIAS foe_crypto)
 
+set_target_properties(foe_crypto PROPERTIES FOLDER "Libraries")
+
 # Definition
 set_target_properties(foe_crypto PROPERTIES DEBUG_POSTFIX "_d")
 

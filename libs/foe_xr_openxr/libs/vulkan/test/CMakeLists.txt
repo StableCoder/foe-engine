@@ -6,10 +6,12 @@
 find_package(Catch2 3 REQUIRED)
 
 # Declaration
-add_test(NAME FoE-OpenXR-VK-Test COMMAND test_foe_xr_openxr_vk)
+add_test(NAME FoE-XR-OpenXR-VK-Test COMMAND test_foe_xr_openxr_vk)
 add_executable(test_foe_xr_openxr_vk)
 
 # Definition
+set_target_properties(test_foe_xr_openxr_vk PROPERTIES FOLDER "Tests")
+
 target_sources(test_foe_xr_openxr_vk PRIVATE result.cpp)
 
 target_link_libraries(test_foe_xr_openxr_vk PRIVATE Catch2::Catch2WithMain

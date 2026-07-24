@@ -9,6 +9,8 @@ find_package(Catch2 3 REQUIRED)
 add_executable(test_foe_position_yaml)
 add_test(NAME FoE-Position-Yaml-Test COMMAND test_foe_position_yaml)
 
+set_target_properties(test_foe_position_yaml PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_position_yaml PRIVATE result.cpp)
 

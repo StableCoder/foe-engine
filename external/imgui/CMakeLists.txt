@@ -18,6 +18,9 @@ add_library(foe::external::imgui ALIAS imgui)
 add_library(imgui_demo STATIC)
 add_library(foe::external::imgui::demo ALIAS imgui_demo)
 
+set_target_properties(imgui PROPERTIES FOLDER "External")
+set_target_properties(imgui_demo PROPERTIES FOLDER "External")
+
 # imgui Definition
 set_property(TARGET imgui PROPERTY EXPORT_NAME foe::external::imgui)
 

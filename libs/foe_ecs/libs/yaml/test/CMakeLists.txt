@@ -10,6 +10,8 @@ find_package(Catch2 3 REQUIRED)
 add_test(NAME FoE-ECS-Yaml-Tests COMMAND test_foe_ecs_yaml)
 add_executable(test_foe_ecs_yaml)
 
+set_target_properties(test_foe_ecs_yaml PROPERTIES FOLDER "Tests")
+
 # Definition
 target_sources(test_foe_ecs_yaml PRIVATE id.cpp indexes.cpp)
 

@@ -10,6 +10,7 @@ add_library(foe_graphics_vk_imgui)
 add_library(foe::grpahics::vk::imgui ALIAS foe_graphics_vk_imgui)
 
 # Definition
+set_target_properties(foe_graphics_vk_imgui PROPERTIES FOLDER "Libraries")
 set_target_properties(foe_graphics_vk_imgui PROPERTIES DEBUG_POSTFIX "_d")
 
 generate_export_header(
