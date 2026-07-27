@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2025 George Cave.
+// Copyright (C) 2021-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -105,7 +105,7 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
 
         { // Start RenderPass
             VkClearValue clear{
-                .color = {0.f, 0.5f, 1.f, 0.f},
+                .color = {{0.f, 0.5f, 1.f, 0.f}},
             };
             VkRenderPassBeginInfo renderPassBI{
                 .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,

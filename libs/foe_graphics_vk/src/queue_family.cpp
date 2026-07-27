@@ -36,5 +36,5 @@ SecuredQueue foeGfxGetQueue(QueueFamily *pQueueFamily) {
         queue = foeGfxTryGetQueue(pQueueFamily);
     } while (!queue);
 
-    return std::move(queue);
+    return queue;
 }

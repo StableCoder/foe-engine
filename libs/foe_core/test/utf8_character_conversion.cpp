@@ -192,7 +192,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
 
                     for (uint32_t codepoint = 0; codepoint <= 0x7F; ++codepoint) {
                         src = codepoint;
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src, &dst, &state);
 
@@ -208,7 +208,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                     for (uint32_t codepoint = 0x00; codepoint <= 0x7F; ++codepoint) {
                         src[0] = 0xC0 | ((codepoint >> 6) & 0x1F);
                         src[1] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -221,7 +221,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                     for (uint32_t codepoint = 0x0080; codepoint <= 0x07FF; ++codepoint) {
                         src[0] = 0xC0 | ((codepoint >> 6) & 0x1F);
                         src[1] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -240,7 +240,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                         src[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
                         src[1] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[2] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -257,7 +257,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                         src[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
                         src[1] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[2] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -274,7 +274,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                         src[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
                         src[1] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[2] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -291,7 +291,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                         src[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
                         src[1] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[2] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -314,7 +314,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                         src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                         src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[3] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -335,7 +335,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                         src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                         src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[3] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -356,7 +356,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                         src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                         src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[3] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -377,7 +377,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                         src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                         src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[3] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -398,7 +398,7 @@ TEST_CASE("UTF-8 to UTF-16 - character conversion") {
                     src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                     src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                     src[3] = 0x80 | (codepoint & 0x3F);
-                    state = {0};
+                    state = {};
 
                     result = foe_utf8_to_utf16_ch(src[0], &dst, &state);
                     CHECK(result == FOE_AWAITING_INPUT);
@@ -605,7 +605,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
 
                     for (uint32_t codepoint = 0; codepoint <= 0x7F; ++codepoint) {
                         src = codepoint;
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src, &dst, &state);
 
@@ -621,7 +621,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                     for (uint32_t codepoint = 0x00; codepoint <= 0x7F; ++codepoint) {
                         src[0] = 0xC0 | ((codepoint >> 6) & 0x1F);
                         src[1] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -634,7 +634,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                     for (uint32_t codepoint = 0x0080; codepoint <= 0x07FF; ++codepoint) {
                         src[0] = 0xC0 | ((codepoint >> 6) & 0x1F);
                         src[1] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -653,7 +653,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                         src[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
                         src[1] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[2] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -670,7 +670,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                         src[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
                         src[1] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[2] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -687,7 +687,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                         src[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
                         src[1] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[2] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -704,7 +704,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                         src[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
                         src[1] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[2] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -727,7 +727,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                         src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                         src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[3] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -748,7 +748,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                         src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                         src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[3] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -769,7 +769,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                         src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                         src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[3] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -790,7 +790,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                         src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                         src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                         src[3] = 0x80 | (codepoint & 0x3F);
-                        state = {0};
+                        state = {};
 
                         result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                         CHECK(result == FOE_AWAITING_INPUT);
@@ -811,7 +811,7 @@ TEST_CASE("UTF-8 to UTF-32 - character conversion") {
                     src[1] = 0x80 | ((codepoint >> 12) & 0x3F);
                     src[2] = 0x80 | ((codepoint >> 6) & 0x3F);
                     src[3] = 0x80 | (codepoint & 0x3F);
-                    state = {0};
+                    state = {};
 
                     result = foe_utf8_to_utf32_ch(src[0], &dst, &state);
                     CHECK(result == FOE_AWAITING_INPUT);

@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,11 +6,16 @@
 
 #include "result.h"
 
+#define UNUSED(X) (void)X;
+
 typedef struct ManagedMemorySubset {
     foeManagedMemory parentMemory;
 } ManagedMemorySubset;
 
 static void cleanup_ManagedMemorySubset(void *pData, uint32_t dataSize, void *pMetadata) {
+    UNUSED(pData)
+    UNUSED(dataSize)
+
     ManagedMemorySubset *pManagedMemorySubsetData = (ManagedMemorySubset *)pMetadata;
 
     foeManagedMemoryDecrementUse(pManagedMemorySubsetData->parentMemory);

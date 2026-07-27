@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2023 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -233,8 +233,6 @@ extern "C" foeResultSet foeResourceReplace(foeResource oldResource, foeResource 
 }
 
 extern "C" foeResource foeResourceGetReplacement(foeResource resource) {
-    Resource *pResource = resource_from_handle(resource);
-
     if (foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
         ReplacedResource *pData = (ReplacedResource *)foeResourceGetData(resource);
 
@@ -420,7 +418,7 @@ bool resourceUnloadCall(foeResource resource,
 
         unloadDataFn(pUnloadDataContext, (void *)pResourceBaseData);
 
-        // Make sur ethe resource is 'reset', in that the top-level resource type is still the same
+        // Make sure the resource is 'reset', in that the top-level resource type is still the same
         // and the pNext is reset
         *pResourceBaseData = {
             .rType = rType,

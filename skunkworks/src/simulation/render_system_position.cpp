@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -155,8 +155,6 @@ foeResultSet initializePositionData(foeGfxSession gfxSession,
 
 void deinitializePositionData(foeGfxSession gfxSession, RenderSystemPositionData &positionData) {
     for (size_t i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES; ++i) {
-        RenderSystemPositionGpuData &gfxData = positionData.gpuData[i];
-
         destroyPositionGpuData(gfxSession, positionData.gpuData + i);
     }
 

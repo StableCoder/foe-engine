@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2026 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define UNUSED(X) (void)X;
+
 typedef struct MemoryMappedFile {
     int fileDescriptor;
     void *pData;
@@ -19,6 +21,9 @@ typedef struct MemoryMappedFile {
 } MemoryMappedFile;
 
 static void cleanup_MemoryMappedFile(void *pData, uint32_t dataSize, void *pMetadata) {
+    UNUSED(pData)
+    UNUSED(dataSize)
+
     MemoryMappedFile *pMemoryMappedFile = pMetadata;
     int posixRetVal;
 

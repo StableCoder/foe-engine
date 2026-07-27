@@ -296,7 +296,6 @@ void foeImageLoader::load(foeResource resource,
         uint8_t *pPelData = pelData.get();
         for (uint32_t m = 0; m < mipLevels; ++m) {
             auto mipExtent = foeGfxVkMipmapExtent(extent, m);
-            auto mipDataSize = bpp * mipExtent.width * mipExtent.height * mipExtent.depth;
 
             Image *mipImage =
                 ResizeImage(image, mipExtent.width, mipExtent.height, LanczosFilter, exceptionInfo);

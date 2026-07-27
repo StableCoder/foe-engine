@@ -279,7 +279,7 @@ foeResult foe_utf16_to_utf8_ch(uint16_t src, uint8_t *pDst, foeMultiByteState *p
         // output first of 4 bytes
         pState->state &= ~PROCESSING_UTF16_SURROGATE;
         pState->state |= OUTPUTTING_UTF8_3_POINTS;
-        *pDst = 0xF0 | (pState->fullCodepoint >> 18) & 0x07;
+        *pDst = 0xF0 | ((pState->fullCodepoint >> 18) & 0x07);
         return FOE_INCOMPLETE;
 
     } else if ((pState->state & OUTPUTTING_UTF8_2_POINTS) == OUTPUTTING_UTF8_2_POINTS) {
